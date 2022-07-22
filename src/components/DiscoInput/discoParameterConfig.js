@@ -181,7 +181,7 @@ export const inputConfig = {
   },
   transformation_percent: {
     default: "[0.09]",
-    type: "json",
+    type: "array",
     label: "Transformation Percent",
   },
 }

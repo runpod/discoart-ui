@@ -1,5 +1,5 @@
 import { inputConfig } from "@components/DiscoInput/discoParameterConfig"
-import { compose, pick } from "ramda"
+import { compose, omit, pick } from "ramda"
 
 const parseTextPrompts = (parsedJson) =>
   parsedJson.map((prompt) => {
@@ -34,8 +34,8 @@ const stringifyCudaDevice = (index) => `cuda:${index}`
 export const stateToJson = (state) => {
   // TODO: add more special parsers to make UX better
 
-  const jsonString = compose(
-    (object) => JSON.stringify(object, null, 2),
+  const jsonObject = compose(
+    omit(["width", "height"]),
     pick(Object.keys(inputConfig)),
     (state) => {
       return {
@@ -55,6 +55,8 @@ export const stateToJson = (state) => {
           mappedState[key] = parseFloat(value)
         } else if (fieldType === "string") {
           mappedState[key] = value || null
+        } else if (fieldType === "array") {
+          mappedState[key] = JSON.parse(value) || null
         } else {
           mappedState[key] = value
         }
@@ -63,7 +65,7 @@ export const stateToJson = (state) => {
     }
   )(state)
 
-  return jsonString
+  return jsonObject
 }
 
 // TODO: add more validations here

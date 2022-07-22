@@ -74,7 +74,7 @@ export default function Home({ customValidationSchema }) {
   }
 
   const handleExport = () => {
-    setExportedJson(stateToJson(getValues()))
+    setExportedJson(JSON.stringify(stateToJson(getValues()), null, 2))
     openExportModal()
   }
 
