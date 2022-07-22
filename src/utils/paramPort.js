@@ -1,21 +1,15 @@
 import { inputConfig } from "@components/DiscoInput/discoParameterConfig"
 import { compose, pick } from "ramda"
 
-const parseTextPrompts = (parsedJson) => {
-  let promptState = []
-
-  Object.entries(parsedJson).forEach(([startFrame, prompts]) => {
-    prompts?.forEach((prompt) => {
-      const [text, weight = 1] = prompt?.split(":")
-      promptState.push({
-        prompt: text,
-        weight,
-      })
-    })
+const parseTextPrompts = (parsedJson) =>
+  parsedJson.map((prompt) => {
+    const [text, weight = 1] = prompt?.split(":")
+    return {
+      prompt: text,
+      weight,
+    }
   })
 
-  return promptState
-}
 const stringifyTextPrompts = (inputState) =>
   inputState.map(({ prompt, weight }) => `${prompt}:${weight}`)
 
@@ -29,6 +23,7 @@ const parseDimensions = (dimensions) => {
 }
 
 const parseCudaDevice = (string) => {
+  if (!string) return "cuda:0"
   const [, index] = string?.split(":")
 
   return index?.trim()
@@ -40,14 +35,14 @@ export const stateToJson = (state) => {
   // TODO: add more special parsers to make UX better
 
   const jsonString = compose(
-    JSON.stringify,
+    (object) => JSON.stringify(object, null, 2),
     pick(Object.keys(inputConfig)),
     (state) => {
       return {
         ...state,
         text_prompts: stringifyTextPrompts(state.text_prompts),
         width_height: stringifyDimensions(state.height, state.width),
-        cuda_device: stringifyCudaDevice(state?.cuda_device),
+        // cuda_device: stringifyCudaDevice(state?.cuda_device),
       }
     },
     (state) => {
@@ -81,7 +76,7 @@ export const jsonToState = (json) => {
       return {
         ...parsed,
         text_prompts: parseTextPrompts(parsed?.text_prompts),
-        cuda_device: parseCudaDevice(parsed?.cuda_device),
+        // cuda_device: parseCudaDevice(parsed?.cuda_device),
         width,
         height,
       }

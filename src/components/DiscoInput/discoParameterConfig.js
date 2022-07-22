@@ -1,20 +1,14 @@
 export const inputConfig = {
   //seed
-  seed_type: {
-    type: "string",
-    default: "random_seed",
-    label: "Seed Type",
-  },
-  seed_value: {
+  seed: {
     type: "integer",
-    default: 123456,
+    default: "",
     label: "Seed Value",
   },
-
   //general run
   batch_name: {
     type: "string",
-    default: "TimeToDisco",
+    default: "RunPodDisco",
     label: "Batch Name",
   },
   batch_size: {
@@ -24,7 +18,7 @@ export const inputConfig = {
   },
   n_batches: {
     type: "integer",
-    default: 150,
+    default: 1,
     label: "Images Per Batch",
   },
   width: {
@@ -61,11 +55,11 @@ export const inputConfig = {
     label: "Text Prompts",
   },
 
-  init_image: {
-    default: null,
-    type: "string",
-    label: "Init Image Path",
-  },
+  // init_image: {
+  //   default: null,
+  //   type: "string",
+  //   label: "Init Image Path",
+  // },
   skip_steps: {
     default: 0,
     type: "integer",
@@ -105,6 +99,33 @@ export const inputConfig = {
 
   clip_models: {
     default: ["RN50::openai", "ViT-B-32::openai"],
+    options: [
+      "RN101-quickgelu::openai",
+      "RN101-quickgelu::yfcc15m",
+      "RN101::openaiRN101::yfcc15m",
+      "RN50-quickgelu::cc12m",
+      "RN50-quickgelu::openai",
+      "RN50-quickgelu::yfcc15m",
+      "RN50::openai",
+      "RN50::yfcc15mRN50::cc12m",
+      "RN50x16::openai",
+      "RN50x4::openai",
+      "RN50x64::openai",
+      "ViT-B-16-plus-240::laion400m_e31",
+      "ViT-B-16-plus-240::laion400m_e32",
+      "ViT-B-16::laion400m_e31",
+      "ViT-B-16::laion400m_e32",
+      "ViT-B-16::openai",
+      "ViT-B-32-quickgelu::laion400m_e31",
+      "ViT-B-32-quickgelu::laion400m_e32",
+      "ViT-B-32-quickgelu::openai",
+      "ViT-B-32::laion2b_e16",
+      "ViT-B-32::laion400m_e31",
+      "ViT-B-32::laion400m_e32",
+      "ViT-B-32::openai",
+      "ViT-L-14-336::openai",
+      "ViT-L-14::openai",
+    ],
     type: "multiSelect",
     label: "Clip Models",
   },
@@ -112,7 +133,20 @@ export const inputConfig = {
   diffusion_model: {
     type: "select",
     default: "512x512_diffusion_uncond_finetune_008100",
-    options: ["512x512_diffusion_uncond_finetune_008100", "256x256_diffusion_uncond"],
+    options: [
+      "256x256_diffusion_uncond",
+      "256x256_openai_comics_faces_v2.by_alex_spirin_114k",
+      "512x512_diffusion_uncond_finetune_008100",
+      "FeiArt_Handpainted_CG_Diffusion",
+      "PADexpanded",
+      "pixel_art_diffusion_hard_256",
+      "pixel_art_diffusion_soft_256",
+      "pixelartdiffusion4k",
+      "portrait_generator_v001_ema_0.9999_1MM",
+      "PulpSciFiDiffusion",
+      "watercolordiffusion_2",
+      "watercolordiffusion",
+    ],
     label: "Diffusion Model",
   },
   randomize_class: { type: "boolean", default: true, label: "Randomize Class" },
@@ -122,7 +156,7 @@ export const inputConfig = {
   clip_guidance_scale: { default: 5000, type: "integer", label: "Clip Guidance Scale" },
   cut_overview: { default: "[12]*400+[4]*600", type: "string", label: "Cut Overview" },
   cut_innercut: { default: "[4]*400+[12]*600", type: "string", label: "Cut Innercut" },
-  cut_icgray_p: { default: "[0.2]*400+[0]*600", type: "string", label: "Cut IC Power" },
+  cut_icgray_p: { default: "[0.2]*400+[0]*600", type: "string", label: "Cut IC Gray" },
   cut_ic_pow: { default: 1, type: "integer", label: "Cut IC Power" },
   eta: { default: 0.8, type: "float", label: "ETA" },
   clamp_grad: { default: true, type: "boolean", label: "Clamp Grad" },
@@ -146,8 +180,8 @@ export const inputConfig = {
     label: "Vertical Symmetry",
   },
   transformation_percent: {
-    default: [0.09],
-    type: "array",
+    default: "[0.09]",
+    type: "json",
     label: "Transformation Percent",
   },
 }

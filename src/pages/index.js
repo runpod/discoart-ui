@@ -12,13 +12,18 @@ import {
   Button,
   IconButton,
   Box,
+  Autocomplete,
+  TextField,
+  Dialog,
+  DialogContent,
+  DialogActions,
 } from "@mui/material"
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore"
 import AddIcon from "@mui/icons-material/Add"
 import CloseIcon from "@mui/icons-material/Close"
 // sections
 
-import { useFieldArray, useForm } from "react-hook-form"
+import { Controller, useFieldArray, useForm } from "react-hook-form"
 import { yupResolver } from "@hookform/resolvers/yup"
 import * as yup from "yup"
 
@@ -31,10 +36,6 @@ import useOpenState from "@hooks/useOpenState"
 // TODO: add real validation schema here
 const validationSchema = yup.object({})
 
-// TODO: make linked inputs for better UX
-
-// ----------------------------------------------------------------------
-
 export default function Home({ customValidationSchema }) {
   const theme = useTheme()
 
@@ -46,6 +47,7 @@ export default function Home({ customValidationSchema }) {
   const {
     getValues,
     register,
+    watch,
     reset,
     formState: { errors },
     control,
@@ -85,9 +87,7 @@ export default function Home({ customValidationSchema }) {
     })
   }
 
-  const handlePromptRemove = (index) => () => {
-    remove(index)
-  }
+  const handlePromptRemove = (index) => () => remove(index)
 
   return (
     <Container maxWidth="xl">
@@ -98,7 +98,7 @@ export default function Home({ customValidationSchema }) {
         defaultExpanded
       >
         <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-          <Typography>Prompt</Typography>
+          <Typography variant="h5">Prompt</Typography>
         </AccordionSummary>
         <AccordionDetails>
           <Stack spacing={2}>
@@ -131,62 +131,149 @@ export default function Home({ customValidationSchema }) {
       </Accordion>
       <Accordion>
         <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-          <Typography>Model Settings</Typography>
+          <Typography variant="h5">Model Settings</Typography>
         </AccordionSummary>
         <AccordionDetails>
           <Stack spacing={2}>
-            <DynamicInput control={control} name={"use_secondary_model"} />
+            <Controller
+              render={({ field: { ref, onChange, ...field } }) => (
+                <Autocomplete
+                  multiple
+                  options={inputConfig?.clip_models?.options}
+                  defaultValue={inputConfig?.clip_models?.default}
+                  onChange={(e, data) => {
+                    onChange(data)
+                  }}
+                  renderInput={(params) => (
+                    <TextField {...params} label="Clip Models" inputRef={ref} {...field} />
+                  )}
+                />
+              )}
+              name="clip_models"
+              control={control}
+            />
+
             <DynamicInput control={control} name={"diffusion_model"} />
+            <DynamicInput control={control} name={"use_secondary_model"} />
           </Stack>
         </AccordionDetails>
       </Accordion>
       <Accordion>
         <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-          <Typography>Run Settings</Typography>
+          <Typography variant="h5">Run Settings</Typography>
         </AccordionSummary>
         <AccordionDetails>
-          <Stack spacing={2}>
-            <DynamicInput control={control} name={"batch_name"} />
-            <DynamicInput control={control} name={"n_batches"} />
-            <DynamicInput control={control} name={"steps"} />
-            <DynamicInput control={control} name={"width"} />
-            <DynamicInput control={control} name={"height"} />
-          </Stack>
+          <Grid container spacing={2}>
+            <Grid item xs={12} sm={4} md={3}>
+              <DynamicInput control={control} name={"seed"} />
+            </Grid>
+            <Grid item xs={12} sm={4} md={3}>
+              <DynamicInput control={control} name={"batch_name"} />
+            </Grid>
+            <Grid item xs={12} sm={4} md={3}>
+              <DynamicInput control={control} name={"batch_size"} />
+            </Grid>
+            <Grid item xs={12} sm={4} md={3}>
+              <DynamicInput control={control} name={"n_batches"} />
+            </Grid>
+            <Grid item xs={12} sm={4} md={3}>
+              <DynamicInput control={control} name={"steps"} />
+            </Grid>
+            <Grid item xs={12} sm={4} md={3}>
+              <DynamicInput control={control} name={"width"} />
+            </Grid>
+            <Grid item xs={12} sm={4} md={3}>
+              <DynamicInput control={control} name={"height"} />
+            </Grid>
+          </Grid>
         </AccordionDetails>
       </Accordion>
       <Accordion>
         <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-          <Typography>Clip Settings</Typography>
+          <Typography variant="h5">Symmetry Settings</Typography>
         </AccordionSummary>
         <AccordionDetails>
-          <Stack spacing={2}>
-            <DynamicInput control={control} name={"cutn_batches"} />
-            <DynamicInput control={control} name={"clip_guidance_scale"} />
-            <DynamicInput control={control} name={"cut_overview"} />
-            <DynamicInput control={control} name={"cut_innercut"} />
-            <DynamicInput control={control} name={"cut_icgray_p"} />
-            <DynamicInput control={control} name={"cut_ic_pow"} />
-          </Stack>
+          <Grid container spacing={2}>
+            <Grid item xs={12} sm={4} md={3}>
+              <DynamicInput control={control} name={"use_vertical_symmetry"} />
+            </Grid>
+            <Grid item xs={12} sm={4} md={3}>
+              <DynamicInput control={control} name={"use_horizontal_symmetry"} />
+            </Grid>
+          </Grid>
+          <Grid mt={2} container spacing={2}>
+            <Grid item xs={12} sm={4} md={3}>
+              <DynamicInput control={control} name={"transformation_percent"} />
+            </Grid>
+          </Grid>
+        </AccordionDetails>
+      </Accordion>
+      <Accordion>
+        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+          <Typography variant="h5">Clip Settings</Typography>
+        </AccordionSummary>
+        <AccordionDetails>
+          <Grid container spacing={2}>
+            <Grid item xs={12} sm={4} md={3} lg={2}>
+              <DynamicInput control={control} name={"cutn_batches"} />
+            </Grid>
+            <Grid item xs={12} sm={4} md={3} lg={2}>
+              <DynamicInput control={control} name={"clip_guidance_scale"} />
+            </Grid>
+          </Grid>
+          <Grid mt={2} container spacing={2}>
+            <Grid item xs={12} sm={4} md={3}>
+              <DynamicInput control={control} name={"cut_ic_pow"} />
+            </Grid>
+            <Grid item xs={12} sm={4} md={3}>
+              <DynamicInput control={control} name={"cut_overview"} />
+            </Grid>
+            <Grid item xs={12} sm={4} md={3}>
+              <DynamicInput control={control} name={"cut_innercut"} />
+            </Grid>
+            <Grid item xs={12} sm={4} md={3}>
+              <DynamicInput control={control} name={"cut_icgray_p"} />
+            </Grid>
+          </Grid>
         </AccordionDetails>
       </Accordion>
 
       <Accordion>
         <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-          <Typography>Miscellaneous Settings</Typography>
+          <Typography variant="h5">Miscellaneous Settings</Typography>
         </AccordionSummary>
         <AccordionDetails>
-          <Stack spacing={2}>
-            <DynamicInput control={control} name={"eta"} />
-            <DynamicInput control={control} name={"clamp_max"} />
-            <DynamicInput control={control} name={"rand_mag"} />
-            <DynamicInput control={control} name={"tv_scale"} />
-            <DynamicInput control={control} name={"range_scale"} />
-            <DynamicInput control={control} name={"sat_scale"} />
-
-            <DynamicInput control={control} name={"clamp_grad"} />
-            <DynamicInput control={control} name={"clip_denoised"} />
-            <DynamicInput control={control} name={"skip_augs"} />
-          </Stack>
+          <Grid container spacing={2}>
+            <Grid item xs={12} sm={4} md={3}>
+              <DynamicInput control={control} name={"eta"} />
+            </Grid>
+            <Grid item xs={12} sm={4} md={3}>
+              <DynamicInput control={control} name={"clamp_max"} />
+            </Grid>
+            <Grid item xs={12} sm={4} md={3}>
+              <DynamicInput control={control} name={"rand_mag"} />
+            </Grid>
+            <Grid item xs={12} sm={4} md={3}>
+              <DynamicInput control={control} name={"tv_scale"} />
+            </Grid>
+            <Grid item xs={12} sm={4} md={3}>
+              <DynamicInput control={control} name={"range_scale"} />
+            </Grid>
+            <Grid item xs={12} sm={4} md={3}>
+              <DynamicInput control={control} name={"sat_scale"} />
+            </Grid>
+          </Grid>
+          <Grid container spacing={2} mt={2}>
+            <Grid item xs={12} sm={4} md={3}>
+              <DynamicInput control={control} name={"clamp_grad"} />
+            </Grid>
+            <Grid item xs={12} sm={4} md={3}>
+              <DynamicInput control={control} name={"clip_denoised"} />
+            </Grid>
+            <Grid item xs={12} sm={4} md={3}>
+              <DynamicInput control={control} name={"skip_augs"} />
+            </Grid>
+          </Grid>
         </AccordionDetails>
       </Accordion>
       <Stack sx={{ mt: 3 }} direction="row" justifyContent="space-between">
@@ -197,7 +284,7 @@ export default function Home({ customValidationSchema }) {
         </Stack>
 
         <Stack direction="row" spacing={2}>
-          <Button variant="outlined" onClick={handleImport}>
+          <Button variant="outlined" onClick={openImportModal}>
             Import Settings
           </Button>
           <Button variant="outlined" onClick={handleExport}>
@@ -205,6 +292,45 @@ export default function Home({ customValidationSchema }) {
           </Button>
         </Stack>
       </Stack>
+
+      <Dialog fullWidth maxWidth="lg" open={exportOpen} onClose={closeExportModal}>
+        <DialogContent>
+          <TextField fullWidth multiline readOnly value={exportedJson}></TextField>
+        </DialogContent>
+        <DialogActions>
+          <Button variant="ghost" mr={3} onClick={closeExportModal}>
+            Close
+          </Button>
+          <Button
+            onClick={() => {
+              navigator.clipboard.writeText(exportedJson)
+            }}
+            variant="contained"
+          >
+            Copy To Clipboard
+          </Button>
+        </DialogActions>
+      </Dialog>
+      <Dialog fullWidth maxWidth="lg" open={importOpen} onClose={closeImportModal}>
+        <DialogContent>
+          <TextField
+            fullWidth
+            value={jsonToImport}
+            onChange={(e) => setJsonToImport(e?.target?.value)}
+            multiline
+            rows={30}
+          ></TextField>
+        </DialogContent>
+
+        <DialogActions>
+          <Button variant="ghost" mr={3} onClick={closeImportModal}>
+            Close
+          </Button>
+          <Button onClick={handleImport} variant="contained">
+            Import
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Container>
   )
 }
