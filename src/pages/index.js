@@ -21,6 +21,7 @@ import {
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore"
 import AddIcon from "@mui/icons-material/Add"
 import CloseIcon from "@mui/icons-material/Close"
+import { nanoid } from "nanoid"
 // sections
 
 import { Controller, useFieldArray, useForm } from "react-hook-form"
@@ -41,6 +42,8 @@ export default function Home({ customValidationSchema }) {
 
   const [exportedJson, setExportedJson] = useState()
   const [jsonToImport, setJsonToImport] = useState()
+  const [renderId, setRenderId] = useState()
+  const [rendering, setRendering] = useState(false)
   const [exportOpen, openExportModal, closeExportModal] = useOpenState()
   const [importOpen, openImportModal, closeImportModal] = useOpenState()
 
@@ -78,7 +81,47 @@ export default function Home({ customValidationSchema }) {
     openExportModal()
   }
 
-  console.log(exportedJson)
+  const handleRenderStart = () => {
+    // setRendering(true)
+    const newRenderId = nanoid()
+    setRenderId(newRenderId)
+
+    const payload = {
+      execEndpoint: "/create",
+      parameters: {
+        name_docarray: renderId,
+        ...stateToJson(getValues()),
+      },
+    }
+
+    fetch("/api/control", {
+      headers: {
+        "Content-Type": "application/json",
+      },
+      method: "POST",
+      body: JSON.stringify(payload),
+    })
+  }
+
+  const handleRenderStop = async () => {
+    const payload = {
+      execEndpoint: "/stop",
+    }
+
+    await fetch("/api/control", {
+      headers: {
+        "Content-Type": "application/json",
+      },
+      method: "POST",
+      body: JSON.stringify(payload),
+    })
+
+    setRendering(false)
+  }
+
+  const handleRenderCheck = () => {}
+
+  const handleRenderSkip = () => {}
 
   const handlePromptAdd = () => {
     append({
@@ -278,9 +321,13 @@ export default function Home({ customValidationSchema }) {
       </Accordion>
       <Stack sx={{ mt: 3 }} direction="row" justifyContent="space-between">
         <Stack direction="row" spacing={2}>
-          <Button variant="contained">Start Render</Button>
+          <Button variant="contained" onClick={handleRenderStart} disabled={rendering}>
+            Start Render
+          </Button>
           <Button variant="outlined">Skip Current Render</Button>
-          <Button variant="outlined">Cancel Entire Batch</Button>
+          <Button variant="outlined" onClick={handleRenderStop} disabled={!rendering}>
+            Cancel Entire Batch
+          </Button>
         </Stack>
 
         <Stack direction="row" spacing={2}>
