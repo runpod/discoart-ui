@@ -82,7 +82,7 @@ export default function Home({ customValidationSchema }) {
   }
 
   const handleRenderStart = () => {
-    // setRendering(true)
+    setRendering(true)
     const newRenderId = nanoid()
     setRenderId(newRenderId)
 
@@ -119,9 +119,33 @@ export default function Home({ customValidationSchema }) {
     setRendering(false)
   }
 
-  const handleRenderCheck = () => {}
+  const handleRenderCheck = async () => {
+    const payload = { execEndpoint: "/result", parameters: { name_docarray: renderId } }
 
-  const handleRenderSkip = () => {}
+    const result = await fetch("/api/control", {
+      headers: {
+        "Content-Type": "application/json",
+      },
+      method: "POST",
+      body: JSON.stringify(payload),
+    })
+
+    setProgress(result)
+  }
+
+  const handleRenderSkip = async () => {
+    const payload = {
+      execEndpoint: "/skip",
+    }
+
+    await fetch("/api/control", {
+      headers: {
+        "Content-Type": "application/json",
+      },
+      method: "POST",
+      body: JSON.stringify(payload),
+    })
+  }
 
   const handlePromptAdd = () => {
     append({
