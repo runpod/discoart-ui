@@ -13,7 +13,12 @@
     "@emotion/styled": "^11.9.3",
     "@hookform/resolvers": "^2.9.6",
     "@mui/icons-material": "^5.8.4",
+    "@mui/lab": "^5.0.0-alpha.91",
     "@mui/material": "^5.9.1",
+    "axios": "^0.27.2",
+    "axios-hooks": "^3.1.4",
+    "date-fns": "^2.29.1",
+    "esm": "^3.2.25",
     "express": "^4.18.1",
     "http-proxy-middleware": "^2.0.6",
     "nanoid": "^4.0.0",
@@ -22,6 +27,10 @@
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "react-hook-form": "^7.33.1",
+    "sql-template-strings": "^2.2.2",
+    "sqlite": "^4.1.2",
+    "sqlite3": "^5.0.10",
+    "yarn": "^1.22.19",
     "yup": "^0.32.11"
   },
   "devDependencies": {

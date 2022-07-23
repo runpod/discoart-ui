@@ -5,6 +5,8 @@
 /.pnp
 .pnp.js
 /out
+/discoDaemon/*
+!/discoDaemon/*.js
 
 # testing
 /coverage

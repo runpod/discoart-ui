@@ -1,7 +1,7 @@
 const path = require("path")
 const fs = require("fs")
 //joining path of directory
-const directoryPath = path.join("./out")
+const directoryPath = path.join("../")
 //passsing directoryPath and callback function
 
 export default async function handler(req, res) {
