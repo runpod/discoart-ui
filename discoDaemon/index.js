@@ -60,11 +60,13 @@ const startJob = async ({ parameters, jobId }) => {
     process: job,
     promise: new Promise((resolve, reject) => {
       job.stdout.on("data", (data) => {
-        console.log(`stdout: ${data}`)
+        console.log(`STDOUT: ${data}`)
+        if (data.includes("ERROR")) reject(`${data}`)
       })
 
       job.stderr.on("data", (data) => {
-        console.error(`stderr: ${data}`)
+        console.error(`ERROR: ${data}`)
+        if (data.includes("ERROR")) reject(`${data}`)
       })
 
       job.on("close", (code) => {
@@ -77,6 +79,9 @@ const startJob = async ({ parameters, jobId }) => {
     })
       .then((code) => {
         delete activeProcesses[jobId]
+
+        console.log("EXIT CODE", code)
+
         database
           .run(
             `
@@ -95,6 +100,7 @@ const startJob = async ({ parameters, jobId }) => {
       })
       .catch((err) => {
         delete activeProcesses[jobId]
+        console.log("FATAL ERROR", err)
         database
           .run(
             `
@@ -108,7 +114,7 @@ const startJob = async ({ parameters, jobId }) => {
             jobId
           )
           .catch((err) => {
-            console.log(err)
+            console.log("ERROR", err)
           })
       }),
   }
@@ -118,7 +124,6 @@ const startJob = async ({ parameters, jobId }) => {
 
 const pruneDeletedJobs = async () => {
   const database = await db
-  console.log("loop")
   const activeJobs = Object.values(activeProcesses)
 
   const queuedJobs = await database.all(`SELECT job_id FROM jobs`)
