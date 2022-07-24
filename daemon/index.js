@@ -52,6 +52,14 @@ const startJob = async ({ parameters, jobId }) => {
 
   let debugStream = fs.createWriteStream(`/workspace/logs/${jobId}.txt`, { flags: "a" })
 
+  if (!fs.existsSync(`/workspace/out/${jobId}/`)) {
+    fs.mkdirSync(`/workspace/out/${jobId}/`)
+  }
+
+  fs.writeFile(`/workspace/out/${jobId}/settings.txt`, parameters, () =>
+    console.log("settings written")
+  )
+
   const jobInfo = {
     id: jobId,
     pid: job.pid,

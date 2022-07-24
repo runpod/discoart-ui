@@ -28,12 +28,12 @@ export default function QueueEntry({ job, refetchJobQueue, handleImport }) {
     <TableRow key={job_id} sx={{ "&:last-child td, &:last-child th": { border: 0 } }}>
       <TableCell align="left">
         <Typography>
-          {created_at ? `${format(new Date(created_at), "MM/dd/yyyy HH:MM")}` : "-"}
+          {created_at ? `${format(new Date(created_at), "MM/dd/yyyy HH:MM:SS")}` : "-"}
         </Typography>
       </TableCell>
       <TableCell align="left">
         <Typography>
-          {started_at ? `${format(new Date(started_at), "MM/dd/yyyy HH:MM")}` : "-"}
+          {started_at ? `${format(new Date(started_at), "MM/dd/yyyy HH:MM:SS")}` : "-"}
         </Typography>
       </TableCell>
       <TableCell align="right">
@@ -43,6 +43,7 @@ export default function QueueEntry({ job, refetchJobQueue, handleImport }) {
         <Button onClick={handleQueueRemove(job_id)}>
           {completed_at ? "REMOVE" : started_at ? "CANCEL" : "REMOVE"}
         </Button>
+        {completed_at && <Button href={`/gallery/${job_id}`}>GALLERY</Button>}
         <Button onClick={() => setSettingsViewerOpen(true)}>SETTINGS</Button>
         <Button disabled={!started_at} onClick={() => setLogViewerOpen(true)}>
           LOGS
@@ -52,7 +53,7 @@ export default function QueueEntry({ job, refetchJobQueue, handleImport }) {
       <SettingsViewer
         open={settingsViewerOpen}
         onClose={() => setSettingsViewerOpen(false)}
-        settings={job_details}
+        jobId={job_id}
         handleImport={handleImport(job_details)}
       />
     </TableRow>

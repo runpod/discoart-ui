@@ -1,13 +1,4 @@
-import sqlite3 from "sqlite3"
-import { open } from "sqlite"
 import readLastLines from "read-last-lines"
-
-const databasePath = "/workspace/database"
-
-const db = open({
-  filename: databasePath,
-  driver: sqlite3.Database,
-})
 
 const handler = async (req, res) => {
   const { jobId } = req.query

@@ -20,7 +20,12 @@ const handler = async (req, res) => {
 
     const files = fs
       .readdirSync(fileLocation)
-      ?.filter((fileName) => fileName.includes("done") || fileName.includes("progress"))
+      ?.filter(
+        (fileName) =>
+          fileName.includes("done") ||
+          fileName.includes("progress") ||
+          fileName.includes("settings.txt")
+      )
 
     var zip = Archiver("zip")
 

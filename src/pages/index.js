@@ -120,7 +120,7 @@ export default function Home({ customValidationSchema }) {
 
   const handlePromptAdd = () => {
     append({
-      prompt: "a lighthouse",
+      prompt: "",
       weight: 1,
     })
   }
@@ -335,9 +335,11 @@ export default function Home({ customValidationSchema }) {
       {progressData?.progress && (
         <Grid container justifyContent="center" mt={3} mb={10}>
           <Stack alignItems="center" spacing={1} width={300}>
-            <Box sx={{ objectFit: "contain", position: "relative" }} height={200} width={320}>
-              <Image layout="fill" src={progressData?.progress?.latestImage}></Image>
-            </Box>
+            <Image
+              {...progressData?.progress?.dimensions}
+              src={progressData?.progress?.latestImage}
+            ></Image>
+
             <Box width="100%">
               <LinearProgress
                 height={10}

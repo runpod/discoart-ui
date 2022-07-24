@@ -1,18 +1,17 @@
-import { Button, TextField, Dialog, DialogContent, DialogActions } from "@mui/material"
+import { Button, Dialog, DialogContent, DialogActions } from "@mui/material"
+import useAxios from "axios-hooks"
 import dynamic from "next/dynamic"
 const DynamicReactJson = dynamic(import("react-json-view"), { ssr: false })
 
-export default function SettingsViewer({ open, onClose, settings, handleImport }) {
+export default function SettingsViewer({ open, onClose, jobId, handleImport }) {
+  const [{ data }] = useAxios(`/api/settings/${jobId}`, {
+    manual: !open,
+  })
+
   return (
     <Dialog fullWidth maxWidth="lg" open={open} onClose={onClose}>
       <DialogContent>
-        {settings && (
-          <DynamicReactJson
-            displayDataTypes={false}
-            displayObjectSize={false}
-            src={JSON.parse(settings)}
-          />
-        )}
+        <DynamicReactJson displayDataTypes={false} displayObjectSize={false} src={data} />
       </DialogContent>
 
       <DialogActions>
@@ -26,15 +25,17 @@ export default function SettingsViewer({ open, onClose, settings, handleImport }
         >
           Copy to Clipboard
         </Button>
-        <Button
-          onClick={() => {
-            handleImport()
-            onClose()
-          }}
-          variant="contained"
-        >
-          Import
-        </Button>
+        {handleImport && (
+          <Button
+            onClick={() => {
+              handleImport()
+              onClose()
+            }}
+            variant="contained"
+          >
+            Import
+          </Button>
+        )}
       </DialogActions>
     </Dialog>
   )

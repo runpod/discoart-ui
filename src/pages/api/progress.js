@@ -1,6 +1,5 @@
 import sqlite3 from "sqlite3"
 import { open } from "sqlite"
-import { last } from "ramda"
 import fs from "fs/promises"
 const path = require("path")
 
@@ -10,6 +9,22 @@ const db = open({
   filename: databasePath,
   driver: sqlite3.Database,
 })
+
+export const getImageDimensions = (height, width) => {
+  try {
+    const aspectRatio = width / height
+
+    const adjustedHeight = Math.min(400, height)
+    const adjustedWidth = adjustedHeight * aspectRatio
+
+    return {
+      height: adjustedHeight,
+      width: adjustedWidth,
+    }
+  } catch (e) {
+    return { height: 300, width: 400 }
+  }
+}
 
 const getJobInfo = async (jobId, jobConfig) => {
   try {
@@ -43,12 +58,16 @@ const getJobInfo = async (jobId, jobConfig) => {
 
     const [batchNumber, _, frame] = latestProgressFileName?.split("-") || []
 
+    const height = parsedConfig?.width_height?.[1]
+    const width = parsedConfig?.width_height?.[0]
+
     return {
       finishedImages,
-      latestImage: `/api/image/${jobId}/${latestProgressFileName}`,
+      latestImage: latestProgressFileName && `/api/image/${jobId}/${latestProgressFileName}`,
       batchNumber,
       frame,
       config: parsedConfig,
+      dimensions: getImageDimensions(height, width),
     }
   } catch (e) {
     console.log(e)
@@ -57,8 +76,6 @@ const getJobInfo = async (jobId, jobConfig) => {
 }
 
 const handler = async (req, res) => {
-  console.log("PROGRESS CALLED")
-
   const database = await db
 
   try {
@@ -75,8 +92,6 @@ const handler = async (req, res) => {
     }
 
     const progress = await getJobInfo(runningJob.job_id, runningJob.job_details)
-
-    console.log(progress)
 
     res.status(200).json({
       success: true,

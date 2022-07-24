@@ -14,6 +14,8 @@ export const DynamicInput = ({ control, name, ...rest }) => {
     <ControlledTextField control={control} name={name} label={label} {...rest} />
   ) : type === "json" ? (
     <ControlledTextField control={control} name={name} label={label} {...rest} />
+  ) : type === "array" ? (
+    <ControlledTextField control={control} name={name} label={label} {...rest} />
   ) : type === "boolean" ? (
     <ControlledCheckbox control={control} name={name} label={label} {...rest} />
   ) : type === "select" ? (
