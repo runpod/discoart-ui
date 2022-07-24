@@ -36,7 +36,7 @@ export const stateToJson = (state) => {
 
   const jsonObject = compose(
     omit(["width", "height"]),
-    pick(Object.keys(inputConfig)),
+    pick([...Object.keys(inputConfig), "width_height"]),
     (state) => {
       return {
         ...state,
