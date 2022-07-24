@@ -7,7 +7,7 @@ export async function getServerSideProps(context) {
 
   try {
     const files = fs
-      .readdirSync(`./discoDaemon/${jobId}`)
+      .readdirSync(`/workspace/out/${jobId}`)
       ?.filter((fileName) => fileName.includes("done"))
       ?.map((fileName) => `/api/image/${jobId}/${fileName}`)
     return {
@@ -27,7 +27,6 @@ export async function getServerSideProps(context) {
 export default function JobGallery({ imageUrls }) {
   return (
     <Container maxWidth="xl" sx={{ p: 10 }}>
-      <Button href="/gallery">Back to Gallery</Button>
       <Grid container spacing={2}>
         {imageUrls?.map((imageUrl) => (
           <Grid item xs={12} md={6} lg={3} key={imageUrl}>

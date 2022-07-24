@@ -5,14 +5,13 @@ import Link from "next/link"
 
 export async function getServerSideProps() {
   try {
-    console.log("run")
-    const directories = (await fs.readdir(`./discoDaemon`))?.filter((name) => !name.includes("."))
+    const directories = (await fs.readdir(`/workspace/out`))?.filter((name) => !name.includes("."))
 
     const validDirectories = (
       await Promise.all(
         directories.map(async (dir) => {
           try {
-            await fs.access(`./discoDaemon/${dir}/0-done-0.png`)
+            await fs.access(`/workspace/out/${dir}/0-done-0.png`)
             return dir
           } catch (e) {
             return null
@@ -20,8 +19,6 @@ export async function getServerSideProps() {
         })
       )
     ).filter((url) => url)
-
-    console.log(validDirectories)
 
     return {
       props: {
@@ -44,9 +41,6 @@ export default function Gallery({ directories }) {
       <Stack>
         <Stack direction="row" justifyContent="space-between">
           <Typography variant="h4">Successful Render Batches</Typography>
-          <Button href="/" variant="contained">
-            Create
-          </Button>
         </Stack>
         <Grid container spacing={2}>
           {directories?.map((dirName) => (

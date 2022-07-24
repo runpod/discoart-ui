@@ -7,7 +7,7 @@ export const config = {
 
 const handler = express()
 
-const serveFiles = express.static("./discoDaemon/")
+const serveFiles = express.static("/workspace/out")
 
 handler.use(["/api/image/", "/image"], serveFiles)
 
