@@ -50,8 +50,6 @@ export async function getServerSideProps() {
 }
 
 export default function Gallery({ galleries }) {
-  console.log("gallery")
-  console.log(galleries)
   return (
     <Container maxWidth="xl" sx={{ p: 10 }}>
       <Stack>

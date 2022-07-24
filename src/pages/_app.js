@@ -1,5 +1,4 @@
-// import '../styles/globals.css'
-import ThemeProvider from "./theme"
+import ThemeProvider from "../theme"
 import * as React from "react"
 import AppBar from "@mui/material/AppBar"
 import Toolbar from "@mui/material/Toolbar"

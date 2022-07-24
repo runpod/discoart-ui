@@ -29,7 +29,6 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore"
 import AddIcon from "@mui/icons-material/Add"
 import CloseIcon from "@mui/icons-material/Close"
 import { nanoid } from "nanoid"
-import dynamic from "next/dynamic"
 // sections
 
 import { Controller, useFieldArray, useForm } from "react-hook-form"
@@ -42,33 +41,30 @@ import { inputConfig } from "@components/DiscoInput/discoParameterConfig"
 import { DynamicInput, ControlledTextField } from "@components/DiscoInput"
 import useOpenState from "@hooks/useOpenState"
 import Image from "next/image"
-import useInterval from "@hooks/useInterval"
-import useAxios from "axios-hooks"
 import QueueEntry from "@components/QueueEntry"
+import useSWR from "swr"
 
 // TODO: add real validation schema here
 const validationSchema = yup.object({})
 
-const DynamicReactJson = dynamic(import("react-json-view"), { ssr: false })
-
-export default function Home({ customValidationSchema }) {
-  const [exportedJson, setExportedJson] = useState("{}")
-  const [jsonToImport, setJsonToImport] = useState("{}")
-  const [{ data: jobData }, refetchJobQueue] = useAxios("/api/list")
-  const [{ data: progressData, loading: progressLoading }, refetchProgress] =
-    useAxios("/api/progress")
+export default function Home() {
+  const [exportedJson, setExportedJson] = useState()
+  const [jsonToImport, setJsonToImport] = useState()
+  const { data: jobData, mutate: refetchJobQueue } = useSWR("/api/list", null, {
+    refreshInterval: 10000,
+  })
+  const { data: progressData } = useSWR("/api/progress", null, {
+    refreshInterval: 10000,
+  })
   const [exportOpen, openExportModal, closeExportModal] = useOpenState()
   const [importOpen, openImportModal, closeImportModal] = useOpenState()
   const [showAllJobs, setShowAllJobs] = useState(false)
   const [jsonValidationError, setJsonValidationError] = useState("")
 
-  useInterval(refetchProgress, 10000)
-  useInterval(refetchJobQueue, 10000)
-
   const { getValues, reset, control } = useForm({
     defaultValues: mapObject({ valueMapper: (value) => value?.default, mapee: inputConfig }),
 
-    resolver: yupResolver(customValidationSchema || validationSchema),
+    resolver: yupResolver(validationSchema),
   })
 
   const { fields, append, remove } = useFieldArray({
@@ -88,13 +84,11 @@ export default function Home({ customValidationSchema }) {
     }
   }
 
-  const handleExport = (jsonString) => () => {
+  const handleExport = () => {
     try {
-      const jsonToExport = jsonString
-        ? JSON.stringify(JSON.parse(jsonString), null, 2)
-        : JSON.stringify(stateToJson(getValues()), null, 2)
+      const jsonToExport = stateToJson(getValues())
 
-      setExportedJson(jsonToExport)
+      setExportedJson(JSON.stringify(jsonToExport, null, 2))
       openExportModal()
     } catch (e) {
       console.log(e)
@@ -327,7 +321,7 @@ export default function Home({ customValidationSchema }) {
           <Button variant="outlined" onClick={openImportModal}>
             Import Settings
           </Button>
-          <Button variant="outlined" onClick={handleExport()}>
+          <Button variant="outlined" onClick={handleExport}>
             Export Settings
           </Button>
         </Stack>
@@ -411,11 +405,7 @@ export default function Home({ customValidationSchema }) {
       <Box sx={{ width: "100%", height: 100 }}></Box>
       <Dialog fullWidth maxWidth="lg" open={exportOpen} onClose={closeExportModal}>
         <DialogContent>
-          <DynamicReactJson
-            displayDataTypes={false}
-            displayObjectSize={false}
-            src={JSON.parse(exportedJson)}
-          />
+          {<TextField multiline rows={30} readOnly value={exportedJson} />}
         </DialogContent>
         <DialogActions>
           <Button variant="ghost" mr={3} onClick={closeExportModal}>
