@@ -177,7 +177,7 @@ export const inputConfig = {
   use_horizontal_symmetry: {
     default: false,
     type: "boolean",
-    label: "Vertical Symmetry",
+    label: "Horizontal Symmetry",
   },
   transformation_percent: {
     default: "[0.09]",
