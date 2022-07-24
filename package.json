@@ -5,9 +5,8 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start -p 8888",
-    "lint": "next lint",
-    "daemon": "DISCOART_OUTPUT_DIR=/workspace/out node -r esm ./daemon/index.js"
+    "start": "DISCOART_OUTPUT_DIR=/workspace/out next start -p 8888",
+    "lint": "next lint"
   },
   "dependencies": {
     "@emotion/react": "^11.9.3",

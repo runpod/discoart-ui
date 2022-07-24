@@ -176,4 +176,4 @@ const queuePollerDaemon = async () => {
   }, 10000)
 }
 
-queuePollerDaemon()
+export default queuePollerDaemon
