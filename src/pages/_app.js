@@ -21,9 +21,6 @@ function MyApp({ Component, pageProps }) {
               <Button disabled={route === "/"} href="/" color="inherit">
                 Create
               </Button>
-              <Button disabled={route === "/queue"} href="/queue" color="inherit">
-                Queue
-              </Button>
               <Button disabled={route === "/gallery"} href="/gallery" color="inherit">
                 Gallery
               </Button>

@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react"
 // @mui
-import { useTheme } from "@mui/material/styles"
 import {
   Grid,
   Container,
@@ -23,12 +22,14 @@ import {
   TableRow,
   TableCell,
   TableBody,
+  Switch,
+  FormControlLabel,
 } from "@mui/material"
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore"
 import AddIcon from "@mui/icons-material/Add"
 import CloseIcon from "@mui/icons-material/Close"
 import { nanoid } from "nanoid"
-import { format } from "date-fns"
+import dynamic from "next/dynamic"
 // sections
 
 import { Controller, useFieldArray, useForm } from "react-hook-form"
@@ -43,19 +44,26 @@ import useOpenState from "@hooks/useOpenState"
 import Image from "next/image"
 import useInterval from "@hooks/useInterval"
 import useAxios from "axios-hooks"
+import QueueEntry from "@components/QueueEntry"
 
 // TODO: add real validation schema here
 const validationSchema = yup.object({})
 
+const DynamicReactJson = dynamic(import("react-json-view"), { ssr: false })
+
 export default function Home({ customValidationSchema }) {
-  const [exportedJson, setExportedJson] = useState()
-  const [jsonToImport, setJsonToImport] = useState()
+  const [exportedJson, setExportedJson] = useState("{}")
+  const [jsonToImport, setJsonToImport] = useState("{}")
   const [{ data: jobData }, refetchJobQueue] = useAxios("/api/list")
-  const [{ data: progressData }, refetchProgress] = useAxios("/api/progress")
+  const [{ data: progressData, loading: progressLoading }, refetchProgress] =
+    useAxios("/api/progress")
   const [exportOpen, openExportModal, closeExportModal] = useOpenState()
   const [importOpen, openImportModal, closeImportModal] = useOpenState()
+  const [showAllJobs, setShowAllJobs] = useState(false)
+  const [jsonValidationError, setJsonValidationError] = useState("")
 
   useInterval(refetchProgress, 10000)
+  useInterval(refetchJobQueue, 10000)
 
   const { getValues, reset, control } = useForm({
     defaultValues: mapObject({ valueMapper: (value) => value?.default, mapee: inputConfig }),
@@ -68,19 +76,29 @@ export default function Home({ customValidationSchema }) {
     name: "text_prompts", // unique name for your Field Array
   })
 
-  const handleImport = () => {
-    const newState = jsonToState(jsonToImport)
-    reset(newState)
-    closeImportModal()
+  const handleImport = (jsonString) => () => {
+    try {
+      const newState = jsonString ? jsonToState(jsonString) : jsonToState(jsonToImport)
+      reset(newState)
+      setJsonValidationError("")
+      closeImportModal()
+    } catch (e) {
+      console.log(e)
+      setJsonValidationError("Invalid JSON")
+    }
   }
 
   const handleExport = (jsonString) => () => {
-    const jsonToExport = jsonString
-      ? JSON.stringify(JSON.parse(jsonString), null, 2)
-      : JSON.stringify(stateToJson(getValues()), null, 2)
+    try {
+      const jsonToExport = jsonString
+        ? JSON.stringify(JSON.parse(jsonString), null, 2)
+        : JSON.stringify(stateToJson(getValues()), null, 2)
 
-    setExportedJson(jsonToExport)
-    openExportModal()
+      setExportedJson(jsonToExport)
+      openExportModal()
+    } catch (e) {
+      console.log(e)
+    }
   }
 
   const handleRenderStart = () => {
@@ -99,21 +117,6 @@ export default function Home({ customValidationSchema }) {
       body: JSON.stringify(payload),
     }).then(refetchJobQueue)
   }
-
-  const handleQueueRemove = (jobId) => async () => {
-    const payload = {
-      jobId,
-    }
-
-    await fetch("/api/remove", {
-      headers: {
-        "Content-Type": "application/json",
-      },
-      method: "POST",
-      body: JSON.stringify(payload),
-    })
-  }
-  // useInterval(handleRenderCheck, 20000)
 
   const handlePromptAdd = () => {
     append({
@@ -142,14 +145,14 @@ export default function Home({ customValidationSchema }) {
               const prompt = `text_prompts.${index}.prompt`
 
               return (
-                <Stack direction="row" spacing={2} key={field.id}>
+                <Stack direction="row" alignItems="center" spacing={2} key={field.id}>
+                  <IconButton onClick={handlePromptRemove(index)}>
+                    <CloseIcon></CloseIcon>
+                  </IconButton>
                   <Box width="100px">
                     <ControlledTextField control={control} name={weight} label="Weight" />
                   </Box>
                   <ControlledTextField control={control} name={prompt} label="Prompt" />
-                  <IconButton onClick={handlePromptRemove(index)}>
-                    <CloseIcon></CloseIcon>
-                  </IconButton>
                 </Stack>
               )
             })}
@@ -331,87 +334,84 @@ export default function Home({ customValidationSchema }) {
       </Stack>
       {progressData?.progress && (
         <Grid container justifyContent="center" mt={3} mb={10}>
-          <Grid item xs={12} md={6}>
-            <Stack alignItems="center" spacing={1}>
-              <Box sx={{ objectFit: "contain" }}>
-                <img src={progressData?.progress?.uri}></img>
-              </Box>
-              <Box width="100%">
-                <LinearProgress
-                  height={10}
-                  width="100%"
-                  sx={{
-                    borderRadius: 2,
-                  }}
-                  variant="determinate"
-                  value={
-                    (progressData?.progress?.stepsComplete / progressData?.progress?.stepsTotal) *
-                    100
-                  }
-                />
-                <LinearProgress
-                  height={10}
-                  width="100%"
-                  sx={{
-                    borderRadius: 2,
-                  }}
-                  variant="determinate"
-                  value={
-                    (progressData?.progress?.currentBatchIndex /
-                      progressData?.progress?.batchTotalCount) *
-                    100
-                  }
-                />
-              </Box>
-            </Stack>
-          </Grid>
+          <Stack alignItems="center" spacing={1} width={300}>
+            <Box sx={{ objectFit: "contain", position: "relative" }} height={200} width={320}>
+              <Image layout="fill" src={progressData?.progress?.latestImage}></Image>
+            </Box>
+            <Box width="100%">
+              <LinearProgress
+                height={10}
+                width="100%"
+                sx={{
+                  borderRadius: 2,
+                }}
+                variant="determinate"
+                value={
+                  (progressData?.progress?.frame / progressData?.progress?.config?.steps) * 100
+                }
+              />
+              <LinearProgress
+                height={10}
+                width="100%"
+                sx={{
+                  borderRadius: 2,
+                }}
+                variant="determinate"
+                value={
+                  (progressData?.progress?.batchNumber /
+                    progressData?.progress?.config?.n_batches) *
+                  100
+                }
+              />
+            </Box>
+          </Stack>
         </Grid>
       )}
-      <Stack spacing={2} alignItems="center" sx={{ width: "100%" }}>
-        <Typography variant="h4">Generation Queue</Typography>
-        <Table sx={{ minWidth: 650 }} aria-label="simple table">
-          <TableHead>
-            <TableRow>
-              <TableCell align="left">Created</TableCell>
-              <TableCell align="left">Started</TableCell>
-              <TableCell align="right">Status</TableCell>
-              <TableCell align="right"></TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {jobData?.jobs?.map(
-              ({ job_id, created_at, started_at, completed_at, job_details }) =>
-                !completed_at && (
-                  <TableRow key={job_id} sx={{ "&:last-child td, &:last-child th": { border: 0 } }}>
-                    <TableCell align="left">
-                      <Typography>
-                        {created_at ? `${format(new Date(created_at), "MM/dd/yyyy HH:MM")}` : "-"}
-                      </Typography>
-                    </TableCell>
-                    <TableCell align="left">
-                      <Typography>
-                        {started_at ? `${format(new Date(started_at), "MM/dd/yyyy HH:MM")}` : "-"}
-                      </Typography>
-                    </TableCell>
-                    <TableCell align="right">
-                      <Typography>{started_at ? "PROCESSING" : "WAITING"}</Typography>
-                    </TableCell>
-                    <TableCell align="right">
-                      <Button onClick={handleQueueRemove(job_id)}>
-                        {started_at ? "CANCEL" : "REMOVE"}
-                      </Button>
-                      <Button onClick={handleExport(job_details)}>SETTINGS</Button>
-                    </TableCell>
-                  </TableRow>
-                )
-            )}
-          </TableBody>
-        </Table>
-      </Stack>
+      {jobData?.jobs?.length > 0 && (
+        <Stack mt={4} spacing={2} sx={{ width: "100%" }}>
+          <Stack direction="row" justifyContent="space-between">
+            <Typography variant="h4">Generation Queue</Typography>
+            <FormControlLabel
+              label="Show Finished"
+              control={
+                <Switch checked={showAllJobs} onClick={() => setShowAllJobs(!showAllJobs)}></Switch>
+              }
+            ></FormControlLabel>
+          </Stack>
+          <Table sx={{ minWidth: 650 }} aria-label="simple table">
+            <TableHead>
+              <TableRow>
+                <TableCell align="left">Created</TableCell>
+                <TableCell align="left">Started</TableCell>
+                <TableCell align="right">Status</TableCell>
+                <TableCell align="right"></TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {jobData?.jobs
+                ?.filter(({ completed_at }) => {
+                  if (showAllJobs) return true
+                  else return !completed_at
+                })
+                ?.map((job) => (
+                  <QueueEntry
+                    job={job}
+                    refetchJobQueue={refetchJobQueue}
+                    handleImport={handleImport}
+                  ></QueueEntry>
+                ))}
+            </TableBody>
+          </Table>
+        </Stack>
+      )}
       <Box sx={{ width: "100%", height: 100 }}></Box>
       <Dialog fullWidth maxWidth="lg" open={exportOpen} onClose={closeExportModal}>
         <DialogContent>
-          <TextField fullWidth multiline readOnly value={exportedJson}></TextField>
+          <DynamicReactJson
+            displayDataTypes={false}
+            displayObjectSize={false}
+            src={JSON.parse(exportedJson)}
+          />
         </DialogContent>
         <DialogActions>
           <Button variant="ghost" mr={3} onClick={closeExportModal}>
@@ -435,16 +435,27 @@ export default function Home({ customValidationSchema }) {
             onChange={(e) => setJsonToImport(e?.target?.value)}
             multiline
             rows={30}
-          ></TextField>
+          />
         </DialogContent>
 
         <DialogActions>
-          <Button variant="ghost" mr={3} onClick={closeImportModal}>
-            Close
-          </Button>
-          <Button onClick={handleImport} variant="contained">
-            Import
-          </Button>
+          <Stack direction="row" width="100%" alignItems="center" justifyContent="space-between">
+            {jsonValidationError && (
+              <Box sx={{ pl: 3 }}>
+                <Typography variant="h5" color="red">
+                  {jsonValidationError}
+                </Typography>
+              </Box>
+            )}
+            <Box>
+              <Button variant="ghost" mr={3} onClick={closeImportModal}>
+                Close
+              </Button>
+              <Button onClick={handleImport()} variant="contained">
+                Import
+              </Button>
+            </Box>
+          </Stack>
         </DialogActions>
       </Dialog>
     </Container>

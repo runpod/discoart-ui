@@ -7,6 +7,7 @@
 /out
 /discoDaemon/*
 !/discoDaemon/*.js
+*.lz4
 
 # testing
 /coverage

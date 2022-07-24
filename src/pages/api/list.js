@@ -14,7 +14,7 @@ const handler = async (req, res) => {
   try {
     const jobs = await database.all(
       `
-        SELECT * from jobs
+        SELECT * from jobs 
     `
     )
 

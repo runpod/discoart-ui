@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "daemon": "DISCOART_OUTPUT_DIR=/workspace/out node -r esm ./daemon/index.js"
   },
   "dependencies": {
     "@emotion/react": "^11.9.3",
@@ -15,6 +16,7 @@
     "@mui/icons-material": "^5.8.4",
     "@mui/lab": "^5.0.0-alpha.91",
     "@mui/material": "^5.9.1",
+    "archiver": "^5.3.1",
     "axios": "^0.27.2",
     "axios-hooks": "^3.1.4",
     "date-fns": "^2.29.1",
@@ -27,6 +29,8 @@
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "react-hook-form": "^7.33.1",
+    "react-json-view": "^1.21.3",
+    "read-last-lines": "^1.8.0",
     "sql-template-strings": "^2.2.2",
     "sqlite": "^4.1.2",
     "sqlite3": "^5.0.10",

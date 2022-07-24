@@ -1,6 +1,7 @@
 const { spawn } = require("child_process")
 import sqlite3 from "sqlite3"
 import { open } from "sqlite"
+import fs from "fs"
 
 const databasePath = "/workspace/database"
 
@@ -17,18 +18,13 @@ let setupFinished = false
 const setup = async () => {
   const database = await db
 
-  await database.run("DELETE FROM jobs")
-
   await database.exec(`
     CREATE TABLE IF NOT EXISTS jobs (
       job_id TEXT PRIMARY KEY,
       created_at INTEGER,
       started_at INTEGER,
       completed_at INTEGER,
-      job_details TEXT,
-      exit_code TEXT,
-      error TEXT,
-      desired_status TEXT
+      job_details TEXT
       )
   `)
 
@@ -54,6 +50,8 @@ const startJob = async ({ parameters, jobId }) => {
     jobId
   )
 
+  let debugStream = fs.createWriteStream(`/workspace/logs/${jobId}.txt`, { flags: "a" })
+
   const jobInfo = {
     id: jobId,
     pid: job.pid,
@@ -66,32 +64,30 @@ const startJob = async ({ parameters, jobId }) => {
 
       job.stderr.on("data", (data) => {
         console.error(`ERROR: ${data}`)
+        debugStream.write(`${data}`)
         if (data.includes("ERROR")) reject(`${data}`)
       })
 
       job.on("close", (code) => {
+        debugStream.end()
         resolve(code)
       })
 
       job.on("error", (err) => {
+        debugStream.end()
         reject(err)
       })
     })
       .then((code) => {
         delete activeProcesses[jobId]
-
-        console.log("EXIT CODE", code)
-
         database
           .run(
             `
               UPDATE jobs
-                SET completed_at = ?,
-                exit_code = ?
+                SET completed_at = ?
               WHERE job_id = ?
             `,
             Date.now(),
-            code,
             jobId
           )
           .catch((err) => {
@@ -105,12 +101,10 @@ const startJob = async ({ parameters, jobId }) => {
           .run(
             `
               UPDATE jobs
-                SET completed_at = ?,
-                error = ?
+                SET completed_at = ?
               WHERE job_id = ?
             `,
             Date.now(),
-            JSON.stringify(error),
             jobId
           )
           .catch((err) => {
@@ -143,7 +137,7 @@ const queuePollerDaemon = async () => {
       const database = await db
 
       const allJobs = await database.all(
-        `SELECT job_id, created_at, started_at, completed_at, desired_status FROM jobs
+        `SELECT job_id, created_at, started_at, completed_at FROM jobs
             ORDER BY created_at ASC`
       )
 
@@ -158,7 +152,6 @@ const queuePollerDaemon = async () => {
           `
                   SELECT job_id, job_details FROM jobs 
                     WHERE completed_at is null
-                    AND desired_status = 'RUN'
                     ORDER BY created_at ASC
                 `
         )

@@ -1,5 +1,6 @@
 import sqlite3 from "sqlite3"
 import { open } from "sqlite"
+import readLastLines from "read-last-lines"
 
 const databasePath = "/workspace/database"
 
@@ -9,25 +10,17 @@ const db = open({
 })
 
 const handler = async (req, res) => {
-  const payload = req?.body
-
-  const database = await db
+  const { jobId } = req.query
 
   try {
-    await database.run(
-      `INSERT INTO jobs (job_id, created_at, job_details) 
-        VALUES (:job_id, :created_at, :job_details)`,
-      {
-        ":job_id": payload?.jobId,
-        ":created_at": Date.now(),
-        ":job_details": JSON.stringify(payload?.parameters),
-      }
-    )
+    const logs = await readLastLines.read(`/workspace/logs/${jobId}.txt`, 200)
 
     res.status(200).json({
       success: true,
+      logs,
     })
   } catch (e) {
+    console.log(e)
     res.status(200).json({
       success: false,
     })
