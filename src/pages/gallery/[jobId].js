@@ -69,6 +69,7 @@ export default function JobGallery({ files }) {
               style={{
                 borderRadius: 10,
               }}
+              alt=""
               src={url}
               {...dimensions}
             />

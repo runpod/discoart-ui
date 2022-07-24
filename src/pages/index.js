@@ -336,6 +336,7 @@ export default function Home({ customValidationSchema }) {
         <Grid container justifyContent="center" mt={3} mb={10}>
           <Stack alignItems="center" spacing={1} width={300}>
             <Image
+              alt=""
               {...progressData?.progress?.dimensions}
               src={progressData?.progress?.latestImage}
             ></Image>
@@ -397,6 +398,7 @@ export default function Home({ customValidationSchema }) {
                 })
                 ?.map((job) => (
                   <QueueEntry
+                    key={job.job_id}
                     job={job}
                     refetchJobQueue={refetchJobQueue}
                     handleImport={handleImport}

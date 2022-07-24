@@ -50,6 +50,8 @@ export async function getServerSideProps() {
 }
 
 export default function Gallery({ galleries }) {
+  console.log("gallery")
+  console.log(galleries)
   return (
     <Container maxWidth="xl" sx={{ p: 10 }}>
       <Stack>
@@ -59,14 +61,17 @@ export default function Gallery({ galleries }) {
         <Masonry columns={{ sx: 1, md: 2, lg: 4 }} spacing={2}>
           {galleries?.map(({ url, dimensions, jobId }) => (
             <Link key={url} href={`/gallery/${jobId}`}>
-              <Image
-                key={jobId}
-                src={url}
-                {...dimensions}
-                style={{
-                  borderRadius: 10,
-                }}
-              />
+              <Box>
+                <Image
+                  key={jobId}
+                  src={url}
+                  alt=""
+                  {...dimensions}
+                  style={{
+                    borderRadius: 10,
+                  }}
+                />
+              </Box>
             </Link>
           ))}
         </Masonry>
