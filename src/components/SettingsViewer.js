@@ -1,12 +1,11 @@
 import { Button, Dialog, DialogContent, DialogActions } from "@mui/material"
-import useAxios from "axios-hooks"
 import dynamic from "next/dynamic"
+import useSWR from "swr"
+
 const DynamicReactJson = dynamic(import("react-json-view"), { ssr: false })
 
 export default function SettingsViewer({ open, onClose, jobId, handleImport }) {
-  const [{ data }] = useAxios(`/api/settings/${jobId}`, {
-    manual: !open,
-  })
+  const { data } = useSWR(open && `/api/settings/${jobId}`)
 
   return (
     <Dialog fullWidth maxWidth="lg" open={open} onClose={onClose}>

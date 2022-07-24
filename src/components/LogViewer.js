@@ -1,15 +1,10 @@
 import { Button, TextField, Dialog, DialogContent, DialogActions } from "@mui/material"
-import useInterval from "@hooks/useInterval"
-import useAxios from "axios-hooks"
+import useSWR from "swr"
 
 export default function LogViewer({ open, onClose, jobId }) {
-  const [{ data }, refetch] = useAxios(`/api/logs/${jobId}`, {
-    manual: !open,
+  const { data, mutate } = useSWR(open && `/api/logs/${jobId}`, null, {
+    refreshInterval: 2000,
   })
-
-  useInterval(() => {
-    if (open) refetch
-  }, 10000)
 
   return (
     <Dialog fullWidth maxWidth="lg" open={open} onClose={onClose}>
@@ -21,7 +16,7 @@ export default function LogViewer({ open, onClose, jobId }) {
         <Button variant="ghost" mr={3} onClick={onClose}>
           Close
         </Button>
-        <Button onClick={refetch} variant="contained">
+        <Button onClick={mutate} variant="contained">
           Refresh
         </Button>
       </DialogActions>
