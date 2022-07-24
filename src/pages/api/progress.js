@@ -20,10 +20,11 @@ const handler = async (req, res) => {
     )
 
     if (!runningJob) {
-      return {
+      res.status(200).json({
         success: true,
         progress: null,
-      }
+      })
+      return
     }
 
     const runningJobStatus = await fetch("http:localhost:51001/post", {
