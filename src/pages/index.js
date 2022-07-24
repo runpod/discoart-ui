@@ -29,7 +29,6 @@ import AddIcon from "@mui/icons-material/Add"
 import CloseIcon from "@mui/icons-material/Close"
 import { nanoid } from "nanoid"
 import { format } from "date-fns"
-import Masonry from "@mui/lab/Masonry"
 // sections
 
 import { Controller, useFieldArray, useForm } from "react-hook-form"
@@ -56,8 +55,6 @@ export default function Home({ customValidationSchema }) {
   const [exportOpen, openExportModal, closeExportModal] = useOpenState()
   const [importOpen, openImportModal, closeImportModal] = useOpenState()
 
-  console.log(progressData)
-
   useInterval(refetchProgress, 10000)
 
   const { getValues, reset, control } = useForm({
@@ -78,9 +75,9 @@ export default function Home({ customValidationSchema }) {
   }
 
   const handleExport = (jsonString) => () => {
-    const jsonToExport =
-      JSON.stringify(JSON.parse(jsonString), null, 2) ||
-      JSON.stringify(stateToJson(getValues()), null, 2)
+    const jsonToExport = jsonString
+      ? JSON.stringify(JSON.parse(jsonString), null, 2)
+      : JSON.stringify(stateToJson(getValues()), null, 2)
 
     setExportedJson(jsonToExport)
     openExportModal()
@@ -332,24 +329,41 @@ export default function Home({ customValidationSchema }) {
           </Button>
         </Stack>
       </Stack>
-      {progressData && (
+      {progressData?.progress && (
         <Grid container justifyContent="center" mt={3} mb={10}>
           <Grid item xs={12} md={6}>
-            <img src={progressData?.progress?.uri}></img>
-            <LinearProgress
-              variant="determinate"
-              value={
-                (progressData?.progress?.stepsComplete / progressData?.progress?.stepsTotal) * 100
-              }
-            ></LinearProgress>
-            <LinearProgress
-              variant="determinate"
-              value={
-                (progressData?.progress?.currentBatchIndex /
-                  progressData?.progress?.batchTotalCount) *
-                100
-              }
-            ></LinearProgress>
+            <Stack alignItems="center" spacing={1}>
+              <Box sx={{ objectFit: "contain" }}>
+                <img src={progressData?.progress?.uri}></img>
+              </Box>
+              <Box width="100%">
+                <LinearProgress
+                  height={10}
+                  width="100%"
+                  sx={{
+                    borderRadius: 2,
+                  }}
+                  variant="determinate"
+                  value={
+                    (progressData?.progress?.stepsComplete / progressData?.progress?.stepsTotal) *
+                    100
+                  }
+                />
+                <LinearProgress
+                  height={10}
+                  width="100%"
+                  sx={{
+                    borderRadius: 2,
+                  }}
+                  variant="determinate"
+                  value={
+                    (progressData?.progress?.currentBatchIndex /
+                      progressData?.progress?.batchTotalCount) *
+                    100
+                  }
+                />
+              </Box>
+            </Stack>
           </Grid>
         </Grid>
       )}
@@ -395,15 +409,6 @@ export default function Home({ customValidationSchema }) {
         </Table>
       </Stack>
       <Box sx={{ width: "100%", height: 100 }}></Box>
-
-      <Masonry columns={4} spacing={2}>
-        {jobData &&
-          jobData?.jobs?.map(
-            ({ job_id, completed_at }) =>
-              completed_at && <img src={`/api/image/${job_id}/0-done-0.png`}></img>
-          )}
-      </Masonry>
-
       <Dialog fullWidth maxWidth="lg" open={exportOpen} onClose={closeExportModal}>
         <DialogContent>
           <TextField fullWidth multiline readOnly value={exportedJson}></TextField>
