@@ -326,7 +326,7 @@ export default function Home() {
           </Button>
         </Stack>
       </Stack>
-      {progressData?.progress && (
+      {progressData?.progress?.latestImage && (
         <Grid container justifyContent="center" mt={3} mb={10}>
           <Stack alignItems="center" spacing={1} width={300}>
             <Image
