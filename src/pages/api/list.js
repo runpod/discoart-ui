@@ -1,5 +1,6 @@
 import sqlite3 from "sqlite3"
 import { open } from "sqlite"
+import queuePollerDaemon from "src/daemon"
 
 const databasePath = "/workspace/database"
 
@@ -9,9 +10,10 @@ const db = open({
 })
 
 const handler = async (req, res) => {
-  const database = await db
-
   try {
+    queuePollerDaemon()
+    const database = await db
+
     const jobs = await database.all(
       `
         SELECT * from jobs 

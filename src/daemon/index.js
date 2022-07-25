@@ -5,6 +5,8 @@ import fs from "fs"
 
 const databasePath = "/workspace/database"
 
+let daemon = null
+let dbInit = false
 const maxConcurrency = 1
 export let activeProcesses = {}
 
@@ -13,9 +15,7 @@ const db = open({
   driver: sqlite3.Database,
 })
 
-let setupFinished = false
-
-const setup = async () => {
+const initDb = async () => {
   const database = await db
 
   await database.exec(`
@@ -28,10 +28,8 @@ const setup = async () => {
       )
   `)
 
-  setupFinished = true
+  dbInit = true
 }
-
-setup()
 
 const startJob = async ({ parameters, jobId }) => {
   const database = await db
@@ -140,14 +138,14 @@ const pruneDeletedJobs = async () => {
 }
 
 const queuePollerDaemon = async () => {
-  setInterval(async () => {
-    if (setupFinished) {
+  if (!dbInit) {
+    await initDb()
+  }
+  if (!daemon) {
+    console.log("starting daemon")
+    daemon = setInterval(async () => {
+      console.log("daemon poll")
       const database = await db
-
-      const allJobs = await database.all(
-        `SELECT job_id, created_at, started_at, completed_at FROM jobs
-            ORDER BY created_at ASC`
-      )
 
       const activeJobCount = Object.values(activeProcesses).length
 
@@ -158,10 +156,10 @@ const queuePollerDaemon = async () => {
 
         const nextJob = await database.get(
           `
-                  SELECT job_id, job_details FROM jobs 
-                    WHERE completed_at is null
-                    ORDER BY created_at ASC
-                `
+                    SELECT job_id, job_details FROM jobs 
+                      WHERE completed_at is null
+                      ORDER BY created_at ASC
+                  `
         )
 
         if (nextJob) {
@@ -172,8 +170,8 @@ const queuePollerDaemon = async () => {
           })
         }
       }
-    }
-  }, 10000)
+    }, 5000)
+  }
 }
 
 export default queuePollerDaemon
