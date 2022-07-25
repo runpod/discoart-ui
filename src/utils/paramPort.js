@@ -1,14 +1,22 @@
 import { inputConfig } from "@components/DiscoInput/discoParameterConfig"
 import { compose, omit, pick } from "ramda"
+import { parse } from "yaml"
 
-const parseTextPrompts = (parsedJson) =>
-  parsedJson.map((prompt) => {
-    const [text, weight = 1] = prompt?.split(":")
+const parseTextPrompts = (parsedJson) => {
+  if (typeof parsedJson === "string")
     return {
-      prompt: text,
+      prompt: parsedJson,
       weight,
     }
-  })
+  else
+    return parsedJson.map((prompt) => {
+      const [text, weight = 1] = prompt?.split(":")
+      return {
+        prompt: text,
+        weight,
+      }
+    })
+}
 
 const stringifyTextPrompts = (inputState) =>
   inputState.map(({ prompt, weight }) => `${prompt}:${weight}`)
@@ -83,7 +91,7 @@ export const jsonToState = (json) => {
         height,
       }
     },
-    JSON.parse
+    parse
   )(json)
 
   return parsedState
