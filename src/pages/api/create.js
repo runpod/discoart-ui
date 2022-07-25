@@ -43,6 +43,8 @@ const handler = async (req, res) => {
       parsedFields.parameters.init_image = path
     }
 
+    parsedFields.parameters.truncate_overlength_prompt = true
+
     const job_details = JSON.stringify(parsedFields?.parameters)
 
     if (!fs.existsSync(`/workspace/out/${jobId}/`)) {
