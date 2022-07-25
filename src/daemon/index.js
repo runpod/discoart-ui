@@ -68,13 +68,15 @@ const startJob = async ({ parameters, jobId }) => {
     process: job,
     promise: new Promise((resolve, reject) => {
       job.stdout.on("data", (data) => {
-        if (data) console.log(`STDOUT: ${data}`)
-        if (data.includes("ERROR")) reject(`${data}`)
+        const trimmed = `${data}`.trim()
+        if (trimmed) console.log(trimmed)
+        if (trimmed.includes("ERROR")) reject(`${data}`)
       })
 
       job.stderr.on("data", (data) => {
-        if (data) console.log(`${data}`)
-        debugStream.write(`${data}`)
+        const trimmed = `${data}`.trim()
+        if (trimmed) console.log(trimmed)
+        debugStream.write(trimmed)
         if (data.includes("ERROR")) reject(`${data}`)
       })
 
