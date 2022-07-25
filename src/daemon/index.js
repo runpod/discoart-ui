@@ -5,8 +5,6 @@ import fs from "fs"
 
 const databasePath = "/workspace/database"
 
-let daemon = null
-let dbInit = false
 const maxConcurrency = 1
 export let activeProcesses = {}
 
@@ -15,7 +13,8 @@ const db = open({
   driver: sqlite3.Database,
 })
 
-const initDb = async () => {
+const setup = async () => {
+  console.log("Daemon setup")
   const database = await db
 
   await database.exec(`
@@ -28,7 +27,14 @@ const initDb = async () => {
       )
   `)
 
-  dbInit = true
+  if (!fs.existsSync(`/workspace/out/`)) {
+    fs.mkdirSync(`/workspace/out/`)
+  }
+  if (!fs.existsSync(`/workspace/logs/`)) {
+    fs.mkdirSync(`/workspace/logs/`)
+  }
+
+  console.log("Daemon setup complete - start polling")
 }
 
 const startJob = async ({ parameters, jobId }) => {
@@ -37,6 +43,8 @@ const startJob = async ({ parameters, jobId }) => {
   const command = `echo ${JSON.stringify(parameters)} | python -m discoart create `
 
   const job = spawn("bash", ["-c", command], { detached: true })
+
+  console.log(job)
 
   database.run(
     `
@@ -48,11 +56,15 @@ const startJob = async ({ parameters, jobId }) => {
     jobId
   )
 
-  let debugStream = fs.createWriteStream(`/workspace/logs/${jobId}.txt`, { flags: "a" })
-
   if (!fs.existsSync(`/workspace/out/${jobId}/`)) {
     fs.mkdirSync(`/workspace/out/${jobId}/`)
   }
+
+  if (!fs.existsSync(`/workspace/logs/${jobId}/`)) {
+    fs.mkdirSync(`/workspace/logs/${jobId}/`)
+  }
+
+  let debugStream = fs.createWriteStream(`/workspace/logs/${jobId}.txt`, { flags: "a" })
 
   fs.writeFile(`/workspace/out/${jobId}/settings.txt`, parameters, () =>
     console.log("settings written")
@@ -137,14 +149,11 @@ const pruneDeletedJobs = async () => {
   })
 }
 
-const queuePollerDaemon = async () => {
-  if (!dbInit) {
-    await initDb()
-  }
-  if (!daemon) {
-    console.log("starting daemon")
-    daemon = setInterval(async () => {
-      console.log("daemon poll")
+const startDaemon = async () => {
+  console.log("Daemon init")
+  await setup()
+  setInterval(async () => {
+    if (setupFinished) {
       const database = await db
 
       const activeJobCount = Object.values(activeProcesses).length
@@ -152,8 +161,6 @@ const queuePollerDaemon = async () => {
       pruneDeletedJobs()
 
       if (activeJobCount < maxConcurrency) {
-        // get next job
-
         const nextJob = await database.get(
           `
                     SELECT job_id, job_details FROM jobs 
@@ -170,8 +177,8 @@ const queuePollerDaemon = async () => {
           })
         }
       }
-    }, 5000)
-  }
+    }
+  }, 10000)
 }
 
-export default queuePollerDaemon
+startDaemon()

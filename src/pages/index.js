@@ -24,6 +24,7 @@ import {
   TableBody,
   Switch,
   FormControlLabel,
+  CircularProgress,
 } from "@mui/material"
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore"
 import AddIcon from "@mui/icons-material/Add"
@@ -69,7 +70,7 @@ export default function Home() {
 
   const { fields, append, remove } = useFieldArray({
     control,
-    name: "text_prompts", // unique name for your Field Array
+    name: "text_prompts",
   })
 
   const handleImport = (jsonString) => () => {
@@ -326,41 +327,49 @@ export default function Home() {
           </Button>
         </Stack>
       </Stack>
-      {progressData?.progress?.latestImage && (
+      {progressData?.progress && (
         <Grid container justifyContent="center" mt={3} mb={10}>
           <Stack alignItems="center" spacing={1} width={300}>
-            <Image
-              alt=""
-              {...progressData?.progress?.dimensions}
-              src={progressData?.progress?.latestImage}
-            ></Image>
-
-            <Box width="100%">
-              <LinearProgress
-                height={10}
-                width="100%"
-                sx={{
-                  borderRadius: 2,
-                }}
-                variant="determinate"
-                value={
-                  (progressData?.progress?.frame / progressData?.progress?.config?.steps) * 100
-                }
-              />
-              <LinearProgress
-                height={10}
-                width="100%"
-                sx={{
-                  borderRadius: 2,
-                }}
-                variant="determinate"
-                value={
-                  (progressData?.progress?.batchNumber /
-                    progressData?.progress?.config?.n_batches) *
-                  100
-                }
-              />
-            </Box>
+            {progressData?.progress?.latestImage ? (
+              <>
+                <Image
+                  alt=""
+                  {...progressData?.progress?.dimensions}
+                  src={progressData?.progress?.latestImage}
+                />
+                <Box width="100%">
+                  <LinearProgress
+                    height={10}
+                    width="100%"
+                    sx={{
+                      borderRadius: 2,
+                    }}
+                    variant="determinate"
+                    value={
+                      (progressData?.progress?.frame / progressData?.progress?.config?.steps) * 100
+                    }
+                  />
+                  <LinearProgress
+                    height={10}
+                    width="100%"
+                    sx={{
+                      borderRadius: 2,
+                    }}
+                    variant="determinate"
+                    value={
+                      (progressData?.progress?.batchNumber /
+                        progressData?.progress?.config?.n_batches) *
+                      100
+                    }
+                  />
+                </Box>
+              </>
+            ) : (
+              <Stack alignItems="center" spacing={2}>
+                <Typography>Initializing Job</Typography>
+                <CircularProgress></CircularProgress>
+              </Stack>
+            )}
           </Stack>
         </Grid>
       )}

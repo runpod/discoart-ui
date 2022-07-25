@@ -37,7 +37,7 @@ export default function QueueEntry({ job, refetchJobQueue, handleImport }) {
         </Typography>
       </TableCell>
       <TableCell align="right">
-        <Typography>{completed_at ? "FINISHED" : started_at ? "PROCESSING" : "WAITING"}</Typography>
+        <Typography>{completed_at ? "FINISHED" : started_at ? "PROCESSING" : "QUEUED"}</Typography>
       </TableCell>
       <TableCell align="right">
         <Button onClick={handleQueueRemove(job_id)}>

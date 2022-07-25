@@ -3,9 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "DISCOART_OUTPUT_DIR=/workspace/out node -r esm src/daemon/index.js & next dev -p 3000",
     "build": "next build",
-    "start": "DISCOART_OUTPUT_DIR=/workspace/out next start -p 8888",
+    "start": "DISCOART_OUTPUT_DIR=/workspace/out node -r esm src/daemon/index.js &; next start -p 3000 &",
     "lint": "next lint"
   },
   "dependencies": {
