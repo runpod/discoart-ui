@@ -1,12 +1,14 @@
-import ThemeProvider from "../theme"
 import * as React from "react"
 import AppBar from "@mui/material/AppBar"
 import Toolbar from "@mui/material/Toolbar"
 import Button from "@mui/material/Button"
-import { Container, Stack } from "@mui/material"
+import { Box, Container, Paper, Stack } from "@mui/material"
 import { useRouter } from "next/router"
 import { SWRConfig } from "swr"
 import axios from "axios"
+import { createTheme, ThemeProvider } from "@mui/material/styles"
+import CssBaseline from "@mui/material/CssBaseline"
+import { DarkTheme } from "../theme"
 
 const fetcher = (url) => axios.get(url).then((res) => res.data)
 
@@ -21,7 +23,8 @@ function MyApp({ Component, pageProps }) {
         fetcher,
       }}
     >
-      <ThemeProvider>
+      <ThemeProvider theme={DarkTheme}>
+        <CssBaseline />
         <AppBar position="static">
           <Toolbar>
             <Container maxWidth="xl">

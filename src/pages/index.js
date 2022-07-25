@@ -148,12 +148,8 @@ export default function Home() {
 
   return (
     <Container maxWidth="xl">
-      <Accordion
-        sx={{
-          mt: 10,
-        }}
-        defaultExpanded
-      >
+      <Box sx={{ width: "100%", height: 75 }}></Box>
+      <Accordion defaultExpanded>
         <AccordionSummary expandIcon={<ExpandMoreIcon />}>
           <Typography variant="h5">Prompt</Typography>
         </AccordionSummary>
