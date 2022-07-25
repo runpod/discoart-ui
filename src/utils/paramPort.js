@@ -3,6 +3,7 @@ import { compose, omit, pick } from "ramda"
 import { parse } from "yaml"
 
 const parseTextPrompts = (parsedJson) => {
+  if (!parsedJson) return []
   if (typeof parsedJson === "string")
     return {
       prompt: parsedJson,
@@ -83,11 +84,14 @@ export const jsonToState = (json) => {
     (parsed) => {
       const { height, width } = parseDimensions(parsed?.width_height)
 
+      const clipModels = parsed?.clip_models
+
       return {
         ...parsed,
         text_prompts: parseTextPrompts(parsed?.text_prompts),
         // cuda_device: parseCudaDevice(parsed?.cuda_device),
         transformation_percent: JSON.stringify(parsed?.transformation_percent),
+        clip_models: clipModels || inputConfig.clip_models.default,
         width,
         height,
       }

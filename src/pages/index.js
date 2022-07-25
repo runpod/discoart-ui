@@ -193,7 +193,7 @@ export default function Home() {
           <Grid container spacing={2}>
             <Grid item xs={12}>
               <Grid container spacing={1}>
-                {clipModels.map((option, index) => {
+                {clipModels?.map((option, index) => {
                   return (
                     <Grid item key={option}>
                       <Chip
@@ -211,7 +211,7 @@ export default function Home() {
               <Autocomplete
                 key={refreshModelAutocomplete}
                 options={inputConfig?.["clip_models"]?.options?.filter(
-                  (option) => !clipModels.includes(option)
+                  (option) => !clipModels?.includes(option)
                 )}
                 disableCloseOnSelect={true}
                 onChange={(e, data) => {
