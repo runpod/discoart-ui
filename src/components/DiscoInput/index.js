@@ -44,6 +44,7 @@ export const ControlledTextField = ({
       control={control}
       render={({ field, fieldState: { error } }) => (
         <TextField
+          size="small"
           {...props}
           fullWidth
           {...field}
@@ -66,6 +67,7 @@ const ControlledCheckbox = ({ control, name, endAdornment, label, ...props }) =>
       control={control}
       render={({ field, fieldState: { error } }) => (
         <FormControlLabel
+          size="small"
           control={<Checkbox {...props} {...field} checked={field.value} error={error} />}
           label={label}
         />
@@ -93,7 +95,14 @@ export const ControlledAutocomplete = ({
             onChange(data)
           }}
           renderInput={(params) => (
-            <TextField {...params} label={label} inputRef={ref} {...textFieldProps} {...field} />
+            <TextField
+              {...params}
+              label={label}
+              inputRef={ref}
+              {...textFieldProps}
+              {...field}
+              size="small"
+            />
           )}
           {...autoCompleteProps}
         />

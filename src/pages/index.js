@@ -185,28 +185,37 @@ export default function Home() {
           <Typography variant="h5">Model Settings</Typography>
         </AccordionSummary>
         <AccordionDetails>
-          <Stack spacing={2}>
-            <Controller
-              render={({ field: { ref, onChange, ...field } }) => (
-                <Autocomplete
-                  multiple
-                  options={inputConfig?.clip_models?.options}
-                  defaultValue={inputConfig?.clip_models?.default}
-                  onChange={(e, data) => {
-                    onChange(data)
-                  }}
-                  renderInput={(params) => (
-                    <TextField {...params} label="Clip Models" inputRef={ref} {...field} />
-                  )}
-                />
-              )}
-              name="clip_models"
-              control={control}
-            />
+          <Grid container spacing={2}>
+            <Grid item xs={12}>
+              <Controller
+                render={({ field: { ref, onChange, ...field } }) => (
+                  <Autocomplete
+                    multiple
+                    options={inputConfig?.clip_models?.options}
+                    defaultValue={inputConfig?.clip_models?.default}
+                    onChange={(e, data) => {
+                      onChange(data)
+                    }}
+                    renderInput={(params) => (
+                      <TextField {...params} label="Clip Models" inputRef={ref} {...field} />
+                    )}
+                  />
+                )}
+                name="clip_models"
+                control={control}
+              />
+            </Grid>
 
-            <DynamicInput control={control} name={"diffusion_model"} />
-            <DynamicInput control={control} name={"use_secondary_model"} />
-          </Stack>
+            <Grid item xs={12} md={6}>
+              <DynamicInput control={control} name={"diffusion_model"} />
+            </Grid>
+            <Grid item xs={12} md={3}>
+              <DynamicInput control={control} name={"diffusion_sampling_mode"} />
+            </Grid>
+            <Grid item xs={12} md={3}>
+              <DynamicInput control={control} name={"use_secondary_model"} />
+            </Grid>
+          </Grid>
         </AccordionDetails>
       </Accordion>
       <Accordion>

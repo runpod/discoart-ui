@@ -150,7 +150,12 @@ export const inputConfig = {
     label: "Diffusion Model",
   },
   randomize_class: { type: "boolean", default: true, label: "Randomize Class" },
-
+  diffusion_sampling_mode: {
+    type: "select",
+    default: "ddim",
+    options: ["ddim", "plms"],
+    label: "Diffusion Sampling Mode",
+  },
   // cut stuff
   cutn_batches: { default: 4, type: "integer", label: "Number Cut Batches" },
   clip_guidance_scale: { default: 5000, type: "integer", label: "Clip Guidance Scale" },
