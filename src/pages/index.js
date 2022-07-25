@@ -414,7 +414,7 @@ export default function Home() {
       <Box sx={{ width: "100%", height: 100 }}></Box>
       <Dialog fullWidth maxWidth="lg" open={exportOpen} onClose={closeExportModal}>
         <DialogContent>
-          {<TextField multiline rows={30} readOnly value={exportedJson} />}
+          {<TextField fullWidth multiline rows={30} readOnly value={exportedJson} />}
         </DialogContent>
         <DialogActions>
           <Button variant="ghost" mr={3} onClick={closeExportModal}>
