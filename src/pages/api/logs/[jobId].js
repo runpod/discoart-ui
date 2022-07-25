@@ -4,7 +4,7 @@ const handler = async (req, res) => {
   const { jobId } = req.query
 
   try {
-    const logs = await readLastLines.read(`/workspace/logs/${jobId}.txt`, 200)
+    const logs = await readLastLines.read(`/workspace/logs/${jobId}.txt`, 100)
 
     res.status(200).json({
       success: true,

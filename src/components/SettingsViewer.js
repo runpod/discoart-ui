@@ -19,7 +19,7 @@ export default function SettingsViewer({ open, onClose, jobId, handleImport }) {
         </Button>
         <Button
           onClick={() => {
-            navigator.clipboard.writeText(settings)
+            navigator.clipboard.writeText(JSON.stringify(data, null, 2))
           }}
         >
           Copy to Clipboard
