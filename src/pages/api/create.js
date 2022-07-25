@@ -43,7 +43,7 @@ const handler = async (req, res) => {
       parsedFields.parameters.init_image = path
     }
 
-    parsedFields.parameters.truncate_overlength_prompt = true
+    parsedFields.parameters.truncate_overlength_prompt = 77
 
     const job_details = JSON.stringify(parsedFields?.parameters)
 
