@@ -27,7 +27,7 @@ export default function SettingsViewer({ open, onClose, jobId, handleImport }) {
         {handleImport && (
           <Button
             onClick={() => {
-              handleImport()
+              handleImport(JSON.stringify(data))()
               onClose()
             }}
             variant="contained"

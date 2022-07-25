@@ -98,7 +98,7 @@ export const inputConfig = {
   // models
 
   clip_models: {
-    default: ["RN50::openai", "ViT-B-32::openai"],
+    default: ["RN50::openai", "ViT-B-16::openai", "ViT-B-32::openai"],
     options: [
       "RN101-quickgelu::openai",
       "RN101-quickgelu::yfcc15m",

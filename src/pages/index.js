@@ -26,6 +26,7 @@ import {
   FormControlLabel,
   CircularProgress,
   Card,
+  Chip,
 } from "@mui/material"
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore"
 import AddIcon from "@mui/icons-material/Add"
@@ -75,7 +76,7 @@ export default function Home() {
   }, [])
   const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop })
 
-  const { getValues, reset, control } = useForm({
+  const { getValues, reset, control, watch } = useForm({
     defaultValues: mapObject({ valueMapper: (value) => value?.default, mapee: inputConfig }),
 
     resolver: yupResolver(validationSchema),
@@ -85,6 +86,13 @@ export default function Home() {
     control,
     name: "text_prompts",
   })
+
+  const { remove: removeClipModel } = useFieldArray({
+    control,
+    name: "clip_models",
+  })
+
+  const clipModels = watch("clip_models")
 
   const handleImport = (jsonString) => () => {
     try {
@@ -188,19 +196,39 @@ export default function Home() {
           <Grid container spacing={2}>
             <Grid item xs={12}>
               <Controller
-                render={({ field: { ref, onChange, ...field } }) => (
-                  <Autocomplete
-                    multiple
-                    options={inputConfig?.clip_models?.options}
-                    defaultValue={inputConfig?.clip_models?.default}
-                    onChange={(e, data) => {
-                      onChange(data)
-                    }}
-                    renderInput={(params) => (
-                      <TextField {...params} label="Clip Models" inputRef={ref} {...field} />
-                    )}
-                  />
-                )}
+                render={({ field: { ref, onChange, value, ...field } }) => {
+                  return (
+                    <Autocomplete
+                      multiple
+                      options={inputConfig?.clip_models?.options}
+                      defaultValue={inputConfig?.clip_models?.default}
+                      onChange={(e, data) => {
+                        onChange(data)
+                      }}
+                      renderTags={() => {
+                        return clipModels.map((option, index) => {
+                          return (
+                            <Chip
+                              key={option}
+                              variant="outlined"
+                              label={option}
+                              onDelete={() => removeClipModel(index)}
+                            />
+                          )
+                        })
+                      }}
+                      renderInput={(params) => (
+                        <TextField
+                          label="Clip Models"
+                          inputRef={ref}
+                          {...field}
+                          {...params}
+                          value={value}
+                        />
+                      )}
+                    />
+                  )
+                }}
                 name="clip_models"
                 control={control}
               />

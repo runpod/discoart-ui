@@ -5,7 +5,7 @@ import LogViewer from "./LogViewer"
 import SettingsViewer from "./SettingsViewer"
 
 export default function QueueEntry({ job, refetchJobQueue, handleImport }) {
-  const { job_id, created_at, started_at, completed_at, job_details } = job
+  const { job_id, created_at, started_at, completed_at } = job
 
   const [logViewerOpen, setLogViewerOpen] = useState(false)
   const [settingsViewerOpen, setSettingsViewerOpen] = useState(false)
@@ -54,7 +54,7 @@ export default function QueueEntry({ job, refetchJobQueue, handleImport }) {
         open={settingsViewerOpen}
         onClose={() => setSettingsViewerOpen(false)}
         jobId={job_id}
-        handleImport={handleImport(job_details)}
+        handleImport={handleImport}
       />
     </TableRow>
   )

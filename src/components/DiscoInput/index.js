@@ -87,7 +87,7 @@ export const ControlledAutocomplete = ({
 }) => {
   return (
     <Controller
-      render={({ field: { ref, onChange, ...field } }) => (
+      render={({ field: { ref, onChange, value, ...field } }) => (
         <Autocomplete
           options={options}
           defaultValue={defaultValue}
@@ -96,11 +96,11 @@ export const ControlledAutocomplete = ({
           }}
           renderInput={(params) => (
             <TextField
-              {...params}
               label={label}
               inputRef={ref}
               {...textFieldProps}
               {...field}
+              {...params}
               size="small"
             />
           )}
