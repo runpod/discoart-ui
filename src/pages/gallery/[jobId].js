@@ -1,4 +1,4 @@
-import { Grid, Container, Button } from "@mui/material"
+import { Container, Button, Box } from "@mui/material"
 import Image from "next/image"
 import fs from "fs"
 import { useState } from "react"
@@ -65,14 +65,24 @@ export default function JobGallery({ files }) {
       <Masonry columns={{ sx: 1, md: 2, lg: 4 }} spacing={2}>
         {files?.map(({ url, dimensions }) => (
           <a key={url} href={url} target="_blank" rel="noreferrer noopener">
-            <Image
-              style={{
-                borderRadius: 10,
+            <Box
+              sx={{
+                transition: "transform .5s, box-shadow 1s",
+                cursor: "pointer",
+                "&:hover": {
+                  transform: "scale(1.05)",
+                },
               }}
-              alt=""
-              src={url}
-              {...dimensions}
-            />
+            >
+              <Image
+                style={{
+                  borderRadius: 10,
+                }}
+                alt=""
+                src={url}
+                {...dimensions}
+              />
+            </Box>
           </a>
         ))}
       </Masonry>

@@ -59,7 +59,15 @@ export default function Gallery({ galleries }) {
         <Masonry columns={{ sx: 1, md: 2, lg: 4 }} spacing={2}>
           {galleries?.map(({ url, dimensions, jobId }) => (
             <Link key={url} href={`/gallery/${jobId}`}>
-              <Box>
+              <Box
+                sx={{
+                  transition: "transform .5s, box-shadow 1s",
+                  cursor: "pointer",
+                  "&:hover": {
+                    transform: "scale(1.05)",
+                  },
+                }}
+              >
                 <Image
                   key={jobId}
                   src={url}
