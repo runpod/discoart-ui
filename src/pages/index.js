@@ -34,7 +34,7 @@ import CloseIcon from "@mui/icons-material/Close"
 import { nanoid } from "nanoid"
 // sections
 
-import { Controller, useFieldArray, useForm } from "react-hook-form"
+import { useFieldArray, useForm } from "react-hook-form"
 import { yupResolver } from "@hookform/resolvers/yup"
 import * as yup from "yup"
 
@@ -54,6 +54,7 @@ const validationSchema = yup.object({})
 export default function Home() {
   const [exportedJson, setExportedJson] = useState()
   const [jsonToImport, setJsonToImport] = useState()
+  const [refreshModelAutocomplete, setRefreshModelAutocomplete] = useState(false)
   const [file, setFile] = useState()
   const [initImagePreview, setInitImagePreview] = useState()
   const { data: jobData, mutate: refetchJobQueue } = useSWR("/api/list", null, {
@@ -87,7 +88,7 @@ export default function Home() {
     name: "text_prompts",
   })
 
-  const { remove: removeClipModel } = useFieldArray({
+  const { remove: removeClipModel, append: appendClipModel } = useFieldArray({
     control,
     name: "clip_models",
   })
@@ -195,42 +196,35 @@ export default function Home() {
         <AccordionDetails>
           <Grid container spacing={2}>
             <Grid item xs={12}>
-              <Controller
-                render={({ field: { ref, onChange, value, ...field } }) => {
+              <Grid container spacing={1}>
+                {clipModels.map((option, index) => {
                   return (
-                    <Autocomplete
-                      multiple
-                      options={inputConfig?.clip_models?.options}
-                      defaultValue={inputConfig?.clip_models?.default}
-                      onChange={(e, data) => {
-                        onChange(data)
-                      }}
-                      renderTags={() => {
-                        return clipModels.map((option, index) => {
-                          return (
-                            <Chip
-                              key={option}
-                              variant="outlined"
-                              label={option}
-                              onDelete={() => removeClipModel(index)}
-                            />
-                          )
-                        })
-                      }}
-                      renderInput={(params) => (
-                        <TextField
-                          label="Clip Models"
-                          inputRef={ref}
-                          {...field}
-                          {...params}
-                          value={value}
-                        />
-                      )}
-                    />
+                    <Grid item key={option}>
+                      <Chip
+                        key={option}
+                        variant="outlined"
+                        label={option}
+                        onDelete={() => removeClipModel(index)}
+                      />
+                    </Grid>
                   )
+                })}
+              </Grid>
+            </Grid>
+            <Grid item xs={12}>
+              <Autocomplete
+                key={refreshModelAutocomplete}
+                options={inputConfig?.["clip_models"]?.options?.filter(
+                  (option) => !clipModels.includes(option)
+                )}
+                disableCloseOnSelect={true}
+                onChange={(e, data) => {
+                  appendClipModel(data)
                 }}
-                name="clip_models"
-                control={control}
+                onBlur={() => setRefreshModelAutocomplete(!refreshModelAutocomplete)}
+                renderInput={(params) => (
+                  <TextField label={"Add Clip Models"} {...params} size="small" />
+                )}
               />
             </Grid>
 
