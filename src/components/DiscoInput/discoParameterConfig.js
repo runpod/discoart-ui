@@ -18,7 +18,7 @@ export const inputConfig = {
   },
   n_batches: {
     type: "integer",
-    default: 1,
+    default: 10,
     label: "Images Per Batch",
   },
   width: {

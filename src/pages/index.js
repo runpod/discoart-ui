@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 // @mui
 import {
   Grid,
@@ -25,6 +25,7 @@ import {
   Switch,
   FormControlLabel,
   CircularProgress,
+  Card,
 } from "@mui/material"
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore"
 import AddIcon from "@mui/icons-material/Add"
@@ -44,6 +45,7 @@ import useOpenState from "@hooks/useOpenState"
 import Image from "next/image"
 import QueueEntry from "@components/QueueEntry"
 import useSWR from "swr"
+import { useDropzone } from "react-dropzone"
 
 // TODO: add real validation schema here
 const validationSchema = yup.object({})
@@ -51,6 +53,8 @@ const validationSchema = yup.object({})
 export default function Home() {
   const [exportedJson, setExportedJson] = useState()
   const [jsonToImport, setJsonToImport] = useState()
+  const [file, setFile] = useState()
+  const [initImagePreview, setInitImagePreview] = useState()
   const { data: jobData, mutate: refetchJobQueue } = useSWR("/api/list", null, {
     refreshInterval: 10000,
   })
@@ -61,6 +65,15 @@ export default function Home() {
   const [importOpen, openImportModal, closeImportModal] = useOpenState()
   const [showAllJobs, setShowAllJobs] = useState(false)
   const [jsonValidationError, setJsonValidationError] = useState("")
+
+  const onDrop = useCallback(async (acceptedFiles) => {
+    const [file] = acceptedFiles
+    if (file) {
+      setInitImagePreview(URL.createObjectURL(file))
+      setFile(file)
+    }
+  }, [])
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop })
 
   const { getValues, reset, control } = useForm({
     defaultValues: mapObject({ valueMapper: (value) => value?.default, mapee: inputConfig }),
@@ -99,17 +112,19 @@ export default function Home() {
   const handleRenderStart = () => {
     const newRenderId = nanoid()
 
+    const formData = new FormData()
+
     const payload = {
       jobId: newRenderId,
       parameters: { ...stateToJson(getValues()), name_docarray: newRenderId },
     }
 
+    formData.append("data", JSON.stringify(payload))
+    if (file) formData.append("file", file)
+
     fetch("/api/create", {
-      headers: {
-        "Content-Type": "application/json",
-      },
       method: "POST",
-      body: JSON.stringify(payload),
+      body: formData,
     }).then(refetchJobQueue)
   }
 
@@ -164,6 +179,7 @@ export default function Home() {
           </Stack>
         </AccordionDetails>
       </Accordion>
+
       <Accordion>
         <AccordionSummary expandIcon={<ExpandMoreIcon />}>
           <Typography variant="h5">Model Settings</Typography>
@@ -219,6 +235,50 @@ export default function Home() {
             </Grid>
             <Grid item xs={12} sm={4} md={3}>
               <DynamicInput control={control} name={"height"} />
+            </Grid>
+            <Grid item xs={12} sm={4} md={3}>
+              <DynamicInput control={control} name={"skip_steps"} />
+            </Grid>
+            <Grid item xs={12} sm={4} md={3}>
+              <Stack spacing={2}>
+                {file ? (
+                  <Stack
+                    spacing={2}
+                    sx={{
+                      borderRadius: 5,
+                    }}
+                  >
+                    <img src={initImagePreview} />
+                    <Button
+                      onClick={() => {
+                        setFile(null)
+                        setInitImagePreview(null)
+                      }}
+                      variant="outlined"
+                    >
+                      Remove Init Image
+                    </Button>
+                  </Stack>
+                ) : (
+                  <Card
+                    {...getRootProps()}
+                    sx={{
+                      cursor: "pointer",
+                      p: 3,
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                    }}
+                  >
+                    <input {...getInputProps()} />
+                    {isDragActive ? (
+                      <Typography>Drop File Here</Typography>
+                    ) : (
+                      <Typography>Drop Init Image Here or Click to Select</Typography>
+                    )}
+                  </Card>
+                )}
+              </Stack>
             </Grid>
           </Grid>
         </AccordionDetails>

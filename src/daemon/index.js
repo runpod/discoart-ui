@@ -33,7 +33,9 @@ const setup = async () => {
   if (!fs.existsSync(`/workspace/logs/`)) {
     fs.mkdirSync(`/workspace/logs/`)
   }
-
+  if (!fs.existsSync(`/workspace/init/`)) {
+    fs.mkdirSync(`/workspace/init/`)
+  }
   console.log("Daemon setup complete - start polling")
 }
 
@@ -43,8 +45,6 @@ const startJob = async ({ parameters, jobId }) => {
   const command = `echo ${JSON.stringify(parameters)} | python -m discoart create `
 
   const job = spawn("bash", ["-c", command], { detached: true })
-
-  console.log(job)
 
   database.run(
     `
@@ -56,19 +56,11 @@ const startJob = async ({ parameters, jobId }) => {
     jobId
   )
 
-  if (!fs.existsSync(`/workspace/out/${jobId}/`)) {
-    fs.mkdirSync(`/workspace/out/${jobId}/`)
-  }
-
   if (!fs.existsSync(`/workspace/logs/${jobId}/`)) {
     fs.mkdirSync(`/workspace/logs/${jobId}/`)
   }
 
   let debugStream = fs.createWriteStream(`/workspace/logs/${jobId}.txt`, { flags: "a" })
-
-  fs.writeFile(`/workspace/out/${jobId}/settings.txt`, parameters, () =>
-    console.log("settings written")
-  )
 
   const jobInfo = {
     id: jobId,
@@ -153,29 +145,29 @@ const startDaemon = async () => {
   console.log("Daemon init")
   await setup()
   setInterval(async () => {
-    if (setupFinished) {
-      const database = await db
+    const database = await db
 
-      const activeJobCount = Object.values(activeProcesses).length
+    const activeJobCount = Object.values(activeProcesses).length
 
-      pruneDeletedJobs()
+    pruneDeletedJobs()
 
-      if (activeJobCount < maxConcurrency) {
-        const nextJob = await database.get(
-          `
+    if (activeJobCount < maxConcurrency) {
+      const nextJob = await database.get(
+        `
                     SELECT job_id, job_details FROM jobs 
                       WHERE completed_at is null
                       ORDER BY created_at ASC
                   `
-        )
+      )
 
-        if (nextJob) {
-          const jobId = nextJob.job_id
-          activeProcesses[jobId] = await startJob({
-            jobId: jobId,
-            parameters: nextJob.job_details,
-          })
-        }
+      console.log(nextJob)
+
+      if (nextJob) {
+        const jobId = nextJob.job_id
+        activeProcesses[jobId] = await startJob({
+          jobId: jobId,
+          parameters: nextJob.job_details,
+        })
       }
     }
   }, 10000)
