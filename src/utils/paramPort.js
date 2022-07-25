@@ -83,10 +83,13 @@ export const jsonToState = (json) => {
     (parsed) => {
       const { height, width } = parseDimensions(parsed?.width_height)
 
+      console.log(parsed?.transformation_percent)
+
       return {
         ...parsed,
         text_prompts: parseTextPrompts(parsed?.text_prompts),
         // cuda_device: parseCudaDevice(parsed?.cuda_device),
+        transformation_percent: JSON.stringify(parsed?.transformation_percent),
         width,
         height,
       }
