@@ -68,12 +68,12 @@ const startJob = async ({ parameters, jobId }) => {
     process: job,
     promise: new Promise((resolve, reject) => {
       job.stdout.on("data", (data) => {
-        console.log(`STDOUT: ${data}`)
+        if (data) console.log(`STDOUT: ${data}`)
         if (data.includes("ERROR")) reject(`${data}`)
       })
 
       job.stderr.on("data", (data) => {
-        console.error(`ERROR: ${data}`)
+        if (data) console.log(`${data}`)
         debugStream.write(`${data}`)
         if (data.includes("ERROR")) reject(`${data}`)
       })
@@ -159,8 +159,6 @@ const startDaemon = async () => {
                       ORDER BY created_at ASC
                   `
       )
-
-      console.log(nextJob)
 
       if (nextJob) {
         const jobId = nextJob.job_id
