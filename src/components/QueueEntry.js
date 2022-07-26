@@ -28,12 +28,12 @@ export default function QueueEntry({ job, refetchJobQueue, handleImport }) {
     <TableRow key={job_id} sx={{ "&:last-child td, &:last-child th": { border: 0 } }}>
       <TableCell align="left">
         <Typography>
-          {created_at ? `${format(new Date(created_at), "MM/dd/yyyy HH:MM:SS")}` : "-"}
+          {created_at ? `${format(new Date(created_at), "MM/dd/yyyy HH:MM:ss")}` : "-"}
         </Typography>
       </TableCell>
       <TableCell align="left">
         <Typography>
-          {started_at ? `${format(new Date(started_at), "MM/dd/yyyy HH:MM:SS")}` : "-"}
+          {started_at ? `${format(new Date(started_at), "MM/dd/yyyy HH:MM:ss")}` : "-"}
         </Typography>
       </TableCell>
       <TableCell align="right">
