@@ -10,7 +10,12 @@ export default function SettingsViewer({ open, onClose, jobId, handleImport }) {
   return (
     <Dialog fullWidth maxWidth="lg" open={open} onClose={onClose}>
       <DialogContent>
-        <DynamicReactJson displayDataTypes={false} displayObjectSize={false} src={data} />
+        <DynamicReactJson
+          style={{ background: "snow", borderRadius: 10 }}
+          displayDataTypes={false}
+          displayObjectSize={false}
+          src={data}
+        />
       </DialogContent>
 
       <DialogActions>
