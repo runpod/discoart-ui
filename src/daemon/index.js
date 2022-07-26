@@ -29,10 +29,6 @@ const setup = async () => {
   `)
 
   await database.exec(`
-      DROP TABLE concurrency
-  `)
-
-  await database.exec(`
     CREATE TABLE IF NOT EXISTS concurrency (
       id TEXT PRIMARY KEY,
       max_concurrency INTEGER
@@ -48,6 +44,39 @@ const setup = async () => {
   if (!fs.existsSync(`/workspace/init/`)) {
     fs.mkdirSync(`/workspace/init/`)
   }
+
+  console.log("finding gpu count")
+
+  const job = spawn("bash", ["-c", " python /workspace/discoart-ui/src/daemon/getGpuCount.py"], {
+    detached: true,
+  })
+
+  try {
+    maxConcurrency = await new Promise((resolve) => {
+      job.stdout.on("data", (data) => {
+        try {
+          const rawConcurrencyString = `${data}`
+          const parsedConcurrency = parseInt(rawConcurrencyString, 10)
+          resolve(parsedConcurrency)
+        } catch (e) {
+          console.log("WARNING, FAILED TO DETECT CONCURRENCY")
+          resolve(0)
+        }
+      })
+
+      job.on("error", () => {
+        console.log("WARNING, FAILED TO DETECT CONCURRENCY")
+        resolve(0)
+      })
+    })
+  } catch (e) {
+    console.log("WARNING, FAILED TO DETECT CONCURRENCY")
+    console.log(e)
+    maxConcurrency = 0
+  }
+
+  console.log("max concurrency detected: ", maxConcurrency)
+
   console.log("Daemon setup complete - start polling")
 }
 
@@ -84,17 +113,25 @@ const startJob = async ({ parameters, jobId, gpuIndex }) => {
     promise: new Promise((resolve, reject) => {
       job.stdout.on("data", (data) => {
         const trimmed = `${data}`.trim()
-        if (trimmed) console.log(trimmed)
+        // if (trimmed) console.log(trimmed)
         if (trimmed.includes("ERROR")) reject(`${data}`)
       })
 
       job.stderr.on("data", (data) => {
         const trimmed = `${data}`.trim()
-        if (trimmed) console.log(trimmed)
+        // if (trimmed) console.log(trimmed)
         debugStream.write(trimmed)
         if (data.includes("ERROR")) reject(`${data}`)
       })
+      job.on("close", (code) => {
+        debugStream.end()
+        resolve(code)
+      })
 
+      job.on("error", (err) => {
+        debugStream.end()
+        reject(err)
+      })
       job.on("close", (code) => {
         debugStream.end()
         resolve(code)
@@ -150,7 +187,7 @@ const pruneDeletedJobs = async () => {
   const queuedJobs = await database.all(`SELECT job_id FROM jobs`)
 
   activeJobs
-    .filter((job) => job)
+    .filter((job) => job && job.id)
     .forEach(({ id, pid }, index) => {
       const matchedJob = queuedJobs.find((job) => job.job_id === id)
 
@@ -174,34 +211,21 @@ const startDaemon = async () => {
       SELECT max_concurrency FROM concurrency
     `)
 
-    maxConcurrency = row && row.max_concurrency
-
-    if (!maxConcurrency) {
-      maxConcurrency = 1
-      database.run(
-        `
-        INSERT INTO concurrency (id, max_concurrency)
-        VALUES (:id, :max_concurrency)`,
-        {
-          ":id": "value",
-          ":max_concurrency": 1,
-        }
-      )
-    }
-
     pruneDeletedJobs()
 
     if (activeJobCount < maxConcurrency) {
       const viableJobs = await database.all(
         `
-                    SELECT job_id, job_details FROM jobs
-                      WHERE completed_at is null
-                      ORDER BY created_at ASC
-                  `
+          SELECT job_id, job_details FROM jobs
+            WHERE completed_at is null
+            ORDER BY created_at ASC
+        `
       )
 
+      console.log(viableJobs)
+
       const jobsNotInFlight = viableJobs.filter(
-        ({ job_id }) => !activeProcesses.map(({ id }) => id).includes(job_id)
+        ({ job_id }) => !activeProcesses.map((process) => process && process.id).includes(job_id)
       )
 
       const nextJob = head(jobsNotInFlight)

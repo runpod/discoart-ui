@@ -55,10 +55,26 @@ import { useDropzone } from "react-dropzone"
 // TODO: add real validation schema here
 const validationSchema = yup.object({})
 
+const getThumbnailDimensions = ({ height, width, maxWidth = 80 }) => {
+  try {
+    const aspectRatio = height / width
+
+    const adjustedWidth = Math.min(maxWidth, width)
+
+    const adjustedHeight = adjustedWidth * aspectRatio
+
+    return {
+      height: adjustedHeight,
+      width: adjustedWidth,
+    }
+  } catch (e) {
+    return { height: 300, width: 400 }
+  }
+}
+
 export default function Home() {
   const [exportedJson, setExportedJson] = useState()
   const [jsonToImport, setJsonToImport] = useState()
-  const [concurrency, setConcurrency] = useState(1)
   const [refreshModelAutocomplete, setRefreshModelAutocomplete] = useState(false)
   const [file, setFile] = useState()
   const [initImagePreview, setInitImagePreview] = useState()
@@ -73,16 +89,6 @@ export default function Home() {
   const [importOpen, openImportModal, closeImportModal] = useOpenState()
   const [showAllJobs, setShowAllJobs] = useState(false)
   const [jsonValidationError, setJsonValidationError] = useState("")
-
-  const handleConcurrencyChange = (e) => {
-    setConcurrency(e.target.value)
-    fetch("/api/concurrency/set", {
-      method: "POST",
-      body: JSON.stringify({
-        maxConcurrency: e.target.value,
-      }),
-    })
-  }
 
   const onDrop = useCallback(async (acceptedFiles) => {
     const [file] = acceptedFiles
@@ -430,56 +436,55 @@ export default function Home() {
           </Button>
         </Stack>
       </Stack>
-      <Select
-        value={concurrency}
-        label="Number of renders to Process at one time"
-        onChange={handleConcurrencyChange}
-      >
-        <MenuItem value={1}>1 Renders</MenuItem>
-        <MenuItem value={2}>2 Renders</MenuItem>
-        <MenuItem value={3}>3 Renders</MenuItem>
-        <MenuItem value={4}>4 Renders</MenuItem>
-        <MenuItem value={5}>5 Renders</MenuItem>
-        <MenuItem value={6}>6 Renders</MenuItem>
-        <MenuItem value={7}>7 Renders</MenuItem>
-        <MenuItem value={8}>8 Renders</MenuItem>
-      </Select>
       {progressData?.progress && (
         <Grid container justifyContent="center" mt={3} mb={10}>
           <Carousel
             infiniteLoop
             renderThumbs={() => {
-              return progressData?.progress?.map(({ latestImage }) => (
-                <img key={latestImage} src={latestImage}></img>
-              ))
+              return progressData?.progress
+                ?.filter(({ latestImage }) => latestImage)
+                ?.map(({ latestImage, dimensions }) => (
+                  <Image
+                    key={latestImage}
+                    {...getThumbnailDimensions(dimensions)}
+                    src={latestImage}
+                  ></Image>
+                ))
             }}
           >
-            {progressData?.progress?.map(
-              ({ latestImage, dimensions, frame, config, batchNumber }) => (
+            {progressData?.progress
+              ?.filter(({ latestImage }) => latestImage)
+              ?.map(({ latestImage, dimensions, frame, config, batchNumber }) => (
                 <Stack alignItems="center" spacing={1} key={latestImage}>
                   {latestImage ? (
                     <>
                       <LinearProgress
                         sx={{
                           borderRadius: 5,
-                          width: "80%",
+                          width: "65%",
                           height: 20,
                         }}
                         variant="determinate"
                         value={(frame / config?.steps) * 100}
                       />
                       <LinearProgress
-                        width="80%"
                         sx={{
                           borderRadius: 5,
-                          width: "80%",
+                          width: "65%",
                           height: 20,
                         }}
                         variant="determinate"
                         value={(batchNumber / config?.n_batches) * 100}
                       />
                       <Box>
-                        <Image alt="" {...dimensions} src={latestImage} />
+                        <Image
+                          alt=""
+                          {...getThumbnailDimensions({
+                            ...dimensions,
+                            maxWidth: window.innerWidth * 0.65,
+                          })}
+                          src={latestImage}
+                        />
                       </Box>
                     </>
                   ) : (
@@ -489,8 +494,7 @@ export default function Home() {
                     </Stack>
                   )}
                 </Stack>
-              )
-            )}
+              ))}
           </Carousel>
         </Grid>
       )}
