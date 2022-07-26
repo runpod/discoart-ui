@@ -47,7 +47,7 @@ const setup = async () => {
 
   console.log("finding gpu count")
 
-  const job = spawn("bash", ["-c", " python /workspace/discoart-ui/src/daemon/getGpuCount.py"], {
+  const job = spawn("bash", ["-c", `python ${__dirname}/getGpuCount.py`], {
     detached: true,
   })
 
