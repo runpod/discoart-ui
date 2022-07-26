@@ -144,7 +144,8 @@ const startJob = async ({ parameters, jobId, gpuIndex }) => {
           .run(
             `
               UPDATE jobs
-                SET completed_at = ?
+                SET completed_at = ?,
+                error = 0
               WHERE job_id = ?
             `,
             Date.now(),
@@ -162,11 +163,10 @@ const startJob = async ({ parameters, jobId, gpuIndex }) => {
             `
               UPDATE jobs
                 SET completed_at = ?,
-                error = ?
+                error = 1
               WHERE job_id = ?
             `,
             Date.now(),
-            1,
             jobId
           )
           .catch((err) => {
