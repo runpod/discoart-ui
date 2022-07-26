@@ -229,7 +229,7 @@ const startDaemon = async () => {
 
           const jobId = nextJob.job_id
 
-          console.log("starting new job", parameters)
+          console.log("starting new job", nextJob.job_details)
 
           const newJob = await startJob({
             jobId: jobId,
