@@ -9,7 +9,7 @@ export default function LogViewer({ open, onClose, jobId }) {
   return (
     <Dialog fullWidth maxWidth="lg" open={open} onClose={onClose}>
       <DialogContent>
-        <TextField readonly fullWidth value={data?.logs} multiline rows={30}></TextField>
+        <TextField readOnly fullWidth value={data?.logs} multiline rows={30}></TextField>
       </DialogContent>
 
       <DialogActions>

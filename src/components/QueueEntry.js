@@ -5,7 +5,7 @@ import LogViewer from "./LogViewer"
 import SettingsViewer from "./SettingsViewer"
 
 export default function QueueEntry({ job, handleQueueRemove, handleImport }) {
-  const { job_id, created_at, started_at, completed_at } = job
+  const { job_id, created_at, started_at, completed_at, error } = job
 
   const [logViewerOpen, setLogViewerOpen] = useState(false)
   const [settingsViewerOpen, setSettingsViewerOpen] = useState(false)
@@ -23,7 +23,9 @@ export default function QueueEntry({ job, handleQueueRemove, handleImport }) {
         </Typography>
       </TableCell>
       <TableCell align="right">
-        <Typography>{completed_at ? "FINISHED" : started_at ? "PROCESSING" : "QUEUED"}</Typography>
+        <Typography>
+          {error ? "ERROR" : completed_at ? "FINISHED" : started_at ? "PROCESSING" : "QUEUED"}
+        </Typography>
       </TableCell>
       <TableCell align="right">
         <Button onClick={handleQueueRemove(job_id)}>

@@ -24,16 +24,12 @@ const setup = async () => {
       created_at INTEGER,
       started_at INTEGER,
       completed_at INTEGER,
-      job_details TEXT
+      job_details TEXT,
+      error INTEGER
     )
   `)
 
-  await database.exec(`
-    CREATE TABLE IF NOT EXISTS concurrency (
-      id TEXT PRIMARY KEY,
-      max_concurrency INTEGER
-    )
-`)
+  await database.exec("ALTER TABLE jobs ADD COLUMN error INTEGER").catch(() => {})
 
   if (!fs.existsSync(`/workspace/out/`)) {
     fs.mkdirSync(`/workspace/out/`)
@@ -120,8 +116,8 @@ const startJob = async ({ parameters, jobId, gpuIndex }) => {
       job.stderr.on("data", (data) => {
         const trimmed = `${data}`.trim()
         // if (trimmed) console.log(trimmed)
-        debugStream.write(trimmed)
-        if (data.includes("ERROR")) reject(`${data}`)
+        debugStream.write(trimmed + "\n")
+        if (data.includes("ERROR") || data.includes("Error")) reject(`${data}`)
       })
       job.on("close", (code) => {
         debugStream.end()
@@ -165,10 +161,12 @@ const startJob = async ({ parameters, jobId, gpuIndex }) => {
           .run(
             `
               UPDATE jobs
-                SET completed_at = ?
+                SET completed_at = ?,
+                error = ?
               WHERE job_id = ?
             `,
             Date.now(),
+            1,
             jobId
           )
           .catch((err) => {

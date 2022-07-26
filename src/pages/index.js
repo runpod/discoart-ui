@@ -536,7 +536,7 @@ export default function Home() {
           </Carousel>
         </Grid>
       )}
-      <Stack mt={4} spacing={2} sx={{ height: 600 }}>
+      <Stack mt={4} spacing={2} sx={{ minHeight: 600 }}>
         <Stack direction="row" justifyContent="space-between" px={2}>
           <Typography variant="h4">Generation Queue</Typography>
           <Box
