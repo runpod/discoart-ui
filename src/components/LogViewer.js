@@ -1,15 +1,26 @@
-import { Button, TextField, Dialog, DialogContent, DialogActions } from "@mui/material"
+import {
+  Button,
+  TextField,
+  Dialog,
+  DialogContent,
+  DialogActions,
+  CircularProgress,
+} from "@mui/material"
 import useSWR from "swr"
 
 export default function LogViewer({ open, onClose, jobId }) {
-  const { data, mutate } = useSWR(open && `/api/logs/${jobId}`, null, {
-    refreshInterval: 2000,
+  const { data, mutate, isLoading } = useSWR(open && `/api/logs/${jobId}`, null, {
+    refreshInterval: 5000,
   })
 
   return (
     <Dialog fullWidth maxWidth="lg" open={open} onClose={onClose}>
       <DialogContent>
-        <TextField readOnly fullWidth value={data?.logs} multiline rows={30}></TextField>
+        {isLoading ? (
+          <CircularProgress></CircularProgress>
+        ) : (
+          <TextField readOnly fullWidth value={data?.logs} multiline rows={30}></TextField>
+        )}
       </DialogContent>
 
       <DialogActions>
