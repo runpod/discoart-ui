@@ -7,6 +7,7 @@ import { head } from "ramda"
 const databasePath = "/workspace/database"
 
 let maxConcurrency = 1
+let jobStarting = false
 export let activeProcesses = []
 
 const db = open({
@@ -77,6 +78,8 @@ const setup = async () => {
 }
 
 const startJob = async ({ parameters, jobId, gpuIndex }) => {
+  jobStarting = true
+  setTimeout(() => (jobStarting = false), 60000)
   const database = await db
 
   const command = `echo ${JSON.stringify(
@@ -224,7 +227,7 @@ const startDaemon = async () => {
 
         const nextJob = head(jobsNotInFlight)
 
-        if (nextJob) {
+        if (nextJob && !jobStarting) {
           const gpuIndex = activeJobCount
 
           const jobId = nextJob.job_id

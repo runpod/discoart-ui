@@ -338,6 +338,11 @@ export const DarkTheme = createTheme({
         },
       },
     },
+    MuiAccordion: {
+      styleOverrides: {
+        background: "transparent",
+      },
+    },
     MuiFormHelperText: {
       styleOverrides: {
         root: {

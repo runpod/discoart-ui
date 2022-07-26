@@ -29,6 +29,7 @@ import {
   Chip,
   TablePagination,
   useTheme,
+  Divider,
 } from "@mui/material"
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore"
 import AddIcon from "@mui/icons-material/Add"
@@ -36,6 +37,7 @@ import CloseIcon from "@mui/icons-material/Close"
 import { nanoid } from "nanoid"
 import "react-responsive-carousel/lib/styles/carousel.min.css" // requires a loader
 import { Carousel } from "react-responsive-carousel"
+import useMediaQuery from "@mui/material/useMediaQuery"
 // sections
 
 import { useFieldArray, useForm } from "react-hook-form"
@@ -74,9 +76,10 @@ const getThumbnailDimensions = ({ height, width, maxWidth = 80 }) => {
 
 export default function Home() {
   const theme = useTheme()
+  const smallScreen = useMediaQuery(theme.breakpoints.down("sm"))
   const [exportedJson, setExportedJson] = useState()
   const [jsonToImport, setJsonToImport] = useState()
-  const [previewWidth, setPreviewWidth] = useState(500)
+  const [previewWidth, setPreviewWidth] = useState(smallScreen ? 350 : 500)
   const [refreshModelAutocomplete, setRefreshModelAutocomplete] = useState(false)
   const [file, setFile] = useState()
   const [initImagePreview, setInitImagePreview] = useState()
@@ -197,347 +200,295 @@ export default function Home() {
   const handlePromptRemove = (index) => () => remove(index)
 
   useEffect(() => {
-    console.log(window.innerWidth)
     const newWidth = window.innerWidth > 800 ? 800 : window.innerWidth
     console.log(newWidth)
     setPreviewWidth(newWidth)
   }, [])
 
-  console.log(progressData)
-
   return (
-    <Container maxWidth="xl">
-      <Box sx={{ width: "100%", height: 75 }}></Box>
-      <Accordion defaultExpanded>
-        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-          <Typography variant="h5">Prompt</Typography>
-        </AccordionSummary>
-        <AccordionDetails>
-          <Stack spacing={2}>
-            {fields.map((field, index) => {
-              const weight = `text_prompts.${index}.weight`
-              const prompt = `text_prompts.${index}.prompt`
+    <Grid container spacing={4} padding={smallScreen ? 1 : 2}>
+      {!smallScreen && <Grid item xs={12} sx={{ height: 75 }}></Grid>}
+      <Grid item xs={12}>
+        <Accordion defaultExpanded>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography variant="h5">Prompt</Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <Grid container alignItems="center" spacing={smallScreen ? 1 : 2}>
+              {fields.map((field, index) => {
+                const weight = `text_prompts.${index}.weight`
+                const prompt = `text_prompts.${index}.prompt`
 
-              return (
-                <Stack direction="row" alignItems="center" spacing={2} key={field.id}>
-                  <IconButton onClick={handlePromptRemove(index)}>
-                    <CloseIcon></CloseIcon>
-                  </IconButton>
-                  <Box width="100px">
-                    <ControlledTextField control={control} name={weight} label="Weight" />
-                  </Box>
-                  <ControlledTextField control={control} name={prompt} label="Prompt" />
-                </Stack>
-              )
-            })}
-            <Button
-              sx={{
-                width: "200px",
-              }}
-              variant="outlined"
-              onClick={handlePromptAdd}
-              startIcon={<AddIcon></AddIcon>}
-            >
-              Add Prompt
-            </Button>
-          </Stack>
-        </AccordionDetails>
-      </Accordion>
-
-      <Accordion>
-        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-          <Typography variant="h5">Model Settings</Typography>
-        </AccordionSummary>
-        <AccordionDetails>
-          <Grid container spacing={2}>
-            <Grid item xs={12}>
-              <Grid container spacing={1}>
-                {clipModels?.map((option, index) => {
-                  return (
-                    <Grid item key={option}>
-                      <Chip
-                        key={option}
-                        variant="outlined"
-                        label={option}
-                        onDelete={() => removeClipModel(index)}
+                return (
+                  <>
+                    <Grid item xs={12} md={10}>
+                      <ControlledTextField
+                        multiline
+                        control={control}
+                        name={prompt}
+                        label="Prompt"
                       />
                     </Grid>
-                  )
-                })}
+                    <Grid item xs={6} md={1}>
+                      <ControlledTextField control={control} name={weight} label="Weight" />
+                    </Grid>
+                    <Grid item xs={6} md={1}>
+                      <IconButton onClick={handlePromptRemove(index)}>
+                        <CloseIcon></CloseIcon>
+                      </IconButton>
+                    </Grid>
+                  </>
+                )
+              })}
+              <Grid item xs={12}>
+                <Button
+                  variant="outlined"
+                  fullWidth={smallScreen}
+                  onClick={handlePromptAdd}
+                  startIcon={<AddIcon></AddIcon>}
+                >
+                  Add Prompt
+                </Button>
               </Grid>
             </Grid>
-            <Grid item xs={12}>
-              <Autocomplete
-                key={refreshModelAutocomplete}
-                options={inputConfig?.["clip_models"]?.options?.filter(
-                  (option) => !clipModels?.includes(option)
-                )}
-                disableCloseOnSelect={true}
-                onChange={(e, data) => {
-                  appendClipModel(data)
-                }}
-                onBlur={() => setRefreshModelAutocomplete(!refreshModelAutocomplete)}
-                renderInput={(params) => (
-                  <TextField label={"Add Clip Models"} {...params} size="small" />
-                )}
-              />
-            </Grid>
+          </AccordionDetails>
+        </Accordion>
 
-            <Grid item xs={12} md={6}>
-              <DynamicInput control={control} name={"diffusion_model"} />
-            </Grid>
-            <Grid item xs={12} md={3}>
-              <DynamicInput control={control} name={"diffusion_sampling_mode"} />
-            </Grid>
-            <Grid item xs={12} md={3}>
-              <DynamicInput control={control} name={"use_secondary_model"} />
-            </Grid>
-          </Grid>
-        </AccordionDetails>
-      </Accordion>
-      <Accordion>
-        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-          <Typography variant="h5">Run Settings</Typography>
-        </AccordionSummary>
-        <AccordionDetails>
-          <Grid container spacing={2}>
-            <Grid item xs={12} sm={4} md={3}>
-              <DynamicInput control={control} name={"seed"} />
-            </Grid>
-            <Grid item xs={12} sm={4} md={3}>
-              <DynamicInput control={control} name={"batch_name"} />
-            </Grid>
-            <Grid item xs={12} sm={4} md={3}>
-              <DynamicInput control={control} name={"batch_size"} />
-            </Grid>
-            <Grid item xs={12} sm={4} md={3}>
-              <DynamicInput control={control} name={"n_batches"} />
-            </Grid>
-            <Grid item xs={12} sm={4} md={3}>
-              <DynamicInput control={control} name={"steps"} />
-            </Grid>
-            <Grid item xs={12} sm={4} md={3}>
-              <DynamicInput control={control} name={"width"} />
-            </Grid>
-            <Grid item xs={12} sm={4} md={3}>
-              <DynamicInput control={control} name={"height"} />
-            </Grid>
-            <Grid item xs={12} sm={4} md={3}>
-              <DynamicInput control={control} name={"skip_steps"} />
-            </Grid>
-            <Grid item xs={12} sm={4} md={3}>
-              <Stack spacing={2}>
-                {file ? (
-                  <Stack
-                    spacing={2}
-                    sx={{
-                      borderRadius: 5,
-                    }}
-                  >
-                    <img src={initImagePreview} />
-                    <Button
-                      onClick={() => {
-                        setFile(null)
-                        setInitImagePreview(null)
-                      }}
-                      variant="outlined"
-                    >
-                      Remove Init Image
-                    </Button>
-                  </Stack>
-                ) : (
-                  <Card
-                    {...getRootProps()}
-                    sx={{
-                      cursor: "pointer",
-                      p: 3,
-                      display: "flex",
-                      justifyContent: "center",
-                      alignItems: "center",
-                    }}
-                  >
-                    <input {...getInputProps()} />
-                    {isDragActive ? (
-                      <Typography>Drop File Here</Typography>
-                    ) : (
-                      <Typography>Drop Init Image Here or Click to Select</Typography>
-                    )}
-                  </Card>
-                )}
-              </Stack>
-            </Grid>
-          </Grid>
-        </AccordionDetails>
-      </Accordion>
-      <Accordion>
-        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-          <Typography variant="h5">Symmetry Settings</Typography>
-        </AccordionSummary>
-        <AccordionDetails>
-          <Grid container spacing={2}>
-            <Grid item xs={12} sm={4} md={3}>
-              <DynamicInput control={control} name={"use_vertical_symmetry"} />
-            </Grid>
-            <Grid item xs={12} sm={4} md={3}>
-              <DynamicInput control={control} name={"use_horizontal_symmetry"} />
-            </Grid>
-          </Grid>
-          <Grid mt={2} container spacing={2}>
-            <Grid item xs={12} sm={4} md={3}>
-              <DynamicInput control={control} name={"transformation_percent"} />
-            </Grid>
-          </Grid>
-        </AccordionDetails>
-      </Accordion>
-      <Accordion>
-        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-          <Typography variant="h5">Clip Settings</Typography>
-        </AccordionSummary>
-        <AccordionDetails>
-          <Grid container spacing={2}>
-            <Grid item xs={12} sm={4} md={3} lg={2}>
-              <DynamicInput control={control} name={"cutn_batches"} />
-            </Grid>
-            <Grid item xs={12} sm={4} md={3} lg={2}>
-              <DynamicInput control={control} name={"clip_guidance_scale"} />
-            </Grid>
-          </Grid>
-          <Grid mt={2} container spacing={2}>
-            <Grid item xs={12} sm={4} md={3}>
-              <DynamicInput control={control} name={"cut_ic_pow"} />
-            </Grid>
-            <Grid item xs={12} sm={4} md={3}>
-              <DynamicInput control={control} name={"cut_overview"} />
-            </Grid>
-            <Grid item xs={12} sm={4} md={3}>
-              <DynamicInput control={control} name={"cut_innercut"} />
-            </Grid>
-            <Grid item xs={12} sm={4} md={3}>
-              <DynamicInput control={control} name={"cut_icgray_p"} />
-            </Grid>
-          </Grid>
-        </AccordionDetails>
-      </Accordion>
-
-      <Accordion>
-        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-          <Typography variant="h5">Miscellaneous Settings</Typography>
-        </AccordionSummary>
-        <AccordionDetails>
-          <Grid container spacing={2}>
-            <Grid item xs={12} sm={4} md={3}>
-              <DynamicInput control={control} name={"eta"} />
-            </Grid>
-            <Grid item xs={12} sm={4} md={3}>
-              <DynamicInput control={control} name={"clamp_max"} />
-            </Grid>
-            <Grid item xs={12} sm={4} md={3}>
-              <DynamicInput control={control} name={"rand_mag"} />
-            </Grid>
-            <Grid item xs={12} sm={4} md={3}>
-              <DynamicInput control={control} name={"tv_scale"} />
-            </Grid>
-            <Grid item xs={12} sm={4} md={3}>
-              <DynamicInput control={control} name={"range_scale"} />
-            </Grid>
-            <Grid item xs={12} sm={4} md={3}>
-              <DynamicInput control={control} name={"sat_scale"} />
-            </Grid>
-          </Grid>
-          <Grid container spacing={2} mt={2}>
-            <Grid item xs={12} sm={4} md={3}>
-              <DynamicInput control={control} name={"clamp_grad"} />
-            </Grid>
-            <Grid item xs={12} sm={4} md={3}>
-              <DynamicInput control={control} name={"clip_denoised"} />
-            </Grid>
-            <Grid item xs={12} sm={4} md={3}>
-              <DynamicInput control={control} name={"skip_augs"} />
-            </Grid>
-          </Grid>
-        </AccordionDetails>
-      </Accordion>
-      <Stack sx={{ mt: 3 }} direction="row" justifyContent="space-between">
-        <Stack direction="row" spacing={2}>
-          <Button variant="contained" onClick={handleRenderStart}>
-            Queue Render
-          </Button>
-        </Stack>
-
-        <Stack direction="row" spacing={2}>
-          <Button variant="outlined" onClick={openImportModal}>
-            Import Settings
-          </Button>
-          <Button variant="outlined" onClick={handleExport}>
-            Export Settings
-          </Button>
-        </Stack>
-      </Stack>
-      {progressData?.progress && (
-        <Grid container justifyContent="center" mt={3} mb={10}>
-          <Carousel
-            width={previewWidth}
-            infiniteLoop
-            renderThumbs={() => {
-              return progressData?.progress
-                ?.filter(({ latestImage }) => latestImage)
-                ?.map(({ latestImage, dimensions }) => (
-                  <Image
-                    key={latestImage}
-                    {...getThumbnailDimensions(dimensions)}
-                    src={latestImage}
-                  ></Image>
-                ))
-            }}
-          >
-            {progressData?.progress
-              ?.filter(({ latestImage }) => latestImage)
-              ?.map(({ latestImage, dimensions, frame, config, batchNumber }) => (
-                <Stack alignItems="center" spacing={1} key={latestImage}>
-                  {latestImage ? (
-                    <>
-                      <LinearProgress
-                        sx={{
-                          borderRadius: 5,
-                          width: previewWidth * 0.8,
-                          height: 20,
-                        }}
-                        variant="determinate"
-                        value={(frame / config?.steps) * 100}
-                      />
-                      <LinearProgress
-                        sx={{
-                          borderRadius: 5,
-                          width: previewWidth * 0.8,
-                          height: 20,
-                        }}
-                        variant="determinate"
-                        value={(batchNumber / config?.n_batches) * 100}
-                      />
-                      <Box>
-                        <Image
-                          alt=""
-                          {...getThumbnailDimensions({
-                            ...dimensions,
-                            maxWidth: previewWidth,
-                          })}
-                          src={latestImage}
+        <Accordion>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography variant="h5">Model Settings</Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <Grid container spacing={2}>
+              <Grid item xs={12}>
+                <Grid container spacing={1}>
+                  {clipModels?.map((option, index) => {
+                    return (
+                      <Grid item key={option}>
+                        <Chip
+                          key={option}
+                          variant="outlined"
+                          label={option}
+                          onDelete={() => removeClipModel(index)}
                         />
-                      </Box>
-                    </>
-                  ) : (
-                    <Stack alignItems="center" spacing={2}>
-                      <Typography>Initializing Job</Typography>
-                      <CircularProgress></CircularProgress>
+                      </Grid>
+                    )
+                  })}
+                </Grid>
+              </Grid>
+              <Grid item xs={12}>
+                <Autocomplete
+                  key={refreshModelAutocomplete}
+                  options={inputConfig?.["clip_models"]?.options?.filter(
+                    (option) => !clipModels?.includes(option)
+                  )}
+                  disableCloseOnSelect={true}
+                  onChange={(e, data) => {
+                    appendClipModel(data)
+                  }}
+                  onBlur={() => setRefreshModelAutocomplete(!refreshModelAutocomplete)}
+                  renderInput={(params) => (
+                    <TextField label={"Add Clip Models"} {...params} size="small" />
+                  )}
+                />
+              </Grid>
+
+              <Grid item xs={12} md={6}>
+                <DynamicInput control={control} name={"diffusion_model"} />
+              </Grid>
+              <Grid item xs={12} md={3}>
+                <DynamicInput control={control} name={"diffusion_sampling_mode"} />
+              </Grid>
+              <Grid item xs={12} md={3}>
+                <DynamicInput control={control} name={"use_secondary_model"} />
+              </Grid>
+            </Grid>
+          </AccordionDetails>
+        </Accordion>
+        <Accordion>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography variant="h5">Run Settings</Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <Grid container spacing={2}>
+              <Grid item xs={12} sm={4} md={3}>
+                <DynamicInput control={control} name={"seed"} />
+              </Grid>
+              <Grid item xs={12} sm={4} md={3}>
+                <DynamicInput control={control} name={"batch_name"} />
+              </Grid>
+              <Grid item xs={12} sm={4} md={3}>
+                <DynamicInput control={control} name={"batch_size"} />
+              </Grid>
+              <Grid item xs={12} sm={4} md={3}>
+                <DynamicInput control={control} name={"n_batches"} />
+              </Grid>
+              <Grid item xs={12} sm={4} md={3}>
+                <DynamicInput control={control} name={"steps"} />
+              </Grid>
+              <Grid item xs={12} sm={4} md={3}>
+                <DynamicInput control={control} name={"width"} />
+              </Grid>
+              <Grid item xs={12} sm={4} md={3}>
+                <DynamicInput control={control} name={"height"} />
+              </Grid>
+              <Grid item xs={12} sm={4} md={3}>
+                <DynamicInput control={control} name={"skip_steps"} />
+              </Grid>
+              <Grid item xs={12} sm={4} md={3}>
+                <Stack spacing={2}>
+                  {file ? (
+                    <Stack
+                      spacing={2}
+                      sx={{
+                        borderRadius: 5,
+                      }}
+                    >
+                      <img src={initImagePreview} />
+                      <Button
+                        onClick={() => {
+                          setFile(null)
+                          setInitImagePreview(null)
+                        }}
+                        variant="outlined"
+                      >
+                        Remove Init Image
+                      </Button>
                     </Stack>
+                  ) : (
+                    <Card
+                      {...getRootProps()}
+                      sx={{
+                        cursor: "pointer",
+                        p: 3,
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                      }}
+                    >
+                      <input {...getInputProps()} />
+                      {isDragActive ? (
+                        <Typography>Drop File Here</Typography>
+                      ) : (
+                        <Typography>Drop Init Image Here or Click to Select</Typography>
+                      )}
+                    </Card>
                   )}
                 </Stack>
-              ))}
-          </Carousel>
-        </Grid>
-      )}
-      <Stack mt={4} spacing={2} sx={{ minHeight: 600 }}>
-        <Stack direction="row" justifyContent="space-between" px={2}>
+              </Grid>
+            </Grid>
+          </AccordionDetails>
+        </Accordion>
+        <Accordion>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography variant="h5">Symmetry Settings</Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <Grid container spacing={2}>
+              <Grid item xs={12} sm={4} md={3}>
+                <DynamicInput control={control} name={"use_vertical_symmetry"} />
+              </Grid>
+              <Grid item xs={12} sm={4} md={3}>
+                <DynamicInput control={control} name={"use_horizontal_symmetry"} />
+              </Grid>
+            </Grid>
+            <Grid mt={2} container spacing={2}>
+              <Grid item xs={12} sm={4} md={3}>
+                <DynamicInput control={control} name={"transformation_percent"} />
+              </Grid>
+            </Grid>
+          </AccordionDetails>
+        </Accordion>
+        <Accordion>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography variant="h5">Clip Settings</Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <Grid container spacing={2}>
+              <Grid item xs={12} sm={4} md={3} lg={2}>
+                <DynamicInput control={control} name={"cutn_batches"} />
+              </Grid>
+              <Grid item xs={12} sm={4} md={3} lg={2}>
+                <DynamicInput control={control} name={"clip_guidance_scale"} />
+              </Grid>
+            </Grid>
+            <Grid mt={2} container spacing={2}>
+              <Grid item xs={12} sm={4} md={3}>
+                <DynamicInput control={control} name={"cut_ic_pow"} />
+              </Grid>
+              <Grid item xs={12} sm={4} md={3}>
+                <DynamicInput control={control} name={"cut_overview"} />
+              </Grid>
+              <Grid item xs={12} sm={4} md={3}>
+                <DynamicInput control={control} name={"cut_innercut"} />
+              </Grid>
+              <Grid item xs={12} sm={4} md={3}>
+                <DynamicInput control={control} name={"cut_icgray_p"} />
+              </Grid>
+            </Grid>
+          </AccordionDetails>
+        </Accordion>
+
+        <Accordion>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography variant="h5">Miscellaneous Settings</Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <Grid container spacing={2}>
+              <Grid item xs={12} sm={4} md={3}>
+                <DynamicInput control={control} name={"eta"} />
+              </Grid>
+              <Grid item xs={12} sm={4} md={3}>
+                <DynamicInput control={control} name={"clamp_max"} />
+              </Grid>
+              <Grid item xs={12} sm={4} md={3}>
+                <DynamicInput control={control} name={"rand_mag"} />
+              </Grid>
+              <Grid item xs={12} sm={4} md={3}>
+                <DynamicInput control={control} name={"tv_scale"} />
+              </Grid>
+              <Grid item xs={12} sm={4} md={3}>
+                <DynamicInput control={control} name={"range_scale"} />
+              </Grid>
+              <Grid item xs={12} sm={4} md={3}>
+                <DynamicInput control={control} name={"sat_scale"} />
+              </Grid>
+            </Grid>
+            <Grid container spacing={2} mt={2}>
+              <Grid item xs={12} sm={4} md={3}>
+                <DynamicInput control={control} name={"clamp_grad"} />
+              </Grid>
+              <Grid item xs={12} sm={4} md={3}>
+                <DynamicInput control={control} name={"clip_denoised"} />
+              </Grid>
+              <Grid item xs={12} sm={4} md={3}>
+                <DynamicInput control={control} name={"skip_augs"} />
+              </Grid>
+            </Grid>
+          </AccordionDetails>
+        </Accordion>
+        <Stack sx={{ mt: 3 }} direction="row" justifyContent="space-between">
+          <Stack direction="row" spacing={2}>
+            <Button variant="contained" onClick={handleRenderStart}>
+              Queue Render
+            </Button>
+          </Stack>
+
+          <Stack direction="row" spacing={2}>
+            <Button variant="outlined" onClick={openImportModal}>
+              Import Settings
+            </Button>
+            <Button variant="outlined" onClick={handleExport}>
+              Export Settings
+            </Button>
+          </Stack>
+        </Stack>
+      </Grid>
+      <Grid item xs={12}>
+        <Divider></Divider>
+      </Grid>
+      <Grid item xs={12}>
+        <Stack mb={2} direction="row" justifyContent="space-between" px={2} alignItems="center">
           <Typography variant="h4">Generation Queue</Typography>
           <Box
             sx={{
@@ -556,10 +507,10 @@ export default function Home() {
             />
           </Box>
         </Stack>
-        <Table sx={{ minWidth: 650 }} aria-label="simple table">
+        <Table aria-label="simple table">
           <TableHead>
             <TableRow>
-              <TableCell align="left">Created</TableCell>
+              {!smallScreen && <TableCell align="left">Created</TableCell>}
               <TableCell align="left">Started</TableCell>
               <TableCell align="right">Status</TableCell>
               <TableCell align="right"></TableCell>
@@ -574,6 +525,7 @@ export default function Home() {
               .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
               ?.map((job) => (
                 <QueueEntry
+                  smallScreen={smallScreen}
                   key={job.job_id}
                   job={job}
                   handleQueueRemove={handleQueueRemove}
@@ -596,7 +548,76 @@ export default function Home() {
           rowsPerPage={rowsPerPage}
           onRowsPerPageChange={handleChangeRowsPerPage}
         />
-      </Stack>
+      </Grid>
+      <Grid item xs={12}>
+        <Divider></Divider>
+      </Grid>
+      <Grid item xs={12}>
+        {progressData?.progress && (
+          <Grid container justifyContent="center" mt={3} mb={10}>
+            <Carousel
+              width={previewWidth}
+              infiniteLoop
+              showThumbs={!smallScreen}
+              renderThumbs={() => {
+                return progressData?.progress
+                  ?.filter(({ latestImage }) => latestImage)
+                  ?.map(({ latestImage, dimensions }) => (
+                    <Image
+                      key={latestImage}
+                      {...getThumbnailDimensions(dimensions)}
+                      src={latestImage}
+                    ></Image>
+                  ))
+              }}
+            >
+              {progressData?.progress
+                ?.filter(({ latestImage }) => latestImage)
+                ?.map(({ latestImage, dimensions, frame, config, batchNumber }) => (
+                  <Stack alignItems="center" spacing={1} key={latestImage}>
+                    {latestImage ? (
+                      <>
+                        <LinearProgress
+                          sx={{
+                            borderRadius: 5,
+                            width: previewWidth * 0.8,
+                            height: 20,
+                          }}
+                          variant="determinate"
+                          value={(frame / config?.steps) * 100}
+                        />
+                        <LinearProgress
+                          sx={{
+                            borderRadius: 5,
+                            width: previewWidth * 0.8,
+                            height: 20,
+                          }}
+                          variant="determinate"
+                          value={(batchNumber / config?.n_batches) * 100}
+                        />
+                        <Box>
+                          <Image
+                            alt=""
+                            {...getThumbnailDimensions({
+                              ...dimensions,
+                              maxWidth: previewWidth,
+                            })}
+                            src={latestImage}
+                          />
+                        </Box>
+                      </>
+                    ) : (
+                      <Stack alignItems="center" spacing={2}>
+                        <Typography>Initializing Job</Typography>
+                        <CircularProgress></CircularProgress>
+                      </Stack>
+                    )}
+                  </Stack>
+                ))}
+            </Carousel>
+          </Grid>
+        )}
+      </Grid>
       <Box sx={{ width: "100%", height: 100 }}></Box>
       <Dialog fullWidth maxWidth="lg" open={exportOpen} onClose={closeExportModal}>
         <DialogContent>
@@ -647,6 +668,6 @@ export default function Home() {
           </Stack>
         </DialogActions>
       </Dialog>
-    </Container>
+    </Grid>
   )
 }

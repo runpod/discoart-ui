@@ -2,11 +2,11 @@ import * as React from "react"
 import AppBar from "@mui/material/AppBar"
 import Toolbar from "@mui/material/Toolbar"
 import Button from "@mui/material/Button"
-import { Box, Container, Paper, Stack } from "@mui/material"
+import { Container, Stack } from "@mui/material"
 import { useRouter } from "next/router"
 import { SWRConfig } from "swr"
 import axios from "axios"
-import { createTheme, ThemeProvider } from "@mui/material/styles"
+import { ThemeProvider } from "@mui/material/styles"
 import CssBaseline from "@mui/material/CssBaseline"
 import { DarkTheme } from "../theme"
 
@@ -25,9 +25,15 @@ function MyApp({ Component, pageProps }) {
     >
       <ThemeProvider theme={DarkTheme}>
         <CssBaseline />
-        <AppBar position="static">
-          <Toolbar>
-            <Container maxWidth="xl">
+        <Container
+          maxWidth="xl"
+          sx={{
+            p: 0,
+            m: "auto",
+          }}
+        >
+          <AppBar position="static">
+            <Toolbar>
               <Stack direction="row" spacing={2}>
                 <Button disabled={route === "/"} href="/" color="inherit">
                   Create
@@ -36,10 +42,10 @@ function MyApp({ Component, pageProps }) {
                   Gallery
                 </Button>
               </Stack>
-            </Container>
-          </Toolbar>
-        </AppBar>
-        <Component {...pageProps} />
+            </Toolbar>
+          </AppBar>
+          <Component {...pageProps} />
+        </Container>
       </ThemeProvider>
     </SWRConfig>
   )

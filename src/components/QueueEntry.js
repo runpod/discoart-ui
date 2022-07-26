@@ -4,7 +4,7 @@ import { format } from "date-fns"
 import LogViewer from "./LogViewer"
 import SettingsViewer from "./SettingsViewer"
 
-export default function QueueEntry({ job, handleQueueRemove, handleImport }) {
+export default function QueueEntry({ job, handleQueueRemove, handleImport, smallScreen }) {
   const { job_id, created_at, started_at, completed_at, error } = job
 
   const [logViewerOpen, setLogViewerOpen] = useState(false)
@@ -17,11 +17,13 @@ export default function QueueEntry({ job, handleQueueRemove, handleImport }) {
           {created_at ? `${format(new Date(created_at), "MM/dd/yyyy HH:MM:ss")}` : "-"}
         </Typography>
       </TableCell>
-      <TableCell align="left">
-        <Typography>
-          {started_at ? `${format(new Date(started_at), "MM/dd/yyyy HH:MM:ss")}` : "-"}
-        </Typography>
-      </TableCell>
+      {!smallScreen && (
+        <TableCell align="left">
+          <Typography>
+            {started_at ? `${format(new Date(started_at), "MM/dd/yyyy HH:MM:ss")}` : "-"}
+          </Typography>
+        </TableCell>
+      )}
       <TableCell align="right">
         <Typography>
           {error ? "ERROR" : completed_at ? "FINISHED" : started_at ? "PROCESSING" : "QUEUED"}
