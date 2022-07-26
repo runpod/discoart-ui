@@ -61,7 +61,8 @@ export default function JobGallery({ files }) {
   return (
     <Container maxWidth="xl" sx={{ p: 10 }}>
       <Button onClick={() => setOpen(true)}>SETTINGS</Button>
-      <Button href={`/api/download/${jobId}`}>DOWNLOAD</Button>
+      <Button href={`/api/download/${jobId}?includeProgress=true`}>DOWNLOAD ALL</Button>
+      <Button href={`/api/download/${jobId}`}>DOWNLOAD IMAGES</Button>
       <Masonry columns={{ sx: 1, md: 2, lg: 4 }} spacing={2}>
         {files?.map(({ url, dimensions }) => (
           <a key={url} href={url} target="_blank" rel="noreferrer noopener">

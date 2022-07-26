@@ -8,7 +8,14 @@ export const config = {
 }
 
 const handler = async (req, res) => {
-  const { jobId } = req.query
+  const { jobId, includeProgress } = req.query
+
+  const filterFunction = includeProgress
+    ? (fileName) =>
+        fileName.includes("done") ||
+        fileName.includes("progress") ||
+        fileName.includes("settings.txt")
+    : (fileName) => fileName.includes("done") || fileName.includes("settings.txt")
 
   try {
     const fileLocation = `/workspace/out/${jobId}/`
@@ -18,14 +25,7 @@ const handler = async (req, res) => {
       "Content-disposition": `attachment; filename=${jobId}.zip`,
     })
 
-    const files = fs
-      .readdirSync(fileLocation)
-      ?.filter(
-        (fileName) =>
-          fileName.includes("done") ||
-          fileName.includes("progress") ||
-          fileName.includes("settings.txt")
-      )
+    const files = fs.readdirSync(fileLocation)?.filter(filterFunction)
 
     var zip = Archiver("zip")
 
