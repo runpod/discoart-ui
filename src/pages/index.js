@@ -207,7 +207,6 @@ export default function Home() {
 
   return (
     <Grid container spacing={4} padding={smallScreen ? 1 : 2}>
-      {!smallScreen && <Grid item xs={12} sx={{ height: 75 }}></Grid>}
       <Grid item xs={12}>
         <Accordion defaultExpanded>
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
@@ -554,71 +553,80 @@ export default function Home() {
       </Grid>
       <Grid item xs={12}>
         {progressData?.progress && (
-          <Grid container justifyContent="center" mt={3} mb={10}>
-            <Carousel
-              width={previewWidth}
-              infiniteLoop
-              showThumbs={!smallScreen}
-              renderThumbs={() => {
-                return progressData?.progress
+          <Card
+            sx={{
+              p: {
+                sm: 1,
+                md: 3,
+                lg: 6,
+              },
+            }}
+          >
+            <Grid container justifyContent="center">
+              <Carousel
+                width={previewWidth}
+                infiniteLoop
+                showThumbs={!smallScreen}
+                renderThumbs={() => {
+                  return progressData?.progress
+                    ?.filter(({ latestImage }) => latestImage)
+                    ?.map(({ latestImage, dimensions }) => (
+                      <Image
+                        key={latestImage}
+                        {...getThumbnailDimensions(dimensions)}
+                        src={latestImage}
+                      ></Image>
+                    ))
+                }}
+              >
+                {progressData?.progress
                   ?.filter(({ latestImage }) => latestImage)
-                  ?.map(({ latestImage, dimensions }) => (
-                    <Image
-                      key={latestImage}
-                      {...getThumbnailDimensions(dimensions)}
-                      src={latestImage}
-                    ></Image>
-                  ))
-              }}
-            >
-              {progressData?.progress
-                ?.filter(({ latestImage }) => latestImage)
-                ?.map(({ latestImage, dimensions, frame, config, batchNumber }) => (
-                  <Stack alignItems="center" spacing={1} key={latestImage}>
-                    {latestImage ? (
-                      <>
-                        <LinearProgress
-                          sx={{
-                            borderRadius: 5,
-                            width: previewWidth * 0.8,
-                            height: 20,
-                          }}
-                          variant="determinate"
-                          value={(frame / config?.steps) * 100}
-                        />
-                        <LinearProgress
-                          sx={{
-                            borderRadius: 5,
-                            width: previewWidth * 0.8,
-                            height: 20,
-                          }}
-                          variant="determinate"
-                          value={(batchNumber / config?.n_batches) * 100}
-                        />
-                        <Box>
-                          <Image
-                            alt=""
-                            {...getThumbnailDimensions({
-                              ...dimensions,
-                              maxWidth: previewWidth,
-                            })}
-                            src={latestImage}
+                  ?.map(({ latestImage, dimensions, frame, config, batchNumber }) => (
+                    <Stack alignItems="center" spacing={1} key={latestImage}>
+                      {latestImage ? (
+                        <>
+                          <LinearProgress
+                            sx={{
+                              borderRadius: 5,
+                              width: previewWidth * 0.8,
+                              height: 20,
+                            }}
+                            variant="determinate"
+                            value={(frame / config?.steps) * 100}
                           />
-                        </Box>
-                      </>
-                    ) : (
-                      <Stack alignItems="center" spacing={2}>
-                        <Typography>Initializing Job</Typography>
-                        <CircularProgress></CircularProgress>
-                      </Stack>
-                    )}
-                  </Stack>
-                ))}
-            </Carousel>
-          </Grid>
+                          <LinearProgress
+                            sx={{
+                              borderRadius: 5,
+                              width: previewWidth * 0.8,
+                              height: 20,
+                            }}
+                            variant="determinate"
+                            value={(batchNumber / config?.n_batches) * 100}
+                          />
+                          <Box>
+                            <Image
+                              alt=""
+                              {...getThumbnailDimensions({
+                                ...dimensions,
+                                maxWidth: previewWidth,
+                              })}
+                              src={latestImage}
+                            />
+                          </Box>
+                        </>
+                      ) : (
+                        <Stack alignItems="center" spacing={2}>
+                          <Typography>Initializing Job</Typography>
+                          <CircularProgress></CircularProgress>
+                        </Stack>
+                      )}
+                    </Stack>
+                  ))}
+              </Carousel>
+            </Grid>
+          </Card>
         )}
       </Grid>
-      <Box sx={{ width: "100%", height: 100 }}></Box>
       <Dialog fullWidth maxWidth="lg" open={exportOpen} onClose={closeExportModal}>
         <DialogContent>
           {<TextField fullWidth multiline rows={30} readOnly value={exportedJson} />}
