@@ -181,68 +181,74 @@ const startJob = async ({ parameters, jobId, gpuIndex }) => {
 }
 
 const pruneDeletedJobs = async () => {
-  const database = await db
-  const activeJobs = Object.values(activeProcesses)
+  try {
+    const database = await db
 
-  const queuedJobs = await database.all(`SELECT job_id FROM jobs`)
+    const activeJobs = Object.values(activeProcesses)
 
-  activeJobs
-    .filter((job) => job && job.id)
-    .forEach(({ id, pid }, index) => {
-      const matchedJob = queuedJobs.find((job) => job.job_id === id)
+    const queuedJobs = await database.all(`SELECT job_id FROM jobs`)
 
-      const aboveConcurrency = index + 1 > maxConcurrency
+    activeJobs
+      .filter((job) => job && job.id)
+      .forEach(({ id, pid }, index) => {
+        const matchedJob = queuedJobs.find((job) => job.job_id === id)
 
-      if (!matchedJob || aboveConcurrency) {
-        process.kill(-pid)
-      }
-    })
+        const aboveConcurrency = index + 1 > maxConcurrency
+
+        if (!matchedJob || aboveConcurrency) {
+          process.kill(-pid)
+        }
+      })
+  } catch (e) {
+    console.log("error pruning jobs", e)
+  }
 }
 
 const startDaemon = async () => {
   console.log("Daemon init")
   await setup()
   setInterval(async () => {
-    const database = await db
+    try {
+      console.log("poll loop")
+      const database = await db
 
-    const activeJobCount = activeProcesses.length
+      const activeJobCount = activeProcesses.filter((job) => job).length
 
-    const row = await database.get(`
-      SELECT max_concurrency FROM concurrency
-    `)
+      pruneDeletedJobs()
 
-    pruneDeletedJobs()
-
-    if (activeJobCount < maxConcurrency) {
-      const viableJobs = await database.all(
-        `
+      if (activeJobCount < maxConcurrency) {
+        const viableJobs = await database.all(
+          `
           SELECT job_id, job_details FROM jobs
             WHERE completed_at is null
             ORDER BY created_at ASC
         `
-      )
+        )
 
-      console.log(viableJobs)
+        console.log(viableJobs)
 
-      const jobsNotInFlight = viableJobs.filter(
-        ({ job_id }) => !activeProcesses.map((process) => process && process.id).includes(job_id)
-      )
+        const jobsNotInFlight = viableJobs.filter(
+          ({ job_id }) => !activeProcesses.map((process) => process && process.id).includes(job_id)
+        )
 
-      const nextJob = head(jobsNotInFlight)
+        const nextJob = head(jobsNotInFlight)
 
-      if (nextJob) {
-        const gpuIndex = activeJobCount
+        if (nextJob) {
+          const gpuIndex = activeJobCount
 
-        const jobId = nextJob.job_id
+          const jobId = nextJob.job_id
 
-        const newJob = await startJob({
-          jobId: jobId,
-          gpuIndex,
-          parameters: nextJob.job_details,
-        })
+          const newJob = await startJob({
+            jobId: jobId,
+            gpuIndex,
+            parameters: nextJob.job_details,
+          })
 
-        activeProcesses[gpuIndex] = newJob
+          activeProcesses[gpuIndex] = newJob
+        }
       }
+    } catch (err) {
+      console.log("ERROR", err)
     }
   }, 10000)
 }
