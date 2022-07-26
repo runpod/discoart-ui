@@ -95,10 +95,6 @@ const startJob = async ({ parameters, jobId, gpuIndex }) => {
     jobId
   )
 
-  if (!fs.existsSync(`/workspace/logs/${jobId}/`)) {
-    fs.mkdirSync(`/workspace/logs/${jobId}/`)
-  }
-
   let debugStream = fs.createWriteStream(`/workspace/logs/${jobId}.txt`, { flags: "a" })
 
   const jobInfo = {
@@ -140,6 +136,7 @@ const startJob = async ({ parameters, jobId, gpuIndex }) => {
     })
       .then(() => {
         activeProcesses[gpuIndex] = null
+        console.log("job completed", jobId)
         database
           .run(
             `
@@ -190,6 +187,7 @@ const pruneDeletedJobs = async (activeJobs) => {
       const aboveConcurrency = index + 1 > maxConcurrency
 
       if (!matchedJob || aboveConcurrency) {
+        console.log("killing job", id)
         process.kill(-pid)
       }
     })
@@ -230,6 +228,8 @@ const startDaemon = async () => {
           const gpuIndex = activeJobCount
 
           const jobId = nextJob.job_id
+
+          console.log("starting new job", parameters)
 
           const newJob = await startJob({
             jobId: jobId,
