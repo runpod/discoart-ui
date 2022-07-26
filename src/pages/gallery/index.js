@@ -32,7 +32,9 @@ export async function getServerSideProps() {
           }
         })
       )
-    ).filter((gallery) => gallery)
+    )
+      .filter((gallery) => gallery)
+      .sort((a, b) => a.jobId - b.jobId)
 
     return {
       props: {
