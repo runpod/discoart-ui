@@ -10,11 +10,11 @@ const db = open({
   driver: sqlite3.Database,
 })
 
-export const getImageDimensions = (height, width) => {
+export const getImageDimensions = (height, width, maxHeight = 400) => {
   try {
     const aspectRatio = width / height
 
-    const adjustedHeight = Math.min(400, height)
+    const adjustedHeight = Math.min(maxHeight, height)
     const adjustedWidth = adjustedHeight * aspectRatio
 
     return {
@@ -67,7 +67,7 @@ const getJobInfo = async (jobId, jobConfig) => {
       batchNumber,
       frame,
       config: parsedConfig,
-      dimensions: getImageDimensions(height, width),
+      dimensions: { height, width },
     }
   } catch (e) {
     console.log(e)
@@ -79,19 +79,24 @@ const handler = async (req, res) => {
   const database = await db
 
   try {
-    const runningJob = await database.get(
-      `SELECT job_id, job_details from jobs WHERE started_at is not null AND completed_at is null ORDER BY created_at ASC`
+    const runningJobs = await database.all(
+      `SELECT job_id, job_details from jobs
+        WHERE started_at is not null 
+        AND completed_at is null 
+        ORDER BY created_at ASC`
     )
 
-    if (!runningJob) {
+    if (!runningJobs.length) {
       res.status(200).json({
         success: true,
-        progress: null,
+        progress: [],
       })
       return
     }
 
-    const progress = await getJobInfo(runningJob.job_id, runningJob.job_details)
+    const progress = await Promise.all(
+      runningJobs.map((job) => getJobInfo(job.job_id, job.job_details))
+    )
 
     res.status(200).json({
       success: true,

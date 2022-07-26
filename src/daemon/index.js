@@ -2,11 +2,12 @@ const { spawn } = require("child_process")
 import sqlite3 from "sqlite3"
 import { open } from "sqlite"
 import fs from "fs"
+import { head } from "ramda"
 
 const databasePath = "/workspace/database"
 
-const maxConcurrency = 1
-export let activeProcesses = {}
+let maxConcurrency = 1
+export let activeProcesses = []
 
 const db = open({
   filename: databasePath,
@@ -24,8 +25,19 @@ const setup = async () => {
       started_at INTEGER,
       completed_at INTEGER,
       job_details TEXT
-      )
+    )
   `)
+
+  await database.exec(`
+      DROP TABLE concurrency
+  `)
+
+  await database.exec(`
+    CREATE TABLE IF NOT EXISTS concurrency (
+      id TEXT PRIMARY KEY,
+      max_concurrency INTEGER
+    )
+`)
 
   if (!fs.existsSync(`/workspace/out/`)) {
     fs.mkdirSync(`/workspace/out/`)
@@ -39,10 +51,12 @@ const setup = async () => {
   console.log("Daemon setup complete - start polling")
 }
 
-const startJob = async ({ parameters, jobId }) => {
+const startJob = async ({ parameters, jobId, gpuIndex }) => {
   const database = await db
 
-  const command = `echo ${JSON.stringify(parameters)} | python -m discoart create `
+  const command = `echo ${JSON.stringify(
+    parameters
+  )} | CUDA_VISIBLE_DEVICES=${gpuIndex} python -m discoart create`
 
   const job = spawn("bash", ["-c", command], { detached: true })
 
@@ -64,6 +78,7 @@ const startJob = async ({ parameters, jobId }) => {
 
   const jobInfo = {
     id: jobId,
+    gpuIndex,
     pid: job.pid,
     process: job,
     promise: new Promise((resolve, reject) => {
@@ -90,8 +105,8 @@ const startJob = async ({ parameters, jobId }) => {
         reject(err)
       })
     })
-      .then((code) => {
-        delete activeProcesses[jobId]
+      .then(() => {
+        activeProcesses[gpuIndex] = null
         database
           .run(
             `
@@ -107,7 +122,7 @@ const startJob = async ({ parameters, jobId }) => {
           })
       })
       .catch((err) => {
-        delete activeProcesses[jobId]
+        activeProcesses[gpuIndex] = null
         console.log("FATAL ERROR", err)
         database
           .run(
@@ -134,13 +149,17 @@ const pruneDeletedJobs = async () => {
 
   const queuedJobs = await database.all(`SELECT job_id FROM jobs`)
 
-  activeJobs.forEach(({ id, pid }) => {
-    const matchedJob = queuedJobs.find((job) => job.job_id === id)
+  activeJobs
+    .filter((job) => job)
+    .forEach(({ id, pid }, index) => {
+      const matchedJob = queuedJobs.find((job) => job.job_id === id)
 
-    if (!matchedJob) {
-      process.kill(-pid)
-    }
-  })
+      const aboveConcurrency = index + 1 > maxConcurrency
+
+      if (!matchedJob || aboveConcurrency) {
+        process.kill(-pid)
+      }
+    })
 }
 
 const startDaemon = async () => {
@@ -149,25 +168,56 @@ const startDaemon = async () => {
   setInterval(async () => {
     const database = await db
 
-    const activeJobCount = Object.values(activeProcesses).length
+    const activeJobCount = activeProcesses.length
+
+    const row = await database.get(`
+      SELECT max_concurrency FROM concurrency
+    `)
+
+    maxConcurrency = row && row.max_concurrency
+
+    if (!maxConcurrency) {
+      maxConcurrency = 1
+      database.run(
+        `
+        INSERT INTO concurrency (id, max_concurrency)
+        VALUES (:id, :max_concurrency)`,
+        {
+          ":id": "value",
+          ":max_concurrency": 1,
+        }
+      )
+    }
 
     pruneDeletedJobs()
 
     if (activeJobCount < maxConcurrency) {
-      const nextJob = await database.get(
+      const viableJobs = await database.all(
         `
-                    SELECT job_id, job_details FROM jobs 
+                    SELECT job_id, job_details FROM jobs
                       WHERE completed_at is null
                       ORDER BY created_at ASC
                   `
       )
 
+      const jobsNotInFlight = viableJobs.filter(
+        ({ job_id }) => !activeProcesses.map(({ id }) => id).includes(job_id)
+      )
+
+      const nextJob = head(jobsNotInFlight)
+
       if (nextJob) {
+        const gpuIndex = activeJobCount
+
         const jobId = nextJob.job_id
-        activeProcesses[jobId] = await startJob({
+
+        const newJob = await startJob({
           jobId: jobId,
+          gpuIndex,
           parameters: nextJob.job_details,
         })
+
+        activeProcesses[gpuIndex] = newJob
       }
     }
   }, 10000)

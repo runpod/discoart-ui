@@ -30,6 +30,7 @@
     "react-dropzone": "^14.2.2",
     "react-hook-form": "^7.33.1",
     "react-json-view": "^1.21.3",
+    "react-responsive-carousel": "^3.2.23",
     "read-last-lines": "^1.8.0",
     "sqlite": "^4.1.2",
     "sqlite3": "^5.0.10",

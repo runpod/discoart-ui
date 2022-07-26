@@ -27,11 +27,15 @@ import {
   CircularProgress,
   Card,
   Chip,
+  MenuItem,
+  Select,
 } from "@mui/material"
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore"
 import AddIcon from "@mui/icons-material/Add"
 import CloseIcon from "@mui/icons-material/Close"
 import { nanoid } from "nanoid"
+import "react-responsive-carousel/lib/styles/carousel.min.css" // requires a loader
+import { Carousel } from "react-responsive-carousel"
 // sections
 
 import { useFieldArray, useForm } from "react-hook-form"
@@ -54,6 +58,7 @@ const validationSchema = yup.object({})
 export default function Home() {
   const [exportedJson, setExportedJson] = useState()
   const [jsonToImport, setJsonToImport] = useState()
+  const [concurrency, setConcurrency] = useState(1)
   const [refreshModelAutocomplete, setRefreshModelAutocomplete] = useState(false)
   const [file, setFile] = useState()
   const [initImagePreview, setInitImagePreview] = useState()
@@ -63,10 +68,21 @@ export default function Home() {
   const { data: progressData } = useSWR("/api/progress", null, {
     refreshInterval: 10000,
   })
+
   const [exportOpen, openExportModal, closeExportModal] = useOpenState()
   const [importOpen, openImportModal, closeImportModal] = useOpenState()
   const [showAllJobs, setShowAllJobs] = useState(false)
   const [jsonValidationError, setJsonValidationError] = useState("")
+
+  const handleConcurrencyChange = (e) => {
+    setConcurrency(e.target.value)
+    fetch("/api/concurrency/set", {
+      method: "POST",
+      body: JSON.stringify({
+        maxConcurrency: e.target.value,
+      }),
+    })
+  }
 
   const onDrop = useCallback(async (acceptedFiles) => {
     const [file] = acceptedFiles
@@ -414,50 +430,68 @@ export default function Home() {
           </Button>
         </Stack>
       </Stack>
+      <Select
+        value={concurrency}
+        label="Number of renders to Process at one time"
+        onChange={handleConcurrencyChange}
+      >
+        <MenuItem value={1}>1 Renders</MenuItem>
+        <MenuItem value={2}>2 Renders</MenuItem>
+        <MenuItem value={3}>3 Renders</MenuItem>
+        <MenuItem value={4}>4 Renders</MenuItem>
+        <MenuItem value={5}>5 Renders</MenuItem>
+        <MenuItem value={6}>6 Renders</MenuItem>
+        <MenuItem value={7}>7 Renders</MenuItem>
+        <MenuItem value={8}>8 Renders</MenuItem>
+      </Select>
       {progressData?.progress && (
         <Grid container justifyContent="center" mt={3} mb={10}>
-          <Stack alignItems="center" spacing={1} width={300}>
-            {progressData?.progress?.latestImage ? (
-              <>
-                <Image
-                  alt=""
-                  {...progressData?.progress?.dimensions}
-                  src={progressData?.progress?.latestImage}
-                />
-                <Box width="100%">
-                  <LinearProgress
-                    height={10}
-                    width="100%"
-                    sx={{
-                      borderRadius: 2,
-                    }}
-                    variant="determinate"
-                    value={
-                      (progressData?.progress?.frame / progressData?.progress?.config?.steps) * 100
-                    }
-                  />
-                  <LinearProgress
-                    height={10}
-                    width="100%"
-                    sx={{
-                      borderRadius: 2,
-                    }}
-                    variant="determinate"
-                    value={
-                      (progressData?.progress?.batchNumber /
-                        progressData?.progress?.config?.n_batches) *
-                      100
-                    }
-                  />
-                </Box>
-              </>
-            ) : (
-              <Stack alignItems="center" spacing={2}>
-                <Typography>Initializing Job</Typography>
-                <CircularProgress></CircularProgress>
-              </Stack>
+          <Carousel
+            infiniteLoop
+            renderThumbs={() => {
+              return progressData?.progress?.map(({ latestImage }) => (
+                <img key={latestImage} src={latestImage}></img>
+              ))
+            }}
+          >
+            {progressData?.progress?.map(
+              ({ latestImage, dimensions, frame, config, batchNumber }) => (
+                <Stack alignItems="center" spacing={1} key={latestImage}>
+                  {latestImage ? (
+                    <>
+                      <LinearProgress
+                        sx={{
+                          borderRadius: 5,
+                          width: "80%",
+                          height: 20,
+                        }}
+                        variant="determinate"
+                        value={(frame / config?.steps) * 100}
+                      />
+                      <LinearProgress
+                        width="80%"
+                        sx={{
+                          borderRadius: 5,
+                          width: "80%",
+                          height: 20,
+                        }}
+                        variant="determinate"
+                        value={(batchNumber / config?.n_batches) * 100}
+                      />
+                      <Box>
+                        <Image alt="" {...dimensions} src={latestImage} />
+                      </Box>
+                    </>
+                  ) : (
+                    <Stack alignItems="center" spacing={2}>
+                      <Typography>Initializing Job</Typography>
+                      <CircularProgress></CircularProgress>
+                    </Stack>
+                  )}
+                </Stack>
+              )
             )}
-          </Stack>
+          </Carousel>
         </Grid>
       )}
       {jobData?.jobs?.length > 0 && (
