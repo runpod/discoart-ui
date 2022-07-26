@@ -4,25 +4,11 @@ import { format } from "date-fns"
 import LogViewer from "./LogViewer"
 import SettingsViewer from "./SettingsViewer"
 
-export default function QueueEntry({ job, refetchJobQueue, handleImport }) {
+export default function QueueEntry({ job, handleQueueRemove, handleImport }) {
   const { job_id, created_at, started_at, completed_at } = job
 
   const [logViewerOpen, setLogViewerOpen] = useState(false)
   const [settingsViewerOpen, setSettingsViewerOpen] = useState(false)
-
-  const handleQueueRemove = (jobId) => async () => {
-    const payload = {
-      jobId,
-    }
-
-    await fetch("/api/remove", {
-      headers: {
-        "Content-Type": "application/json",
-      },
-      method: "POST",
-      body: JSON.stringify(payload),
-    }).then(refetchJobQueue)
-  }
 
   return (
     <TableRow key={job_id} sx={{ "&:last-child td, &:last-child th": { border: 0 } }}>

@@ -205,13 +205,13 @@ const startDaemon = async () => {
   await setup()
   setInterval(async () => {
     try {
-      console.log("poll loop")
+      // console.log("poll loop")
       const database = await db
 
       const activeJobs = activeProcesses.filter((job) => job)
       const activeJobCount = activeJobs.length
 
-      pruneDeletedJobs(activeJobs)
+      await pruneDeletedJobs(activeJobs)
 
       if (activeJobCount < maxConcurrency) {
         const viableJobs = await database.all(
@@ -245,7 +245,7 @@ const startDaemon = async () => {
     } catch (err) {
       console.log("ERROR", err)
     }
-  }, 10000)
+  }, 2000)
 }
 
 startDaemon()
