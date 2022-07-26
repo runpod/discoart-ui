@@ -180,25 +180,21 @@ const startJob = async ({ parameters, jobId, gpuIndex }) => {
   return jobInfo
 }
 
-const pruneDeletedJobs = async () => {
+const pruneDeletedJobs = async (activeJobs) => {
   try {
     const database = await db
 
-    const activeJobs = Object.values(activeProcesses)
-
     const queuedJobs = await database.all(`SELECT job_id FROM jobs`)
 
-    activeJobs
-      .filter((job) => job && job.id)
-      .forEach(({ id, pid }, index) => {
-        const matchedJob = queuedJobs.find((job) => job.job_id === id)
+    activeJobs.forEach(({ id, pid }, index) => {
+      const matchedJob = queuedJobs.find((job) => job.job_id === id)
 
-        const aboveConcurrency = index + 1 > maxConcurrency
+      const aboveConcurrency = index + 1 > maxConcurrency
 
-        if (!matchedJob || aboveConcurrency) {
-          process.kill(-pid)
-        }
-      })
+      if (!matchedJob || aboveConcurrency) {
+        process.kill(-pid)
+      }
+    })
   } catch (e) {
     console.log("error pruning jobs", e)
   }
@@ -212,9 +208,10 @@ const startDaemon = async () => {
       console.log("poll loop")
       const database = await db
 
-      const activeJobCount = activeProcesses.filter((job) => job).length
+      const activeJobs = activeProcesses.filter((job) => job)
+      const activeJobCount = activeJobs.length
 
-      pruneDeletedJobs()
+      pruneDeletedJobs(activeJobs)
 
       if (activeJobCount < maxConcurrency) {
         const viableJobs = await database.all(
@@ -224,8 +221,6 @@ const startDaemon = async () => {
             ORDER BY created_at ASC
         `
         )
-
-        console.log(viableJobs)
 
         const jobsNotInFlight = viableJobs.filter(
           ({ job_id }) => !activeProcesses.map((process) => process && process.id).includes(job_id)
