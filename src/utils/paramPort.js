@@ -20,7 +20,12 @@ const parseTextPrompts = (parsedJson) => {
       })
   } catch (e) {
     console.log(e)
-    return []
+    return [
+      {
+        prompt: "Unable to import text prompt",
+        weight: 1,
+      },
+    ]
   }
 }
 
