@@ -1,4 +1,4 @@
-import { inputConfig } from "@components/DiscoInput/discoParameterConfig"
+import { getRandomSeed, inputConfig } from "@components/DiscoInput/discoParameterConfig"
 import { compose, identity, omit, pick } from "ramda"
 import { parse } from "yaml"
 
@@ -51,6 +51,7 @@ export const stateToJson = (state, shouldFilter) => {
         ...state,
         text_prompts: stringifyTextPrompts(state.text_prompts),
         width_height: stringifyDimensions(state.height, state.width),
+        seed: state?.seed || getRandomSeed(),
         // cuda_device: stringifyCudaDevice(state?.cuda_device),
       }
     },

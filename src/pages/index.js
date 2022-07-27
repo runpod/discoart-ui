@@ -219,7 +219,6 @@ export default function Home() {
 
   useEffect(() => {
     const newWidth = window.innerWidth > 800 ? 800 : window.innerWidth
-    console.log(newWidth)
     setPreviewWidth(newWidth)
   }, [])
 
