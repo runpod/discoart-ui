@@ -79,6 +79,8 @@ export default function Home() {
   const smallScreen = useMediaQuery(theme.breakpoints.down("sm"))
   const [exportedJson, setExportedJson] = useState()
   const [jsonToImport, setJsonToImport] = useState()
+  const [additionalSettings, setAdditionalSettings] = useState("")
+  const [useAdditionalSettings, setUseAdditionalSettings] = useState(false)
   const [previewWidth, setPreviewWidth] = useState(smallScreen ? 350 : 500)
   const [refreshModelAutocomplete, setRefreshModelAutocomplete] = useState(false)
   const [file, setFile] = useState()
@@ -106,7 +108,16 @@ export default function Home() {
   const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop })
 
   const { getValues, reset, control, watch } = useForm({
-    defaultValues: mapObject({ valueMapper: (value) => value?.default, mapee: inputConfig }),
+    defaultValues: mapObject({
+      valueMapper: (value) => {
+        if (value?.defaultGenerator) {
+          return value?.defaultGenerator()
+        } else {
+          return value?.default
+        }
+      },
+      mapee: inputConfig,
+    }),
 
     resolver: yupResolver(validationSchema),
   })
@@ -137,7 +148,8 @@ export default function Home() {
 
   const handleExport = () => {
     try {
-      const jsonToExport = stateToJson(getValues())
+      const parsedAdvancedSettings = useAdditionalSettings ? JSON.parse(additionalSettings) : {}
+      const jsonToExport = stateToJson({ ...getValues(), ...parsedAdvancedSettings })
 
       setExportedJson(JSON.stringify(jsonToExport, null, 2))
       openExportModal()
@@ -176,9 +188,15 @@ export default function Home() {
 
     const formData = new FormData()
 
+    const parsedAdvancedSettings = useAdditionalSettings ? JSON.parse(additionalSettings) : {}
+
     const payload = {
       jobId: newRenderId,
-      parameters: { ...stateToJson(getValues()), name_docarray: newRenderId },
+      parameters: {
+        ...stateToJson(getValues()),
+        ...parsedAdvancedSettings,
+        name_docarray: newRenderId,
+      },
     }
 
     formData.append("data", JSON.stringify(payload))
@@ -462,6 +480,44 @@ export default function Home() {
               </Grid>
               <Grid item xs={12} sm={4} md={3}>
                 <DynamicInput control={control} name={"skip_augs"} />
+              </Grid>
+            </Grid>
+          </AccordionDetails>
+        </Accordion>
+        <Accordion>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography variant="h5">Custom Settings</Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <Grid container spacing={2}>
+              <Grid item xs={12}>
+                <Typography variant="subtitle1">
+                  Custom additional settings (in JSON format) that will be sent to the server. You
+                  can override existing settings or use ones that aren't exposed in this UI.
+                  Warning: Advanced feature!
+                </Typography>
+              </Grid>
+              <Grid item xs={12}>
+                <FormControlLabel
+                  color="info"
+                  label="Enable Advanced Custom Settings"
+                  control={
+                    <Switch
+                      checked={useAdditionalSettings}
+                      onClick={() => setUseAdditionalSettings(!useAdditionalSettings)}
+                    ></Switch>
+                  }
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  multiline
+                  disabled={!useAdditionalSettings}
+                  label={"Custom Settings"}
+                  value={additionalSettings}
+                  onChange={(e) => setAdditionalSettings(e?.target?.value)}
+                ></TextField>
               </Grid>
             </Grid>
           </AccordionDetails>

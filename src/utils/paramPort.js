@@ -1,5 +1,5 @@
 import { inputConfig } from "@components/DiscoInput/discoParameterConfig"
-import { compose, omit, pick } from "ramda"
+import { compose, identity, omit, pick } from "ramda"
 import { parse } from "yaml"
 
 const parseTextPrompts = (parsedJson) => {
@@ -40,12 +40,12 @@ const parseCudaDevice = (string) => {
 
 const stringifyCudaDevice = (index) => `cuda:${index}`
 
-export const stateToJson = (state) => {
+export const stateToJson = (state, shouldFilter) => {
   // TODO: add more special parsers to make UX better
 
   const jsonObject = compose(
     omit(["width", "height"]),
-    pick([...Object.keys(inputConfig), "width_height"]),
+    shouldFilter ? pick([...Object.keys(inputConfig), "width_height"]) : identity,
     (state) => {
       return {
         ...state,
