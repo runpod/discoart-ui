@@ -8,16 +8,14 @@ export const config = {
 }
 
 const handler = async (req, res) => {
-  const { jobId, includeProgress } = req.query
-
-  const filterFunction = includeProgress
-    ? (fileName) =>
-        fileName.includes("done") ||
-        fileName.includes("progress") ||
-        fileName.includes("settings.txt")
-    : (fileName) => fileName.includes("done") || fileName.includes("settings.txt")
+  const { jobId, progress, steps, done } = req.query
 
   try {
+    let fileNameMatchStrings = ["settings.txt"]
+
+    if (progress) fileNameMatchStrings.push("progress")
+    if (steps) fileNameMatchStrings.push("step")
+    if (done) fileNameMatchStrings.push("done")
     const fileLocation = `/workspace/out/${jobId}/`
     // Tell the browser that this is a zip file.
     res.writeHead(200, {
@@ -25,7 +23,11 @@ const handler = async (req, res) => {
       "Content-disposition": `attachment; filename=${jobId}.zip`,
     })
 
-    const files = fs.readdirSync(fileLocation)?.filter(filterFunction)
+    const files = fs
+      .readdirSync(fileLocation)
+      ?.filter((fileName) =>
+        fileNameMatchStrings.some((matchString) => fileName.includes(matchString))
+      )
 
     var zip = Archiver("zip")
 
