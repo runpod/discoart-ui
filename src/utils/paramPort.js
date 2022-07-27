@@ -3,20 +3,25 @@ import { compose, identity, omit, pick } from "ramda"
 import { parse } from "yaml"
 
 const parseTextPrompts = (parsedJson) => {
-  if (!parsedJson) return []
-  if (typeof parsedJson === "string")
-    return {
-      prompt: parsedJson,
-      weight,
-    }
-  else
-    return parsedJson.map((prompt) => {
-      const [text, weight = 1] = prompt?.split(":")
+  try {
+    if (!parsedJson) return []
+    if (typeof parsedJson === "string")
       return {
-        prompt: text,
+        prompt: parsedJson,
         weight,
       }
-    })
+    else
+      return parsedJson.map((prompt) => {
+        const [text, weight = 1] = prompt?.split(":")
+        return {
+          prompt: text,
+          weight,
+        }
+      })
+  } catch (e) {
+    console.log(e)
+    return []
+  }
 }
 
 const stringifyTextPrompts = (inputState) =>
