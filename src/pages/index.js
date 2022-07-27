@@ -491,9 +491,9 @@ export default function Home() {
             <Grid container spacing={2}>
               <Grid item xs={12}>
                 <Typography variant="subtitle1">
-                  Custom additional settings (in JSON format) that will be sent to the server. You
-                  can override existing settings or use ones that aren't exposed in this UI.
-                  Warning: Advanced feature!
+                  Custom additional settings in JSON format that will be sent to the server. You can
+                  override existing settings or use ones that aren't exposed in this UI. Warning:
+                  Advanced feature!
                 </Typography>
               </Grid>
               <Grid item xs={12}>
