@@ -16,7 +16,6 @@ import { useRouter } from "next/router"
 
 import ArtPodLogo from "./ArtPodLogo.png"
 import { getAuth } from "@utils/getAuth"
-import useSWR from "swr"
 
 export async function getServerSideProps(context) {
   const auth = await getAuth(context)
