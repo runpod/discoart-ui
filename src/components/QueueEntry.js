@@ -1,8 +1,9 @@
-import { Button, TableCell, TableRow, Typography } from "@mui/material"
+import { Box, Button, TableCell, TableRow, Typography } from "@mui/material"
 import { useState } from "react"
 import { format } from "date-fns"
 import LogViewer from "./LogViewer"
 import SettingsViewer from "./SettingsViewer"
+import Image from "next/image"
 
 export default function QueueEntry({ job, handleQueueRemove, handleImport, smallScreen }) {
   const { job_id, created_at, started_at, completed_at, error } = job
@@ -12,11 +13,21 @@ export default function QueueEntry({ job, handleQueueRemove, handleImport, small
 
   return (
     <TableRow key={job_id} sx={{ "&:last-child td, &:last-child th": { border: 0 } }}>
-      <TableCell align="left">
-        <Typography>
-          {created_at ? `${format(new Date(created_at), "MM/dd/yyyy HH:MM:ss")}` : "-"}
-        </Typography>
-      </TableCell>
+      {!error && (
+        <TableCell align="left">
+          <Box
+            sx={{
+              position: "relative",
+              objectFit: "cover",
+              height: 75,
+              width: 100,
+            }}
+          >
+            <Image layout="fill" src={`/api/image/${job_id}/0-done-0.png`}></Image>
+          </Box>
+        </TableCell>
+      )}
+
       {!smallScreen && (
         <TableCell align="left">
           <Typography>

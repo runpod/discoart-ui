@@ -134,7 +134,7 @@ export default function Home({ loggedIn }) {
 
   const [exportOpen, openExportModal, closeExportModal] = useOpenState(false)
   const [importOpen, openImportModal, closeImportModal] = useOpenState(false)
-  const [queueFilterOption, setQueueFilterOption] = useState("queued")
+  const [queueFilterOption, setQueueFilterOption] = useState("processing")
   const [jsonValidationError, setJsonValidationError] = useState("")
 
   const onDrop = useCallback(async (acceptedFiles) => {
