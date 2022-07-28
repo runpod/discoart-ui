@@ -1,5 +1,7 @@
 import readLastLines from "read-last-lines"
 
+import { getAuth } from "@utils/getAuth"
+
 const handler = async (req, res) => {
   const { jobId } = req.query
 

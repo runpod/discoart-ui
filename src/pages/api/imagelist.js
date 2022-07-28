@@ -1,5 +1,6 @@
 const path = require("path")
 const fs = require("fs")
+import { getAuth } from "@utils/getAuth"
 //joining path of directory
 const directoryPath = path.join("../")
 //passsing directoryPath and callback function

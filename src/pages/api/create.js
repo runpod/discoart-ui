@@ -3,6 +3,8 @@ import { open } from "sqlite"
 import formidable from "formidable"
 import fs from "fs"
 
+import { getAuth } from "@utils/getAuth"
+
 const databasePath = "/workspace/database"
 
 const db = open({

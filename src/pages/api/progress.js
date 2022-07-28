@@ -2,6 +2,7 @@ import sqlite3 from "sqlite3"
 import { open } from "sqlite"
 import fs from "fs/promises"
 const path = require("path")
+import { getAuth } from "@utils/getAuth"
 
 const databasePath = "/workspace/database"
 
@@ -28,11 +29,6 @@ export const getImageDimensions = (height, width, maxHeight = 400) => {
 
 const getJobInfo = async (jobId, jobConfig) => {
   try {
-    const auth = getAuth({ req, res })
-    if (!auth?.loggedIn) {
-      res.status(401)
-    }
-
     const directoryName = `/workspace/out/${jobId}`
     const files = await fs.readdir(directoryName)
 
@@ -76,7 +72,7 @@ const getJobInfo = async (jobId, jobConfig) => {
     }
   } catch (e) {
     console.log(e)
-    return null
+    return []
   }
 }
 
@@ -84,6 +80,11 @@ const handler = async (req, res) => {
   const database = await db
 
   try {
+    const auth = getAuth({ req, res })
+    if (!auth?.loggedIn) {
+      res.status(401)
+    }
+
     const runningJobs = await database.all(
       `SELECT job_id, job_details from jobs
         WHERE started_at is not null 

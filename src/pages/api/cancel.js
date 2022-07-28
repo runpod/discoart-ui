@@ -1,6 +1,8 @@
 import sqlite3 from "sqlite3"
 import { open } from "sqlite"
 
+import { getAuth } from "@utils/getAuth"
+
 const databasePath = "/workspace/database"
 
 const db = open({

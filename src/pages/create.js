@@ -29,7 +29,12 @@ import {
   Chip,
   TablePagination,
   useTheme,
+  SwipeableDrawer,
   Divider,
+  MenuItem,
+  InputLabel,
+  Select,
+  FormControl,
 } from "@mui/material"
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore"
 import AddIcon from "@mui/icons-material/Add"
@@ -116,9 +121,15 @@ export default function Home({ loggedIn }) {
     }
   )
 
-  const [exportOpen, openExportModal, closeExportModal] = useOpenState()
-  const [importOpen, openImportModal, closeImportModal] = useOpenState()
-  const [showAllJobs, setShowAllJobs] = useState(false)
+  const [open, setOpen] = useState(false)
+
+  const toggleDrawer = (newOpen) => () => {
+    setOpen(newOpen)
+  }
+
+  const [exportOpen, openExportModal, closeExportModal] = useOpenState(false)
+  const [importOpen, openImportModal, closeImportModal] = useOpenState(false)
+  const [queueFilterOption, setQueueFilterOption] = useState("queued")
   const [jsonValidationError, setJsonValidationError] = useState("")
 
   const onDrop = useCallback(async (acceptedFiles) => {
@@ -244,6 +255,43 @@ export default function Home({ loggedIn }) {
     const newWidth = window.innerWidth > 800 ? 800 : window.innerWidth
     setPreviewWidth(newWidth)
   }, [])
+
+  let processingJobCount = 0
+  let queuedJobCount = 0
+  let errorJobCount = 0
+  let completedJobCount = 0
+
+  const mappedJobs =
+    jobData?.jobs?.map((job) => {
+      if (job.error) {
+        errorJobCount++
+        return {
+          ...job,
+          disposition: "error",
+        }
+      } else if (job.completed_at) {
+        completedJobCount++
+        return {
+          ...job,
+          disposition: "completed",
+        }
+      } else if (job.started_at) {
+        processingJobCount++
+        return {
+          ...job,
+          disposition: "processing",
+        }
+      } else {
+        queuedJobCount++
+        return {
+          ...job,
+          disposition: "queued",
+        }
+      }
+    }) || []
+
+  const filteredJobs =
+    mappedJobs?.filter(({ disposition }) => disposition === queueFilterOption) || []
 
   return (
     <Grid container spacing={4} padding={smallScreen ? 1 : 2}>
@@ -569,71 +617,7 @@ export default function Home({ loggedIn }) {
       <Grid item xs={12}>
         <Divider></Divider>
       </Grid>
-      <Grid item xs={12}>
-        <Stack mb={2} direction="row" justifyContent="space-between" px={2} alignItems="center">
-          <Typography variant="h4">Generation Queue</Typography>
-          <Box
-            sx={{
-              py: 1,
-              px: 3,
-              border: `1px solid ${theme.colors.primary.main}`,
-              borderRadius: 5,
-            }}
-          >
-            <FormControlLabel
-              color="info"
-              label="Show Finished"
-              control={
-                <Switch checked={showAllJobs} onClick={() => setShowAllJobs(!showAllJobs)}></Switch>
-              }
-            />
-          </Box>
-        </Stack>
-        <Table aria-label="simple table">
-          <TableHead>
-            <TableRow>
-              {!smallScreen && <TableCell align="left">Created</TableCell>}
-              <TableCell align="left">Started</TableCell>
-              <TableCell align="right">Status</TableCell>
-              <TableCell align="right"></TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {jobData?.jobs
-              ?.filter(({ completed_at }) => {
-                if (showAllJobs) return true
-                else return !completed_at
-              })
-              .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-              ?.map((job) => (
-                <QueueEntry
-                  smallScreen={smallScreen}
-                  key={job.job_id}
-                  job={job}
-                  handleQueueRemove={handleQueueRemove}
-                  handleImport={handleImport}
-                ></QueueEntry>
-              ))}
-          </TableBody>
-        </Table>
-        <TablePagination
-          component="div"
-          count={
-            jobData?.jobs?.filter(({ completed_at }) => {
-              if (showAllJobs) return true
-              else return !completed_at
-            })?.length || 0
-          }
-          page={page}
-          onPageChange={handleChangePage}
-          rowsPerPageOptions={[5, 10, 20]}
-          rowsPerPage={rowsPerPage}
-          onRowsPerPageChange={handleChangeRowsPerPage}
-        />
-      </Grid>
-      <Grid item xs={12}>
-        <Divider></Divider>
-      </Grid>
+
       <Grid item xs={12}>
         {progressData?.progress && (
           <Card
@@ -759,6 +743,121 @@ export default function Home({ loggedIn }) {
           </Stack>
         </DialogActions>
       </Dialog>
+      <Box
+        sx={{
+          height: 100,
+          width: "100%",
+        }}
+      ></Box>
+      <Box
+        sx={{
+          p: {
+            xs: 1,
+            md: 3,
+          },
+          width: "100%",
+          position: "fixed",
+          bottom: 0,
+          left: 0,
+          right: 0,
+        }}
+      >
+        <Stack
+          sx={{
+            width: "100%",
+          }}
+          direction={{ xs: "column", sm: "row" }}
+          spacing={{
+            xs: 1,
+            sm: 2,
+            md: 3,
+          }}
+          justifyContent="center"
+          alignItems="center"
+        >
+          <Stack direction="row" spacing={{ xs: 0, sm: 1, md: 3 }}>
+            <Chip color="primary" label={`Processing: ${processingJobCount}`}></Chip>
+            <Chip color="info" label={`Queued: ${queuedJobCount}`}></Chip>
+            <Chip color="error" label={`Error: ${errorJobCount}`}></Chip>
+            <Chip color="success" label={`Completed: ${completedJobCount}`}></Chip>
+          </Stack>
+
+          <Button variant="contained" onClick={toggleDrawer(true)}>
+            Show Queue Details
+          </Button>
+        </Stack>
+      </Box>
+      <SwipeableDrawer
+        anchor="bottom"
+        open={open}
+        onClose={toggleDrawer(false)}
+        onOpen={toggleDrawer(true)}
+      >
+        <Grid
+          container
+          sx={{
+            p: {
+              xs: 1,
+              md: 3,
+            },
+          }}
+        >
+          <Grid item xs={12}>
+            <Stack mb={2} direction="row" justifyContent="space-between" px={2} alignItems="center">
+              <Typography variant="h4">Generation Queue</Typography>
+              <FormControl>
+                <InputLabel id="demo-simple-select-label">Job Filter</InputLabel>
+                <Select
+                  labelId="demo-simple-select-label"
+                  id="demo-simple-select"
+                  value={queueFilterOption}
+                  label="Job Filter"
+                  onChange={(event) => {
+                    setQueueFilterOption(event.target.value)
+                  }}
+                >
+                  <MenuItem value={"queued"}>{`Queued: ${queuedJobCount}`}</MenuItem>
+                  <MenuItem value={"processing"}>{`Processing: ${processingJobCount}`}</MenuItem>
+                  <MenuItem value={"completed"}>{`Completed: ${completedJobCount}`}</MenuItem>
+                  <MenuItem value={"error"}>{`Error: ${errorJobCount}`}</MenuItem>
+                </Select>
+              </FormControl>
+            </Stack>
+            <Table aria-label="simple table">
+              <TableHead>
+                <TableRow>
+                  {!smallScreen && <TableCell align="left">Created</TableCell>}
+                  <TableCell align="left">Started</TableCell>
+                  <TableCell align="right">Status</TableCell>
+                  <TableCell align="right"></TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {filteredJobs
+                  .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                  ?.map((job) => (
+                    <QueueEntry
+                      smallScreen={smallScreen}
+                      key={job.job_id}
+                      job={job}
+                      handleQueueRemove={handleQueueRemove}
+                      handleImport={handleImport}
+                    ></QueueEntry>
+                  ))}
+              </TableBody>
+            </Table>
+            <TablePagination
+              component="div"
+              count={filteredJobs.length || 0}
+              page={page}
+              onPageChange={handleChangePage}
+              rowsPerPageOptions={[5, 10, 20]}
+              rowsPerPage={rowsPerPage}
+              onRowsPerPageChange={handleChangeRowsPerPage}
+            />
+          </Grid>
+        </Grid>
+      </SwipeableDrawer>
     </Grid>
   )
 }
