@@ -615,6 +615,7 @@ export const DarkTheme = createTheme({
             transition: "all .2s",
           },
           color: colors.alpha.trueWhite[90],
+          borderRadius: 30,
         },
         endIcon: {
           marginRight: -8,
@@ -654,12 +655,15 @@ export const DarkTheme = createTheme({
       },
     },
     MuiButtonBase: {
+      root: {
+        borderRadius: 30,
+      },
       defaultProps: {
         disableRipple: false,
       },
       styleOverrides: {
         root: {
-          borderRadius: 6,
+          borderRadius: 30,
         },
       },
     },
