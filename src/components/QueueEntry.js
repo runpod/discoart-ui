@@ -13,7 +13,7 @@ export default function QueueEntry({ job, handleQueueRemove, handleImport, small
 
   return (
     <TableRow key={job_id} sx={{ "&:last-child td, &:last-child th": { border: 0 } }}>
-      {!error && (
+      {started_at && !error && (
         <TableCell align="left">
           <Box
             sx={{
