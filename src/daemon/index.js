@@ -89,6 +89,8 @@ const startJob = async ({ parameters, jobId, gpuIndex }) => {
   setTimeout(() => (jobStarting = false), 60000)
   const database = await db
 
+  console.log(`starting job on GPU CUDA DEVICE ${gpuIndex}`)
+
   const command = `echo ${JSON.stringify(
     parameters
   )} | CUDA_VISIBLE_DEVICES=${gpuIndex} python -m discoart create`
