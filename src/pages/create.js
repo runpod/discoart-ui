@@ -751,10 +751,7 @@ export default function Home({ loggedIn }) {
       ></Box>
       <Box
         sx={{
-          p: {
-            xs: 1,
-            md: 3,
-          },
+          p: 1,
           width: "100%",
           position: "fixed",
           bottom: 0,
