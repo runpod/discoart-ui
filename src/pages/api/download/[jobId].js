@@ -9,7 +9,7 @@ export const config = {
 }
 
 const handler = async (req, res) => {
-  const { jobId, progress, steps, done } = req.query
+  const { jobId, selectedFileNames, zipName } = req.query
 
   try {
     const auth = await getAuth({ req, res })
@@ -17,31 +17,22 @@ const handler = async (req, res) => {
       res.status(401)
     }
 
-    let fileNameMatchStrings = ["settings.txt"]
+    const fileNames = selectedFileNames.split(",") || []
 
-    if (progress) fileNameMatchStrings.push("progress")
-    if (steps) fileNameMatchStrings.push("step")
-    if (done) fileNameMatchStrings.push("done")
     const fileLocation = `/workspace/out/${jobId}/`
     // Tell the browser that this is a zip file.
     res.writeHead(200, {
       "Content-Type": "application/zip",
-      "Content-disposition": `attachment; filename=${jobId}.zip`,
+      "Content-disposition": `attachment; filename=${zipName || jobId}.zip`,
     })
-
-    const files = fs
-      .readdirSync(fileLocation)
-      ?.filter((fileName) =>
-        fileNameMatchStrings.some((matchString) => fileName.includes(matchString))
-      )
 
     var zip = Archiver("zip")
 
     // Send the file to the page output.
     zip.pipe(res)
 
-    for (let file of files) {
-      zip.file(`${fileLocation}${file}`, { name: file })
+    for (let fileName of fileNames) {
+      zip.file(`${fileLocation}${fileName}`, { name: fileName })
     }
 
     zip.finalize()

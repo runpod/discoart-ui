@@ -1,4 +1,4 @@
-import { Grid, Container, Typography, Stack, Button, Box } from "@mui/material"
+import { Grid, Container, Typography, Stack, Button, Box, Badge } from "@mui/material"
 import Image from "next/image"
 import fs from "fs/promises"
 import Link from "next/link"
@@ -19,7 +19,13 @@ export async function getServerSideProps(context) {
       await Promise.all(
         directories.map(async (dir) => {
           try {
-            const filePath = `/workspace/out/${dir}/0-done-0.png`
+            const dirPath = `/workspace/out/${dir}/`
+            const filePath = `${dirPath}0-done-0.png`
+
+            const files = (await fs.readdir(dirPath)).filter((fileName) =>
+              fileName.includes("done")
+            )
+            const fileCount = files?.length
 
             const { height, width } = await sizeOf(filePath)
 
@@ -29,6 +35,7 @@ export async function getServerSideProps(context) {
               url: `/api/image/${dir}/0-done-0.png`,
               dimensions,
               jobId: dir,
+              fileCount,
             }
           } catch (e) {
             console.log(e)
@@ -47,7 +54,6 @@ export async function getServerSideProps(context) {
       },
     }
   } catch (e) {
-    console.log(e)
     return {
       props: { galleries: [] },
     }
@@ -63,27 +69,29 @@ export default function Gallery({ auth, galleries }) {
           <Typography variant="h4">Render Batches</Typography>
         </Stack>
         <Masonry columns={{ sx: 1, md: 2, lg: 4 }} spacing={2}>
-          {galleries?.map(({ url, dimensions, jobId }) => (
+          {galleries?.map(({ url, dimensions, jobId, fileCount }) => (
             <Link key={url} href={`/gallery/${jobId}`}>
-              <Box
-                sx={{
-                  transition: "transform .5s, box-shadow 1s",
-                  cursor: "pointer",
-                  "&:hover": {
-                    transform: "scale(1.05)",
-                  },
-                }}
-              >
-                <Image
-                  key={jobId}
-                  src={url}
-                  alt=""
-                  {...dimensions}
-                  style={{
-                    borderRadius: 10,
+              <Badge badgeContent={fileCount} color="primary">
+                <Box
+                  sx={{
+                    transition: "transform .5s, box-shadow 1s",
+                    cursor: "pointer",
+                    "&:hover": {
+                      transform: "scale(1.05)",
+                    },
                   }}
-                />
-              </Box>
+                >
+                  <Image
+                    key={jobId}
+                    src={url}
+                    alt=""
+                    {...dimensions}
+                    style={{
+                      borderRadius: 10,
+                    }}
+                  />
+                </Box>
+              </Badge>
             </Link>
           ))}
         </Masonry>
