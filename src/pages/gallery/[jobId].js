@@ -158,6 +158,7 @@ export default function JobGallery({ auth, files }) {
       <Masonry columns={{ sx: 1, md: 2, lg: 4 }} spacing={2}>
         {files?.map(({ url, dimensions, fileName, baseUrl }) => (
           <Box
+            key={url}
             sx={{
               position: "relative",
               transition: "transform .5s, box-shadow 1s",
@@ -207,8 +208,8 @@ export default function JobGallery({ auth, files }) {
                 left: 2,
               }}
             >
-              <a key={url} href={url} target="_blank" rel="noreferrer noopener">
-                <IconButton color="primary" aria-label="upload picture" component="label">
+              <a href={url} target="_blank" rel="noreferrer noopener">
+                <IconButton color="info" component="label">
                   <VisibilityIcon />
                 </IconButton>
               </a>
