@@ -6,6 +6,8 @@ import SettingsViewer from "@components/SettingsViewer"
 import { useRouter } from "next/router"
 import { Masonry } from "@mui/lab"
 import { getImageDimensions } from "../api/progress"
+import { getAuth } from "@utils/getAuth"
+import { useLoginRedirect } from "@hooks/useLoginRedirect"
 const { promisify } = require("util")
 const sizeOf = promisify(require("image-size"))
 
@@ -13,6 +15,8 @@ export async function getServerSideProps(context) {
   const jobId = context?.query?.jobId
 
   try {
+    const auth = await getAuth(context)
+
     const directoryName = `/workspace/out/${jobId}`
 
     const files = (
@@ -40,6 +44,7 @@ export async function getServerSideProps(context) {
 
     return {
       props: {
+        auth,
         files,
       },
     }
@@ -47,13 +52,15 @@ export async function getServerSideProps(context) {
     console.log(e)
     return {
       props: {
+        auth,
         files: [],
       },
     }
   }
 }
 
-export default function JobGallery({ files }) {
+export default function JobGallery({ auth, files }) {
+  useLoginRedirect(auth?.loggedIn)
   const [open, setOpen] = useState(false)
   const router = useRouter()
   const { jobId } = router.query

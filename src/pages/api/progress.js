@@ -28,6 +28,11 @@ export const getImageDimensions = (height, width, maxHeight = 400) => {
 
 const getJobInfo = async (jobId, jobConfig) => {
   try {
+    const auth = getAuth({ req, res })
+    if (!auth?.loggedIn) {
+      res.status(401)
+    }
+
     const directoryName = `/workspace/out/${jobId}`
     const files = await fs.readdir(directoryName)
 

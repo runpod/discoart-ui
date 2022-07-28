@@ -20,13 +20,17 @@ const handler = async (req, res) => {
   try {
     const database = await db
 
+    const auth = getAuth({ req, res })
+    if (!auth?.loggedIn) {
+      res.status(401)
+    }
+
     const form = new formidable.IncomingForm({
       uploadDir: "/workspace/init/",
     })
 
     const { fields, files } = await new Promise((resolve, reject) => {
       form.parse(req, (err, fields, files) => {
-        console.log(files)
         if (err) reject(err)
         resolve({
           fields,

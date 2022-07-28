@@ -30,6 +30,13 @@ const setup = async () => {
     )
   `)
 
+  await database.exec(`
+  CREATE TABLE IF NOT EXISTS users (
+    user_name TEXT PRIMARY KEY,
+    password TEXT
+  )
+`)
+
   await database.exec("ALTER TABLE jobs ADD COLUMN error INTEGER").catch(() => {})
 
   if (!fs.existsSync(`/workspace/out/`)) {

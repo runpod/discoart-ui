@@ -11,9 +11,14 @@ const db = open({
 const handler = async (req, res) => {
   const payload = req?.body
 
-  const database = await db
-
   try {
+    const auth = getAuth({ req, res })
+    if (!auth?.loggedIn) {
+      res.status(401)
+    }
+
+    const database = await db
+
     await database.run(`DELETE from jobs where job_id = ?`, payload?.jobId)
 
     res.status(200).json({

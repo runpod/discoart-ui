@@ -4,6 +4,11 @@ const handler = async (req, res) => {
   const { jobId } = req.query
 
   try {
+    const auth = getAuth({ req, res })
+    if (!auth?.loggedIn) {
+      res.status(401)
+    }
+
     const stream = fs.createReadStream(`/workspace/out/${jobId}/settings.txt`)
 
     stream.pipe(res)

@@ -4,11 +4,15 @@ import fs from "fs/promises"
 import Link from "next/link"
 import { getImageDimensions } from "../api/progress"
 import { Masonry } from "@mui/lab"
+import { getAuth } from "@utils/getAuth"
+import { useLoginRedirect } from "@hooks/useLoginRedirect"
 const { promisify } = require("util")
 const sizeOf = promisify(require("image-size"))
 
-export async function getServerSideProps() {
+export async function getServerSideProps(context) {
   try {
+    const auth = await getAuth(context)
+
     const directories = (await fs.readdir(`/workspace/out`))?.filter((name) => !name.includes("."))
 
     const galleries = (
@@ -39,19 +43,19 @@ export async function getServerSideProps() {
     return {
       props: {
         galleries,
+        auth,
       },
     }
   } catch (e) {
     console.log(e)
     return {
-      props: {
-        directories: [],
-      },
+      props: { galleries: [] },
     }
   }
 }
 
-export default function Gallery({ galleries }) {
+export default function Gallery({ auth, galleries }) {
+  useLoginRedirect(auth?.loggedIn)
   return (
     <Container maxWidth="xl" sx={{ p: 10 }}>
       <Stack>

@@ -8,7 +8,10 @@ import { SWRConfig } from "swr"
 import axios from "axios"
 import { ThemeProvider } from "@mui/material/styles"
 import CssBaseline from "@mui/material/CssBaseline"
+import cookieCutter from "cookie-cutter"
+
 import { DarkTheme } from "../theme"
+import Link from "next/link"
 
 const fetcher = (url) => axios.get(url).then((res) => res.data)
 
@@ -16,6 +19,11 @@ function MyApp({ Component, pageProps }) {
   const router = useRouter()
 
   const route = router.pathname
+
+  const handleLogout = () => {
+    cookieCutter.set("password", "", { expires: new Date(0) })
+    router.replace("/")
+  }
 
   return (
     <SWRConfig
@@ -32,15 +40,38 @@ function MyApp({ Component, pageProps }) {
             m: "auto",
           }}
         >
-          <AppBar position="static">
+          <AppBar
+            position="static"
+            sx={{
+              borderRadius: 2,
+              p: 1,
+            }}
+          >
             <Toolbar>
-              <Stack direction="row" spacing={2}>
-                <Button disabled={route === "/"} href="/" color="inherit">
-                  Create
-                </Button>
-                <Button disabled={route === "/gallery"} href="/gallery" color="inherit">
-                  Gallery
-                </Button>
+              <Stack
+                sx={{
+                  width: "100%",
+                  px: 3,
+                }}
+                direction="row"
+                spacing={2}
+                justifyContent="space-between"
+              >
+                <Stack direction="row" spacing={2}>
+                  <Button disabled={route === "/create"} href="/create" color="inherit">
+                    Create
+                  </Button>
+                  <Button
+                    disabled={route === "/gallery"}
+                    href="/gallery"
+                    target="_blank"
+                    color="inherit"
+                  >
+                    Gallery
+                  </Button>
+                </Stack>
+
+                <Button onClick={handleLogout}>Log Out</Button>
               </Stack>
             </Toolbar>
           </AppBar>

@@ -10,6 +10,11 @@ const db = open({
 
 const handler = async (req, res) => {
   try {
+    const auth = getAuth({ req, res })
+    if (!auth?.loggedIn) {
+      res.status(401)
+    }
+
     const database = await db
 
     const jobs = await database.all(

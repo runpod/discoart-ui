@@ -1,3 +1,4 @@
+import { getAuth } from "@utils/getAuth"
 import fs from "fs"
 const Archiver = require("archiver")
 
@@ -11,6 +12,11 @@ const handler = async (req, res) => {
   const { jobId, progress, steps, done } = req.query
 
   try {
+    const auth = getAuth({ req, res })
+    if (!auth?.loggedIn) {
+      res.status(401)
+    }
+
     let fileNameMatchStrings = ["settings.txt"]
 
     if (progress) fileNameMatchStrings.push("progress")
