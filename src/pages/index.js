@@ -32,12 +32,6 @@ export default function Welcome({ loggedIn, setPassword }) {
   const [repeatPasswordValue, setRepeatPasswordValue] = useState("")
   const router = useRouter()
 
-  const { data: version } = useSWR(
-    "https://raw.githubusercontent.com/Run-Pod/discoart-ui/main/version.txt"
-  )
-
-  console.log(version)
-
   const handleSetPassword = async () => {
     const payload = {
       password: passwordValue,

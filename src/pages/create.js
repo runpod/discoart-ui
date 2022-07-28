@@ -58,6 +58,8 @@ import { useDropzone } from "react-dropzone"
 import { getAuth } from "@utils/getAuth"
 import { useLoginRedirect } from "@hooks/useLoginRedirect"
 
+const CURRENT_VERSION = "0.1.1"
+
 // TODO: add real validation schema here
 const validationSchema = yup.object({})
 
@@ -106,6 +108,13 @@ export default function Home({ loggedIn }) {
   const { data: progressData } = useSWR("/api/progress", null, {
     refreshInterval: 10000,
   })
+  const { data: version } = useSWR(
+    "https://raw.githubusercontent.com/Run-Pod/discoart-ui/main/version.txt",
+    null,
+    {
+      refreshInterval: 360000,
+    }
+  )
 
   const [exportOpen, openExportModal, closeExportModal] = useOpenState()
   const [importOpen, openImportModal, closeImportModal] = useOpenState()
@@ -238,6 +247,11 @@ export default function Home({ loggedIn }) {
 
   return (
     <Grid container spacing={4} padding={smallScreen ? 1 : 2}>
+      <Grid item xs={12}>
+        {CURRENT_VERSION !== version && (
+          <Typography color="white">{`Version ${version} is out! Reset your pod to upgrade!`}</Typography>
+        )}
+      </Grid>
       <Grid item xs={12}>
         <Accordion defaultExpanded>
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>

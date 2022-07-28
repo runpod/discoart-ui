@@ -2,7 +2,7 @@ import * as React from "react"
 import AppBar from "@mui/material/AppBar"
 import Toolbar from "@mui/material/Toolbar"
 import Button from "@mui/material/Button"
-import { Container, Stack } from "@mui/material"
+import { Container, Stack, Typography } from "@mui/material"
 import { useRouter } from "next/router"
 import { SWRConfig } from "swr"
 import axios from "axios"
@@ -16,6 +16,7 @@ const fetcher = (url) => axios.get(url).then((res) => res.data)
 
 function MyApp({ Component, pageProps }) {
   const [cookies, setCookie, removeCookie] = useCookies(["password"])
+
   const router = useRouter()
 
   const route = router.pathname
