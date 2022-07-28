@@ -42,7 +42,7 @@ function MyApp({ Component, pageProps }) {
             <AppBar
               position="static"
               sx={{
-                borderRadius: 2,
+                borderRadius: 1,
                 p: 1,
               }}
             >
