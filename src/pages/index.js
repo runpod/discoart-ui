@@ -89,10 +89,13 @@ export default function Welcome({ loggedIn, setPassword }) {
                 <Typography>Choose a password to continue</Typography>
               </Stack>
               <TextField
+                type="password"
                 value={repeatPasswordValue}
                 onChange={(e) => setRepeatPasswordValue(e?.target?.value)}
               ></TextField>
               <TextField
+                password
+                type="password"
                 label="Repeat password"
                 value={passwordValue}
                 onChange={(e) => setPasswordValue(e?.target?.value)}
@@ -109,6 +112,7 @@ export default function Welcome({ loggedIn, setPassword }) {
             <>
               <Typography>Enter your password to log in</Typography>
               <TextField
+                type="password"
                 value={passwordValue}
                 onChange={(e) => setPasswordValue(e?.target?.value)}
               ></TextField>
