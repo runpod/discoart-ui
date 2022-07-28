@@ -38,24 +38,24 @@ export async function getServerSideProps(context) {
 
     const files = (
       await Promise.all(
-        fs
-          .readdirSync(directoryName)
-          ?.filter((fileName) => !fileName.includes(".gif"))
-          ?.map(async (fileName) => {
-            try {
-              const { height, width } = await sizeOf(`${directoryName}/${fileName}`)
+        fs.readdirSync(directoryName)?.map(async (fileName) => {
+          try {
+            const { height, width } = await sizeOf(`${directoryName}/${fileName}`)
 
-              const dimensions = getImageDimensions(height, width)
+            const dimensions = getImageDimensions(height, width)
 
-              return {
-                url: `/api/image/${jobId}/${fileName}`,
-                fileName,
-                dimensions,
-              }
-            } catch (e) {
-              return null
+            const url = `/api/image/${jobId}/${fileName}`
+
+            return {
+              url,
+              baseUrl: url.replace("progress.gif", "done-0.png"),
+              fileName,
+              dimensions,
             }
-          })
+          } catch (e) {
+            return null
+          }
+        })
       )
     )
       .filter((file) => file)
@@ -139,7 +139,7 @@ export default function JobGallery({ auth, files }) {
         </Stack>
       </Stack>
       <Masonry columns={{ sx: 1, md: 2, lg: 4 }} spacing={2}>
-        {files?.map(({ url, dimensions, fileName }) => (
+        {files?.map(({ url, dimensions, fileName, baseUrl }) => (
           <Box
             sx={{
               position: "relative",
@@ -151,14 +151,25 @@ export default function JobGallery({ auth, files }) {
             }}
             onClick={handleToggleSelect(fileName)}
           >
-            <Image
-              style={{
-                borderRadius: 10,
-              }}
-              alt=""
-              src={url}
-              {...dimensions}
-            />
+            {fileName?.includes("gif") ? (
+              <Image
+                style={{
+                  borderRadius: 10,
+                }}
+                alt=""
+                src={baseUrl}
+                {...dimensions}
+              />
+            ) : (
+              <Image
+                style={{
+                  borderRadius: 10,
+                }}
+                alt=""
+                src={url}
+                {...dimensions}
+              />
+            )}
             <Box
               sx={{
                 position: "absolute",
