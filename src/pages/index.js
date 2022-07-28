@@ -86,8 +86,7 @@ export default function Welcome({ loggedIn, setPassword }) {
           {setPassword ? (
             <>
               <Stack spacing={0.5} alignItems="center">
-                <Typography>Looks like you haven't set a password yet</Typography>
-                <Typography>Please choose a strong password!</Typography>
+                <Typography>Choose a password to continue</Typography>
               </Stack>
               <TextField
                 value={repeatPasswordValue}
