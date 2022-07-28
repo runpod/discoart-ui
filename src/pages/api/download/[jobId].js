@@ -35,6 +35,8 @@ const handler = async (req, res) => {
       zip.file(`${fileLocation}${fileName}`, { name: fileName })
     }
 
+    zip.file(`${fileLocation}settings.txt`, { name: "settings.txt" })
+
     zip.finalize()
   } catch (e) {
     console.log(e)

@@ -839,6 +839,10 @@ export default function Home({ loggedIn }) {
             <Table aria-label="simple table">
               <TableHead>
                 <TableRow>
+                  {queueFilterOption === "processing" ||
+                    (queueFilterOption === "completed" && (
+                      <TableCell align="left">Preview</TableCell>
+                    ))}
                   {!smallScreen && <TableCell align="left">Created</TableCell>}
                   <TableCell align="left">Started</TableCell>
                   <TableCell align="right">Status</TableCell>
@@ -851,6 +855,7 @@ export default function Home({ loggedIn }) {
                   ?.map((job) => (
                     <QueueEntry
                       smallScreen={smallScreen}
+                      filter={queueFilterOption}
                       key={job.job_id}
                       job={job}
                       handleQueueRemove={handleQueueRemove}

@@ -163,9 +163,8 @@ const startJob = async ({ parameters, jobId, gpuIndex }) => {
           .catch((err) => {
             console.log(err)
           })
-        fs.unlink(`/workspace/out/${jobId}/da.protobuf.lz4`)
         try {
-          fs.unlink(`/workspace/out/${jobId}/da.protobuf.lz4`)
+          fs.unlink(`/workspace/out/${jobId}/da.protobuf.lz4`, () => {})
         } catch (e) {}
       })
 

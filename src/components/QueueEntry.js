@@ -5,7 +5,7 @@ import LogViewer from "./LogViewer"
 import SettingsViewer from "./SettingsViewer"
 import Image from "next/image"
 
-export default function QueueEntry({ job, handleQueueRemove, handleImport, smallScreen }) {
+export default function QueueEntry({ filter, job, handleQueueRemove, handleImport, smallScreen }) {
   const { job_id, created_at, started_at, completed_at, error } = job
 
   const [logViewerOpen, setLogViewerOpen] = useState(false)
@@ -13,20 +13,21 @@ export default function QueueEntry({ job, handleQueueRemove, handleImport, small
 
   return (
     <TableRow key={job_id} sx={{ "&:last-child td, &:last-child th": { border: 0 } }}>
-      {started_at && !error && (
-        <TableCell align="left">
-          <Box
-            sx={{
-              position: "relative",
-              objectFit: "cover",
-              height: 75,
-              width: 100,
-            }}
-          >
-            <Image layout="fill" src={`/api/image/${job_id}/0-done-0.png`}></Image>
-          </Box>
-        </TableCell>
-      )}
+      {filter === "processing" ||
+        (filter === "completed" && (
+          <TableCell align="left">
+            <Box
+              sx={{
+                position: "relative",
+                objectFit: "cover",
+                height: 75,
+                width: 100,
+              }}
+            >
+              <Image layout="fill" src={`/api/image/${job_id}/0-done-0.png`}></Image>
+            </Box>
+          </TableCell>
+        ))}
 
       {!smallScreen && (
         <TableCell align="left">
