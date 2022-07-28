@@ -24,7 +24,7 @@ const handler = async (req, res) => {
     const existingPassword = existingUser?.password
 
     if (!existingPassword || submittedPassword === existingPassword) {
-      const result = await database.run(
+      await database.run(
         `
         INSERT INTO users (user_name, password) VALUES('owner', ?)
             ON CONFLICT(user_name) DO UPDATE SET password = ?`,

@@ -20,7 +20,7 @@ export const getAuth = async ({ req, res }) => {
               WHERE user_name = 'owner'
     `)
 
-    if (!existingUser?.password && !password) {
+    if (!existingUser?.password) {
       return {
         setPassword: true,
         loggedIn: false,
