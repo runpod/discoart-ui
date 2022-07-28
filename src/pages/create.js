@@ -2,7 +2,6 @@ import { useCallback, useEffect, useLayoutEffect, useState } from "react"
 // @mui
 import {
   Grid,
-  Container,
   Typography,
   Stack,
   Accordion,
@@ -35,6 +34,7 @@ import {
   InputLabel,
   Select,
   FormControl,
+  alpha,
 } from "@mui/material"
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore"
 import AddIcon from "@mui/icons-material/Add"
@@ -756,12 +756,15 @@ export default function Home({ loggedIn }) {
       ></Box>
       <Box
         sx={{
-          p: 1,
-          width: "100%",
+          p: {
+            xs: 1,
+            sm: 3,
+          },
           position: "fixed",
           bottom: 0,
           left: 0,
           right: 0,
+          background: alpha(theme.palette.background.paper, 0.75),
         }}
       >
         <Stack
@@ -778,13 +781,21 @@ export default function Home({ loggedIn }) {
           alignItems="center"
         >
           <Stack direction="row" spacing={{ xs: 0, sm: 1, md: 3 }}>
-            <Chip color="primary" label={`Processing: ${processingJobCount}`}></Chip>
-            <Chip color="info" label={`Queued: ${queuedJobCount}`}></Chip>
-            <Chip color="error" label={`Error: ${errorJobCount}`}></Chip>
-            <Chip color="success" label={`Completed: ${completedJobCount}`}></Chip>
+            <Chip variant="outlined" color="info" label={`Queued: ${queuedJobCount}`}></Chip>
+            <Chip
+              variant="outlined"
+              color="info"
+              label={`Processing: ${processingJobCount}`}
+            ></Chip>
+            <Chip variant="outlined" color="warning" label={`Error: ${errorJobCount}`}></Chip>
+            <Chip
+              variant="outlined"
+              color="success"
+              label={`Completed: ${completedJobCount}`}
+            ></Chip>
           </Stack>
 
-          <Button variant="contained" onClick={toggleDrawer(true)}>
+          <Button size="small" variant="contained" onClick={toggleDrawer(true)}>
             Show Queue Details
           </Button>
         </Stack>
