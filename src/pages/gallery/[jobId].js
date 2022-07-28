@@ -40,7 +40,9 @@ export async function getServerSideProps(context) {
             }
           })
       )
-    ).filter((file) => file)
+    )
+      .filter((file) => file)
+      .sort((a, b) => a.url - b.url)
 
     return {
       props: {
