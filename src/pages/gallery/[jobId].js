@@ -112,11 +112,28 @@ export default function JobGallery({ auth, files }) {
     })
   }
 
+  const handleSelectAll = () => {
+    let newSelected = {}
+    files.forEach((file) => {
+      const fileName = file?.fileName
+
+      if (file?.fileName?.includes("done")) {
+        console.log(fileName)
+        newSelected[fileName] = true
+      }
+    })
+
+    setSelected({ ...selected, ...newSelected })
+  }
+
   return (
     <Container maxWidth="xl" sx={{ p: 2 }}>
       <Stack direction="row" justifyContent="space-between" sx={{ pb: 2 }}>
         <Button variant="outlined" onClick={() => setOpen(true)}>
           SETTINGS
+        </Button>
+        <Button variant="outlined" onClick={handleSelectAll}>
+          SELECT ALL FINAL
         </Button>
         <Stack direction="row" spacing={1} sx={{ px: 2 }}>
           <TextField
