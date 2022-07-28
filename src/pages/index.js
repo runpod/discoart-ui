@@ -9,13 +9,14 @@ import {
   DialogContent,
   TextField,
 } from "@mui/material"
-import cookieCutter from "cookie-cutter"
+import { useCookies } from "react-cookie"
 import Image from "next/image"
 import { useEffect, useState } from "react"
 import { useRouter } from "next/router"
 
 import ArtPodLogo from "./ArtPodLogo.png"
 import { getAuth } from "@utils/getAuth"
+import useSWR from "swr"
 
 export async function getServerSideProps(context) {
   const auth = await getAuth(context)
@@ -26,9 +27,16 @@ export async function getServerSideProps(context) {
 }
 
 export default function Welcome({ loggedIn, setPassword }) {
+  const [cookies, setCookie] = useCookies(["password"])
   const [passwordValue, setPasswordValue] = useState("")
   const [repeatPasswordValue, setRepeatPasswordValue] = useState("")
   const router = useRouter()
+
+  const { data: version } = useSWR(
+    "https://raw.githubusercontent.com/Run-Pod/discoart-ui/main/version.txt"
+  )
+
+  console.log(version)
 
   const handleSetPassword = async () => {
     const payload = {
@@ -45,7 +53,7 @@ export default function Welcome({ loggedIn, setPassword }) {
   }
 
   const handleLogin = async () => {
-    cookieCutter.set("password", passwordValue)
+    setCookie("password", passwordValue)
     router.replace("/")
   }
 
