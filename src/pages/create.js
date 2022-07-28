@@ -63,7 +63,7 @@ import { useDropzone } from "react-dropzone"
 import { getAuth } from "@utils/getAuth"
 import { useLoginRedirect } from "@hooks/useLoginRedirect"
 
-const CURRENT_VERSION = "0.1.0"
+const CURRENT_VERSION = "0.1.1"
 
 // TODO: add real validation schema here
 const validationSchema = yup.object({})
@@ -302,7 +302,7 @@ export default function Home({ loggedIn }) {
     <Grid container spacing={4} padding={smallScreen ? 1 : 2}>
       <Grid item xs={12}>
         {CURRENT_VERSION !== version && (
-          <Typography color="white">{`Version ${version} is out! Reset your pod to upgrade!`}</Typography>
+          <Typography color="white">{`Version ${version} is out! You have version ${CURRENT_VERSION}. Reset your pod to upgrade!`}</Typography>
         )}
       </Grid>
       <Grid item xs={12}>
