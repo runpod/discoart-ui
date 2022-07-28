@@ -14,7 +14,7 @@ const handler = async (req, res) => {
   const payload = req?.body
 
   try {
-    const auth = getAuth({ req, res })
+    const auth = await getAuth({ req, res })
     if (!auth?.loggedIn) {
       res.status(401)
     }

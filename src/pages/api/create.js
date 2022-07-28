@@ -22,7 +22,7 @@ const handler = async (req, res) => {
   try {
     const database = await db
 
-    const auth = getAuth({ req, res })
+    const auth = await getAuth({ req, res })
     if (!auth?.loggedIn) {
       res.status(401)
     }

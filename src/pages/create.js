@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react"
+import { useCallback, useEffect, useLayoutEffect, useState } from "react"
 // @mui
 import {
   Grid,
@@ -106,6 +106,7 @@ export default function Home({ loggedIn }) {
   const [refreshModelAutocomplete, setRefreshModelAutocomplete] = useState(false)
   const [file, setFile] = useState()
   const [initImagePreview, setInitImagePreview] = useState()
+  const [progress, setProgress] = useState([])
   const { data: jobData, mutate: refetchJobQueue } = useSWR("/api/list", null, {
     refreshInterval: 10000,
     keepPreviousData: true,
@@ -120,6 +121,10 @@ export default function Home({ loggedIn }) {
       refreshInterval: 360000,
     }
   )
+
+  useLayoutEffect(() => {
+    setProgress(progressData?.progress)
+  }, [progressData])
 
   const [open, setOpen] = useState(false)
 
@@ -619,7 +624,7 @@ export default function Home({ loggedIn }) {
       </Grid>
 
       <Grid item xs={12}>
-        {progressData?.progress && (
+        {progress && (
           <Card
             sx={{
               p: {
@@ -635,7 +640,7 @@ export default function Home({ loggedIn }) {
                 infiniteLoop
                 showThumbs={!smallScreen}
                 renderThumbs={() => {
-                  return progressData?.progress
+                  return progress
                     ?.filter(({ latestImage }) => latestImage)
                     ?.map(({ latestImage, dimensions }) => (
                       <Image
@@ -646,7 +651,7 @@ export default function Home({ loggedIn }) {
                     ))
                 }}
               >
-                {progressData?.progress
+                {progress
                   ?.filter(({ latestImage }) => latestImage)
                   ?.map(({ latestImage, dimensions, frame, config, batchNumber }) => (
                     <Stack alignItems="center" spacing={1} key={latestImage}>
