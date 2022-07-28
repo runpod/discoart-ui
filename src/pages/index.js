@@ -47,6 +47,7 @@ export default function Welcome({ loggedIn, setPassword }) {
 
   const handleLogin = async () => {
     setCookie("password", passwordValue)
+    console.log(passwordValue)
     router.replace("/")
   }
 
@@ -94,7 +95,6 @@ export default function Welcome({ loggedIn, setPassword }) {
                 onChange={(e) => setRepeatPasswordValue(e?.target?.value)}
               ></TextField>
               <TextField
-                password
                 type="password"
                 label="Repeat password"
                 value={passwordValue}
