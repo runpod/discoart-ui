@@ -1,21 +1,15 @@
-import { Button, Dialog, DialogContent, DialogActions } from "@mui/material"
-import dynamic from "next/dynamic"
+import { Button, Dialog, DialogContent, DialogActions, TextField } from "@mui/material"
 import useSWR from "swr"
-
-const DynamicReactJson = dynamic(import("react-json-view"), { ssr: false })
 
 export default function SettingsViewer({ open, onClose, jobId, handleImport }) {
   const { data } = useSWR(open && `/api/settings/${jobId}`)
 
+  const jsonData = JSON.stringify(data, null, 2)
+
   return (
     <Dialog fullWidth maxWidth="lg" open={open} onClose={onClose}>
       <DialogContent>
-        <DynamicReactJson
-          style={{ background: "snow", borderRadius: 10 }}
-          displayDataTypes={false}
-          displayObjectSize={false}
-          src={data}
-        />
+        <TextField multiline fullWidth rows={30} value={jsonData} />
       </DialogContent>
 
       <DialogActions>
@@ -24,7 +18,7 @@ export default function SettingsViewer({ open, onClose, jobId, handleImport }) {
         </Button>
         <Button
           onClick={() => {
-            navigator.clipboard.writeText(JSON.stringify(data, null, 2))
+            navigator.clipboard.writeText(jsonData)
           }}
         >
           Copy to Clipboard
@@ -32,7 +26,7 @@ export default function SettingsViewer({ open, onClose, jobId, handleImport }) {
         {handleImport && (
           <Button
             onClick={() => {
-              handleImport(JSON.stringify(data))()
+              handleImport(jsonData)()
               onClose()
             }}
             variant="contained"
