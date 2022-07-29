@@ -32,6 +32,56 @@ function MyApp({ Component, pageProps }) {
       <ThemeProvider theme={DarkTheme}>
         <CookiesProvider>
           <CssBaseline />
+          <AppBar
+            position="static"
+            sx={{
+              p: 1,
+              wdith: "100%",
+              margin: "auto",
+            }}
+          >
+            <Toolbar>
+              <Stack
+                maxWidth="xl"
+                sx={{
+                  width: "100%",
+                  px: 6,
+                  margin: "auto",
+                }}
+                direction="row"
+                spacing={2}
+                justifyContent="space-between"
+              >
+                <Stack direction="row" spacing={2}>
+                  <Button
+                    sx={{
+                      pointerEvents: route === "/create" ? "none" : "auto",
+                    }}
+                    href="/create"
+                    variant={route === "/create" ? "outlined" : "auto"}
+                    size="small"
+                  >
+                    Create
+                  </Button>
+                  <Button
+                    sx={{
+                      pointerEvents: route === "/gallery" ? "none" : "auto",
+                    }}
+                    href="/gallery"
+                    target="_blank"
+                    variant={route === "/gallery" ? "outlined" : "auto"}
+                    size="small"
+                  >
+                    Gallery
+                  </Button>
+                </Stack>
+
+                <Button size="small" onClick={handleLogout}>
+                  Log Out
+                </Button>
+              </Stack>
+            </Toolbar>
+          </AppBar>
           <Container
             maxWidth="xl"
             sx={{
@@ -39,42 +89,6 @@ function MyApp({ Component, pageProps }) {
               m: "auto",
             }}
           >
-            <AppBar
-              position="static"
-              sx={{
-                borderRadius: 1,
-                p: 1,
-                width: "99%",
-              }}
-            >
-              <Toolbar>
-                <Stack
-                  sx={{
-                    width: "100%",
-                    px: 3,
-                  }}
-                  direction="row"
-                  spacing={2}
-                  justifyContent="space-between"
-                >
-                  <Stack direction="row" spacing={2}>
-                    <Button disabled={route === "/create"} href="/create" color="inherit">
-                      Create
-                    </Button>
-                    <Button
-                      disabled={route === "/gallery"}
-                      href="/gallery"
-                      target="_blank"
-                      color="inherit"
-                    >
-                      Gallery
-                    </Button>
-                  </Stack>
-
-                  <Button onClick={handleLogout}>Log Out</Button>
-                </Stack>
-              </Toolbar>
-            </AppBar>
             <Component {...pageProps} />
           </Container>
         </CookiesProvider>

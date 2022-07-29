@@ -321,7 +321,7 @@ export const DarkTheme = createTheme({
       sm: 600,
       md: 960,
       lg: 1280,
-      xl: 1600,
+      xl: 1400,
     },
   },
   components: {
