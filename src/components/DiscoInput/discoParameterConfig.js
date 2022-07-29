@@ -2,7 +2,7 @@ import * as yup from "yup"
 
 import mapObject from "@utils/mapObject"
 
-const validateCutSchedule = (scheduleString, valueType, field) => {
+const validateSchedule = (scheduleString, valueType, field) => {
   try {
     let cumulativeWeights = 0
     const scheduleRanges = scheduleString.split("+")
@@ -116,6 +116,11 @@ export const inputConfig = {
       },
     ],
     label: "Text Prompts",
+    // validator: yup.object().shape({
+    //   weight: yup.string().test("Weight", "${path} is not valid", (value) => {
+    //     return validateSchedule(value, "integer", "weight")
+    //   }),
+    // }),
   },
 
   save_rate: {
@@ -272,7 +277,7 @@ export const inputConfig = {
     type: "string",
     label: "Cut Overview",
     validator: yup.string().test("Cut Overview", "${path} is not valid", (value) => {
-      return validateCutSchedule(value, "integer")
+      return validateSchedule(value, "integer")
     }),
   },
   cut_innercut: {
@@ -280,7 +285,7 @@ export const inputConfig = {
     type: "string",
     label: "Cut Innercut",
     validator: yup.string().test("Cut Innercut", "${path} is not valid", (value) => {
-      return validateCutSchedule(value, "integer")
+      return validateSchedule(value, "integer")
     }),
   },
   cut_icgray_p: {
@@ -288,7 +293,7 @@ export const inputConfig = {
     type: "string",
     label: "Cut Innercut Gray",
     validator: yup.string().test("Cut Innercut Gray", "${path} is not valid", (value) => {
-      return validateCutSchedule(value, "float", "gray")
+      return validateSchedule(value, "float", "gray")
     }),
   },
   cut_ic_pow: {
@@ -296,7 +301,7 @@ export const inputConfig = {
     type: "string",
     label: "Cut Innercut Power",
     validator: yup.string().test("Cut Innercut Power", "${path} is not valid", (value) => {
-      return validateCutSchedule(value, "integer", "cut_ic_pow")
+      return validateSchedule(value, "integer", "cut_ic_pow")
     }),
   },
   eta: { default: 0.8, type: "float", label: "ETA", validator: yup.number() },
