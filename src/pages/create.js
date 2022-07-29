@@ -56,7 +56,7 @@ import { useDropzone } from "react-dropzone"
 import { getAuth } from "@utils/getAuth"
 import { useLoginRedirect } from "@hooks/useLoginRedirect"
 
-const CURRENT_VERSION = "0.2.0"
+const CURRENT_VERSION = "0.2.2"
 
 // TODO: add real validation schema here
 
@@ -121,8 +121,8 @@ export default function Home({ loggedIn }) {
       cache: "no-store",
     })
       .then((data) => data.json())
-      .then((version) => setVersion(version))
-  })
+      .then((json) => setVersion(json?.version))
+  }, [])
 
   useLayoutEffect(() => {
     setProgress(progressData?.progress)

@@ -44,13 +44,13 @@ const parseTextPrompts = (parsedJson) => {
   }
 }
 
-const stringifyTextPrompts = (inputState) => {
+const formatTextPrompts = (inputState) => {
   const annotatedState = {
     version: "1",
-    text_prompts: inputState,
+    prompts: inputState,
   }
 
-  return JSON.stringify(annotatedState, null, 2)
+  return annotatedState
 }
 
 const stringifyDimensions = (height, width) => [width, height]
@@ -71,7 +71,7 @@ export const stateToJson = (state, shouldFilter) => {
     (state) => {
       return {
         ...state,
-        text_prompts: stringifyTextPrompts(state.text_prompts),
+        text_prompts: formatTextPrompts(state.text_prompts),
         width_height: stringifyDimensions(state.height, state.width),
         seed: state?.seed || getRandomSeed(),
       }

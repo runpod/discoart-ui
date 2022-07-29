@@ -47,7 +47,6 @@ export default function Welcome({ loggedIn, setPassword }) {
 
   const handleLogin = async () => {
     setCookie("password", passwordValue)
-    console.log(passwordValue)
     router.replace("/")
   }
 

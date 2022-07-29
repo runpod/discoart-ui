@@ -1,4 +1,4 @@
-const mapObject = ({ keyMapper, valueMapper, mapee, allowNull }) => {
+const mapObject = ({ keyMapper, valueMapper, mapee, allowNull = true }) => {
   let newObject = {}
 
   Object.entries(mapee).forEach(([key, value]) => {

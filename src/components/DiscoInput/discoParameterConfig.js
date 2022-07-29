@@ -15,8 +15,6 @@ const validateSchedule = (scheduleString, valueType, field) => {
 
       cumulativeWeights += parsedWeight
 
-      console.log(field, cumulativeWeights)
-
       if (cumulativeWeights > 1000) return false
       else {
         const value = rawValue.replace(/[\[\]]/g, "")
@@ -107,11 +105,11 @@ export const inputConfig = {
     type: "json",
     default: [
       {
-        weight: "[1]*1000",
+        weight: 1,
         text: "A beautiful painting of a singular lighthouse, shining its light across a tumultuous sea of blood by greg rutkowski and thomas kinkade, Trending on artstation.",
       },
       {
-        weight: "[2]*1000",
+        weight: 2,
         text: "Yellow color scheme, this prompt is twice as important as the first",
       },
     ],
@@ -334,7 +332,7 @@ export const inputConfig = {
     default: "[0.09]",
     type: "array",
     label: "Transformation Percent",
-    validator: yup.array().of(yup.number()),
+    // validator: yup.array().of(yup.number()),
   },
 }
 
@@ -342,5 +340,6 @@ export const validationSchema = yup.object().shape(
   mapObject({
     valueMapper: ({ validator }) => validator,
     mapee: inputConfig,
+    allowNull: false,
   })
 )
