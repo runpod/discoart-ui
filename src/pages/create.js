@@ -63,7 +63,7 @@ import { useDropzone } from "react-dropzone"
 import { getAuth } from "@utils/getAuth"
 import { useLoginRedirect } from "@hooks/useLoginRedirect"
 
-const CURRENT_VERSION = "0.1.2"
+const CURRENT_VERSION = "0.1.3"
 
 // TODO: add real validation schema here
 const validationSchema = yup.object({})
