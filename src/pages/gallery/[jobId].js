@@ -7,7 +7,9 @@ import {
   alpha,
   TextField,
   IconButton,
+  Checkbox,
   Stack,
+  FormControlLabel,
 } from "@mui/material"
 import Image from "next/image"
 import fs from "fs"
@@ -87,6 +89,7 @@ export default function JobGallery({ auth, files }) {
   const { jobId } = router.query
   const [selected, setSelected] = useState({})
   const [jobName, setJobName] = useState(jobId)
+  const [showPartials, setShowPartials] = useState(false)
 
   const handleToggleSelect = (fileName) => () => {
     const alreadySelected = selected[fileName]
@@ -112,29 +115,52 @@ export default function JobGallery({ auth, files }) {
     })
   }
 
+  const filteredFiles = files?.filter((file) => {
+    return showPartials ? true : file?.fileName.includes("done")
+  })
+
   const handleSelectAll = () => {
+    console.log("select all")
     let newSelected = {}
-    files.forEach((file) => {
+    filteredFiles.forEach((file) => {
       const fileName = file?.fileName
 
-      if (file?.fileName?.includes("done")) {
-        console.log(fileName)
-        newSelected[fileName] = true
-      }
+      newSelected[fileName] = true
     })
 
     setSelected({ ...selected, ...newSelected })
   }
 
+  const handleDeselectAll = () => {
+    setSelected({})
+  }
+
+  const allChecked = filteredFiles.every((file) => selected[file?.fileName])
+
   return (
     <Container maxWidth="xl" sx={{ p: 2 }}>
       <Stack direction="row" justifyContent="space-between" sx={{ pb: 2 }}>
-        <Button variant="outlined" onClick={() => setOpen(true)}>
-          SETTINGS
-        </Button>
-        <Button variant="outlined" onClick={handleSelectAll}>
-          SELECT ALL FINAL
-        </Button>
+        <Stack direction="row" spacing={1}>
+          <Button variant="outlined" onClick={() => setOpen(true)}>
+            SETTINGS
+          </Button>
+          <FormControlLabel
+            label="Select All"
+            control={
+              <Checkbox
+                checked={allChecked}
+                indeterminate={!allChecked && Object.values(selected).length > 0}
+                onClick={allChecked ? handleDeselectAll : handleSelectAll}
+              />
+            }
+          />
+          <FormControlLabel
+            control={
+              <Checkbox value={showPartials} onClick={() => setShowPartials(!showPartials)} />
+            }
+            label="Show Partials"
+          ></FormControlLabel>
+        </Stack>
         <Stack direction="row" spacing={1} sx={{ px: 2 }}>
           <TextField
             value={jobName}
@@ -156,7 +182,7 @@ export default function JobGallery({ auth, files }) {
         </Stack>
       </Stack>
       <Masonry columns={{ sx: 1, md: 2, lg: 4 }} spacing={2}>
-        {files?.map(({ url, dimensions, fileName, baseUrl }) => (
+        {filteredFiles?.map(({ url, dimensions, fileName, baseUrl }) => (
           <Box
             key={url}
             sx={{
