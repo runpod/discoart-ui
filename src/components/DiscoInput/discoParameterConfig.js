@@ -55,11 +55,11 @@ export const inputConfig = {
     default: "",
     defaultGenerator: getRandomSeed,
     label: "Seed Value",
-    validator: yup
-      .number()
-      .integer()
-      .positive()
-      .max(Math.pow(2, 23) - 1),
+    // validator: yup
+    //   .number()
+    //   .nullable()
+    //   .integer()
+    //   .max(Math.pow(2, 23) - 1),
   },
   //general run
   batch_name: {
