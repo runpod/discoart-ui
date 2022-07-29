@@ -744,6 +744,13 @@ export default function Home({ loggedIn }) {
                         {!progressMetrics && (
                           <Typography variant="h5">{logProgress?.logs || " "}</Typography>
                         )}
+                        <Button
+                          size="small"
+                          onClick={handleQueueRemove(currentProgressJobId)}
+                          variant="outlined"
+                        >
+                          Cancel Render
+                        </Button>
                         {latestImage && (
                           <Box>
                             <Image
