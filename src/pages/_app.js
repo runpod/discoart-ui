@@ -35,7 +35,7 @@ function MyApp({ Component, pageProps }) {
           <Container
             maxWidth="xl"
             sx={{
-              p: 0,
+              py: 0,
               m: "auto",
             }}
           >
@@ -44,6 +44,7 @@ function MyApp({ Component, pageProps }) {
               sx={{
                 borderRadius: 1,
                 p: 1,
+                width: "99%",
               }}
             >
               <Toolbar>

@@ -1,3 +1,47 @@
+import * as yup from "yup"
+
+import mapObject from "@utils/mapObject"
+
+const validateCutSchedule = (scheduleString, valueType, field) => {
+  try {
+    let cumulativeWeights = 0
+    const scheduleRanges = scheduleString.split("+")
+
+    scheduleRanges.forEach((schedule) => {
+      const [rawValue, weight] = schedule.split("*")
+      const parsedWeight = parseInt(weight)
+
+      if (isNaN(parsedWeight) || !Number.isInteger(parsedWeight)) return false
+
+      cumulativeWeights += parsedWeight
+
+      console.log(field, cumulativeWeights)
+
+      if (cumulativeWeights > 1000) return false
+      else {
+        const value = rawValue.replace(/[\[\]]/g, "")
+
+        if (valueType === "integer") {
+          const parsedValue = parseInt(value, 10)
+
+          if (isNaN(value) || !Number.isInteger(parsedValue)) return false
+        }
+        if (valueType === "float") {
+          const parsedValue = parseFloat(value)
+
+          if (isNaN(parsedValue)) return false
+        }
+      }
+    })
+
+    if (cumulativeWeights !== 1000) return false
+
+    return true
+  } catch (e) {
+    return false
+  }
+}
+
 export function getRandomInt(min, max) {
   min = Math.ceil(min)
   max = Math.floor(max)
@@ -13,37 +57,48 @@ export const inputConfig = {
     default: "",
     defaultGenerator: getRandomSeed,
     label: "Seed Value",
+    validator: yup
+      .number()
+      .integer()
+      .positive()
+      .max(Math.pow(2, 23) - 1),
   },
   //general run
   batch_name: {
     type: "string",
     default: "RunPodDisco",
     label: "Batch Name",
+    validator: yup.string().max(15),
   },
   batch_size: {
     type: "integer",
     default: 1,
     label: "Images Per Render",
+    validator: yup.number().integer().min(1).max(10),
   },
   n_batches: {
     type: "integer",
     default: 10,
     label: "Images Per Batch",
+    validator: yup.number().integer().min(1).max(10000),
   },
   width: {
     type: "integer",
     default: 1280,
     label: "Width",
+    validator: yup.number().integer().min(64).max(4096),
   },
   height: {
     type: "integer",
     default: 768,
     label: "Height",
+    validator: yup.number().integer().min(64).max(4096),
   },
   steps: {
     type: "integer",
     default: 250,
     label: "Steps",
+    validator: yup.number().integer().min(1).max(10000),
   },
 
   // prompt
@@ -52,18 +107,39 @@ export const inputConfig = {
     type: "json",
     default: [
       {
-        weight: 1,
-        prompt:
-          "A beautiful painting of a singular lighthouse, shining its light across a tumultuous sea of blood by greg rutkowski and thomas kinkade, Trending on artstation.",
+        weight: "[1]*1000",
+        text: "A beautiful painting of a singular lighthouse, shining its light across a tumultuous sea of blood by greg rutkowski and thomas kinkade, Trending on artstation.",
       },
       {
-        weight: 2,
-        prompt: "Yellow color scheme, this prompt is twice as important as the first",
+        weight: "[2]*1000",
+        text: "Yellow color scheme, this prompt is twice as important as the first",
       },
     ],
     label: "Text Prompts",
   },
 
+  save_rate: {
+    default: 20,
+    type: "integer",
+    label: "Progress Rate",
+    validator: yup.number().integer(),
+  },
+  truncate_overlength_prompt: {
+    default: true,
+    type: "boolean",
+    label: "Auto Truncate Prompt",
+    validator: yup.boolean(),
+  },
+  // gif_fps: {
+  //   default: true,
+  //   type: "boolean",
+  //   label: "Truncate Prompt",
+  // },
+  // gif_size_ratio: {
+  //   default: true,
+  //   type: "boolean",
+  //   label: "Truncate Prompt",
+  // },
   // init_image: {
   //   default: null,
   //   type: "string",
@@ -73,6 +149,7 @@ export const inputConfig = {
     default: 0,
     type: "integer",
     label: "Number of Steps to Skip",
+    validator: yup.number().integer(),
   },
   //   init_generator: {
   //     default: "perlin",
@@ -165,7 +242,12 @@ export const inputConfig = {
     ],
     label: "Diffusion Model",
   },
-  randomize_class: { type: "boolean", default: true, label: "Randomize Class" },
+  randomize_class: {
+    type: "boolean",
+    default: true,
+    label: "Randomize Class",
+    validator: yup.boolean(),
+  },
   diffusion_sampling_mode: {
     type: "select",
     default: "ddim",
@@ -173,21 +255,64 @@ export const inputConfig = {
     label: "Diffusion Sampling Mode",
   },
   // cut stuff
-  cutn_batches: { default: 4, type: "integer", label: "Number Cut Batches" },
-  clip_guidance_scale: { default: 5000, type: "integer", label: "Clip Guidance Scale" },
-  cut_overview: { default: "[12]*400+[4]*600", type: "string", label: "Cut Overview" },
-  cut_innercut: { default: "[4]*400+[12]*600", type: "string", label: "Cut Innercut" },
-  cut_icgray_p: { default: "[0.2]*400+[0]*600", type: "string", label: "Cut Innercut Gray" },
-  cut_ic_pow: { default: "[1]*1000", type: "string", label: "Cut Innercut Power" },
-  eta: { default: 0.8, type: "float", label: "ETA" },
-  clamp_grad: { default: true, type: "boolean", label: "Clamp Grad" },
-  clamp_max: { default: 0.05, type: "float", label: "Clamp Max" },
-  clip_denoised: { default: false, type: "boolean", label: "Clip Denoised" },
-  rand_mag: { default: 0.05, type: "float", label: "Random Mag" },
-  tv_scale: { default: 0, type: "integer", label: "TV Scale" },
-  range_scale: { default: 150, type: "integer", label: "Range Scale" },
-  sat_scale: { default: 0, type: "integer", label: "Sat Scale" },
-  skip_augs: { default: false, type: "boolean", label: "Skip Augs" },
+  cutn_batches: {
+    default: 4,
+    type: "integer",
+    label: "Number Cut Batches",
+    validator: yup.number().integer(),
+  },
+  clip_guidance_scale: {
+    default: 5000,
+    type: "integer",
+    label: "Clip Guidance Scale",
+    validator: yup.number().integer(),
+  },
+  cut_overview: {
+    default: "[12]*400+[4]*600",
+    type: "string",
+    label: "Cut Overview",
+    validator: yup.string().test("Cut Overview", "${path} is not valid", (value) => {
+      return validateCutSchedule(value, "integer")
+    }),
+  },
+  cut_innercut: {
+    default: "[4]*400+[12]*600",
+    type: "string",
+    label: "Cut Innercut",
+    validator: yup.string().test("Cut Innercut", "${path} is not valid", (value) => {
+      return validateCutSchedule(value, "integer")
+    }),
+  },
+  cut_icgray_p: {
+    default: "[0.2]*400+[0]*600",
+    type: "string",
+    label: "Cut Innercut Gray",
+    validator: yup.string().test("Cut Innercut Gray", "${path} is not valid", (value) => {
+      return validateCutSchedule(value, "float", "gray")
+    }),
+  },
+  cut_ic_pow: {
+    default: "[1]*1000",
+    type: "string",
+    label: "Cut Innercut Power",
+    validator: yup.string().test("Cut Innercut Power", "${path} is not valid", (value) => {
+      return validateCutSchedule(value, "integer", "cut_ic_pow")
+    }),
+  },
+  eta: { default: 0.8, type: "float", label: "ETA", validator: yup.number() },
+  clamp_grad: { default: true, type: "boolean", label: "Clamp Grad", validator: yup.boolean() },
+  clamp_max: { default: 0.05, type: "float", label: "Clamp Max", validator: yup.number() },
+  clip_denoised: {
+    default: false,
+    type: "boolean",
+    label: "Clip Denoised",
+    validator: yup.boolean(),
+  },
+  rand_mag: { default: 0.05, type: "float", label: "Random Mag", validator: yup.number() },
+  tv_scale: { default: 0, type: "integer", label: "TV Scale", validator: yup.number().integer() },
+  range_scale: { default: 150, type: "integer", label: "Range Scale", validator: yup.number() },
+  sat_scale: { default: 0, type: "integer", label: "Sat Scale", validator: yup.number() },
+  skip_augs: { default: false, type: "boolean", label: "Skip Augs", validator: yup.boolean() },
 
   //symmetry
   use_vertical_symmetry: {
@@ -204,5 +329,13 @@ export const inputConfig = {
     default: "[0.09]",
     type: "array",
     label: "Transformation Percent",
+    validator: yup.array().of(yup.number()),
   },
 }
+
+export const validationSchema = yup.object().shape(
+  mapObject({
+    valueMapper: ({ validator }) => validator,
+    mapee: inputConfig,
+  })
+)

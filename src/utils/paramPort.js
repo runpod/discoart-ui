@@ -5,19 +5,34 @@ import { parse } from "yaml"
 const parseTextPrompts = (parsedJson) => {
   try {
     if (!parsedJson) return []
+    // string
     if (typeof parsedJson === "string")
       return {
         prompt: parsedJson,
         weight,
       }
-    else
+    else if (Array.isArray(parsedJson)) {
       return parsedJson.map((prompt) => {
         const [text, weight = 1] = prompt?.split(":")
         return {
-          prompt: text,
-          weight,
+          text,
+          weight: `[${weight}]*1000`,
         }
       })
+    } else if (parsedJson?.version === "1") {
+      const promptArray = parsedJson?.text_prompts
+
+      return promptArray
+    } else if (parsedJson?.[0] && Array.isArray(parsedJson[0])) {
+      const prompts = parsedJson[0]
+      return prompts.map((prompt) => {
+        const [text, weight = 1] = prompt?.split(":")
+        return {
+          text,
+          weight: `[${weight}]*1000`,
+        }
+      })
+    }
   } catch (e) {
     console.log(e)
     return [
@@ -29,8 +44,14 @@ const parseTextPrompts = (parsedJson) => {
   }
 }
 
-const stringifyTextPrompts = (inputState) =>
-  inputState.map(({ prompt, weight }) => `${prompt}:${weight}`)
+const stringifyTextPrompts = (inputState) => {
+  const annotatedState = {
+    version: "1",
+    text_prompts: inputState,
+  }
+
+  return JSON.stringify(annotatedState, null, 2)
+}
 
 const stringifyDimensions = (height, width) => [width, height]
 const parseDimensions = (dimensions) => {
@@ -40,15 +61,6 @@ const parseDimensions = (dimensions) => {
     height: dimensions[1],
   }
 }
-
-const parseCudaDevice = (string) => {
-  if (!string) return "cuda:0"
-  const [, index] = string?.split(":")
-
-  return index?.trim()
-}
-
-const stringifyCudaDevice = (index) => `cuda:${index}`
 
 export const stateToJson = (state, shouldFilter) => {
   // TODO: add more special parsers to make UX better
@@ -62,7 +74,6 @@ export const stateToJson = (state, shouldFilter) => {
         text_prompts: stringifyTextPrompts(state.text_prompts),
         width_height: stringifyDimensions(state.height, state.width),
         seed: state?.seed || getRandomSeed(),
-        // cuda_device: stringifyCudaDevice(state?.cuda_device),
       }
     },
     (state) => {
@@ -100,7 +111,6 @@ export const jsonToState = (json) => {
       return {
         ...parsed,
         text_prompts: parseTextPrompts(parsed?.text_prompts),
-        // cuda_device: parseCudaDevice(parsed?.cuda_device),
         transformation_percent: JSON.stringify(parsed?.transformation_percent),
         clip_models: clipModels || inputConfig.clip_models.default,
         width,
