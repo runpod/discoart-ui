@@ -227,6 +227,8 @@ export default function Home({ loggedIn }) {
 
     const formData = new FormData()
 
+    console.log(additionalSettings)
+
     const parsedAdvancedSettings = useAdditionalSettings ? JSON.parse(additionalSettings) : {}
 
     const payload = {
@@ -666,6 +668,10 @@ export default function Home({ loggedIn }) {
                             variant="determinate"
                             value={(frame / config?.steps) * 100}
                           />
+                          <Typography
+                            fontSize={10}
+                            variant="subtitle1"
+                          >{`Frame: ${frame}/${config?.steps}`}</Typography>
                           <LinearProgress
                             sx={{
                               borderRadius: 5,
@@ -675,6 +681,10 @@ export default function Home({ loggedIn }) {
                             variant="determinate"
                             value={(batchNumber / config?.n_batches) * 100}
                           />
+                          <Typography
+                            fontSize={10}
+                            variant="subtitle1"
+                          >{`Batch: ${batchNumber}/${config?.n_batches}`}</Typography>
                           <Box>
                             <Image
                               alt=""

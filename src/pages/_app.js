@@ -8,7 +8,7 @@ import { SWRConfig } from "swr"
 import axios from "axios"
 import { ThemeProvider } from "@mui/material/styles"
 import CssBaseline from "@mui/material/CssBaseline"
-import { CookiesProvider, useCookies } from "react-cookie"
+import { CookiesProvider } from "react-cookie"
 
 import { DarkTheme } from "../theme"
 

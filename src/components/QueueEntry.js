@@ -28,14 +28,19 @@ export default function QueueEntry({ filter, job, handleQueueRemove, handleImpor
             </Box>
           </TableCell>
         ))}
-
       {!smallScreen && (
         <TableCell align="left">
           <Typography>
-            {started_at ? `${format(new Date(started_at), "MM/dd/yyyy HH:MM:ss")}` : "-"}
+            {created_at ? `${format(new Date(created_at), "MM/dd/yyyy HH:MM:ss")}` : "-"}
           </Typography>
         </TableCell>
       )}
+      <TableCell align="left">
+        <Typography>
+          {started_at ? `${format(new Date(started_at), "MM/dd/yyyy HH:MM:ss")}` : "-"}
+        </Typography>
+      </TableCell>
+
       <TableCell align="right">
         <Typography>
           {error ? "ERROR" : completed_at ? "FINISHED" : started_at ? "PROCESSING" : "QUEUED"}
