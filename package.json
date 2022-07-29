@@ -3,9 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "DISCOART_OUTPUT_DIR=/workspace/out node -r esm src/daemon/index.js & next dev -p 3000",
+    "dev": "DISCOART_MODELS_YAML='/models.yaml' DISCOART_DISABLE_REMOTE_MODELS='1' DISCOART_OUTPUT_DIR=/workspace/out node -r esm src/daemon/index.js & next dev -p 3000",
     "build": "next build",
-    "start": "DISCOART_OUTPUT_DIR=/workspace/out node -r esm src/daemon/index.js & next start -p 3000 &",
+    "start": "DISCOART_MODELS_YAML='/models.yaml' DISCOART_DISABLE_REMOTE_MODELS='1' DISCOART_OUTPUT_DIR=/workspace/out node -r esm src/daemon/index.js & next start -p 3000 &",
     "lint": "next lint"
   },
   "dependencies": {
