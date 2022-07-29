@@ -3,6 +3,7 @@ import { compose, identity, omit, pick } from "ramda"
 import { parse } from "yaml"
 
 const parseTextPrompts = (parsedJson) => {
+  console.log(parsedJson)
   try {
     if (!parsedJson) return []
     // string
@@ -20,7 +21,7 @@ const parseTextPrompts = (parsedJson) => {
         }
       })
     } else if (parsedJson?.version === "1") {
-      const promptArray = parsedJson?.text_prompts
+      const promptArray = parsedJson?.prompts
 
       return promptArray
     } else if (parsedJson?.[0] && Array.isArray(parsedJson[0])) {
