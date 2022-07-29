@@ -67,7 +67,7 @@ export const inputConfig = {
     type: "string",
     default: "RunPodDisco",
     label: "Batch Name",
-    validator: yup.string().max(15),
+    validator: yup.string().max(100),
   },
   batch_size: {
     type: "integer",

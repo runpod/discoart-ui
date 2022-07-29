@@ -20,24 +20,37 @@ const handler = async (req, res) => {
     const fileNames = selectedFileNames.split(",") || []
 
     const fileLocation = `/workspace/out/${jobId}/`
-    // Tell the browser that this is a zip file.
-    res.writeHead(200, {
-      "Content-Type": "application/zip",
-      "Content-disposition": `attachment; filename=${zipName || jobId}.zip`,
-    })
 
-    var zip = Archiver("zip")
+    if (fileNames.length === 1) {
+      const fileName = fileNames[0]
+      const fileStream = fs.createReadStream(`${fileLocation}${fileNames[0]}`)
 
-    // Send the file to the page output.
-    zip.pipe(res)
+      res.writeHead(200, {
+        "Content-Type": "application/zip",
+        "Content-disposition": `attachment; filename=${fileName}`,
+      })
 
-    for (let fileName of fileNames) {
-      zip.file(`${fileLocation}${fileName}`, { name: fileName })
+      fileStream.pipe(res)
+    } else {
+      // Tell the browser that this is a zip file.
+      res.writeHead(200, {
+        "Content-Type": "application/zip",
+        "Content-disposition": `attachment; filename=${zipName || jobId}.zip`,
+      })
+
+      var zip = Archiver("zip")
+
+      // Send the file to the page output.
+      zip.pipe(res)
+
+      for (let fileName of fileNames) {
+        zip.file(`${fileLocation}${fileName}`, { name: fileName })
+      }
+
+      zip.file(`${fileLocation}settings.txt`, { name: "settings.txt" })
+
+      zip.finalize()
     }
-
-    zip.file(`${fileLocation}settings.txt`, { name: "settings.txt" })
-
-    zip.finalize()
   } catch (e) {
     console.log(e)
     res.status(404)
