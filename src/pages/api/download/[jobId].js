@@ -23,20 +23,24 @@ const handler = async (req, res) => {
   try {
     const database = await db
 
-    const { job_details } = await database.get(
-      `
-      SELECT job_details FROM jobs
-        WHERE job_id = ? 
-    `,
-      jobId
-    )
-
-    const { batch_name } = JSON.parse(job_details) || "RunPodDisco"
-
     const auth = await getAuth({ req, res })
     if (!auth?.loggedIn) {
       res.status(401)
     }
+
+    let batch_name = "RunPodDisco"
+
+    try {
+      const { job_details } = await database.get(
+        `
+        SELECT job_details FROM jobs
+          WHERE job_id = ? 
+      `,
+        jobId
+      )
+
+      batch_name = JSON.parse(job_details) || "RunPodDisco"
+    } catch (e) {}
 
     const fileNames = selectedFileNames.split(",") || []
 

@@ -129,11 +129,15 @@ export default function Home({ loggedIn }) {
       const timeElapsed = getSubstring(logProgress?.logs, "[", "<")
       const timeRemaining = getSubstring(logProgress?.logs, "<", ",")
       const iterationSpeed = getSubstring(logProgress?.logs, ",", "/it")
+      const frameProgress = getSubstring(logProgress?.logs, "|", "[")
+      const [currentFrame, totalFrames] = frameProgress.split("/")
 
       setProgressMetrics({
         timeElapsed,
         timeRemaining,
         iterationSpeed,
+        currentFrame,
+        totalFrames,
       })
     } catch (e) {
       console.log(e)
@@ -697,7 +701,11 @@ export default function Home({ loggedIn }) {
                               height: 20,
                             }}
                             variant="determinate"
-                            value={(frame / config?.steps) * 100}
+                            value={
+                              ((progressMetrics?.currentFrame || 0) /
+                                (progressMetrics?.totalFrames || 100)) *
+                              100
+                            }
                           />
                           <Typography
                             sx={{
@@ -708,12 +716,11 @@ export default function Home({ loggedIn }) {
                             }}
                             fontSize={10}
                             variant="subtitle1"
-                          >{`Frame: ${frame}/${config?.steps} 
-                            ${
-                              progressMetrics
-                                ? `${progressMetrics.timeElapsed}<${progressMetrics.timeRemaining}, ${progressMetrics.iterationSpeed}/it`
-                                : ""
-                            }`}</Typography>
+                          >{`${
+                            progressMetrics
+                              ? `Frame: ${progressMetrics.currentFrame}/${progressMetrics?.totalFrames}   ${progressMetrics.timeElapsed}<${progressMetrics.timeRemaining}, ${progressMetrics.iterationSpeed}/it`
+                              : ""
+                          }`}</Typography>
                         </Box>
                         <Box
                           sx={{
@@ -738,7 +745,7 @@ export default function Home({ loggedIn }) {
                             }}
                             fontSize={10}
                             variant="subtitle1"
-                          >{`Batch: ${batchNumber}/${config?.n_batches}`}</Typography>
+                          >{`${batchNumber}/${config?.n_batches}`}</Typography>
                         </Box>
 
                         {!progressMetrics && (
