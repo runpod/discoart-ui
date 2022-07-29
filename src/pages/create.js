@@ -1,3 +1,5 @@
+const CURRENT_VERSION = "0.2.3"
+
 import { useCallback, useEffect, useState } from "react"
 // @mui
 import {
@@ -56,7 +58,8 @@ import { useDropzone } from "react-dropzone"
 import { getAuth } from "@utils/getAuth"
 import { useLoginRedirect } from "@hooks/useLoginRedirect"
 
-const CURRENT_VERSION = "0.2.2"
+const getSubstring = (string, startString, endString) =>
+  string.slice(string.lastIndexOf(startString) + 1, string.lastIndexOf(endString)).trim()
 
 // TODO: add real validation schema here
 
@@ -101,6 +104,7 @@ export default function Home({ loggedIn }) {
   const [progress, setProgress] = useState([])
   const [version, setVersion] = useState(CURRENT_VERSION)
   const [currentProgressJobId, setCurrentProgressJobId] = useState(null)
+  const [progressMetrics, setProgressMetrics] = useState(null)
   const { data: jobData, mutate: refetchJobQueue } = useSWR("/api/list", null, {
     refreshInterval: 10000,
     keepPreviousData: true,
@@ -117,6 +121,23 @@ export default function Home({ loggedIn }) {
   )
 
   useEffect(() => {
+    try {
+      const timeElapsed = getSubstring(logProgress?.logs, "[", "<")
+      const timeRemaining = getSubstring(logProgress?.logs, "<", ",")
+      const iterationSpeed = getSubstring(logProgress?.logs, ",", "/it")
+
+      setProgressMetrics({
+        timeElapsed,
+        timeRemaining,
+        iterationSpeed,
+      })
+    } catch (e) {
+      console.log(e)
+      setProgressMetrics(null)
+    }
+  }, [logProgress])
+
+  useEffect(() => {
     fetch("https://raw.githubusercontent.com/Run-Pod/discoart-ui/main/version.txt", {
       cache: "no-store",
     })
@@ -126,10 +147,9 @@ export default function Home({ loggedIn }) {
 
   useEffect(() => {
     setProgress(progressData?.progress)
-    if (!currentProgressJobId) {
-      const jobId = progressData?.progress?.[0]?.jobId
-      setCurrentProgressJobId(jobId)
-    }
+
+    const jobId = progressData?.progress?.[0]?.jobId
+    setCurrentProgressJobId(jobId)
   }, [progressData])
 
   const [open, setOpen] = useState(false)
@@ -663,7 +683,12 @@ export default function Home({ loggedIn }) {
                             }}
                             fontSize={10}
                             variant="subtitle1"
-                          >{`Frame: ${frame}/${config?.steps}`}</Typography>
+                          >{`Frame: ${frame}/${config?.steps} 
+                            ${
+                              progressMetrics
+                                ? `${progressMetrics.timeElapsed}<${progressMetrics.timeRemaining}, ${progressMetrics.iterationSpeed}/it`
+                                : ""
+                            }`}</Typography>
                         </Box>
                         <Box
                           sx={{
@@ -691,7 +716,9 @@ export default function Home({ loggedIn }) {
                           >{`Batch: ${batchNumber}/${config?.n_batches}`}</Typography>
                         </Box>
 
-                        <Typography variant="h5">{logProgress?.logs || " "}</Typography>
+                        {!progressMetrics && (
+                          <Typography variant="h5">{logProgress?.logs || " "}</Typography>
+                        )}
                         {latestImage && (
                           <Box>
                             <Image
