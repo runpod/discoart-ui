@@ -55,11 +55,12 @@ export const inputConfig = {
     default: "",
     defaultGenerator: getRandomSeed,
     label: "Seed Value",
-    // validator: yup
-    //   .number()
-    //   .nullable()
-    //   .integer()
-    //   .max(Math.pow(2, 23) - 1),
+    validator: yup
+      .number()
+      .integer()
+      .max(Math.pow(2, 23) - 1)
+      .nullable(true)
+      .transform((_, val) => (val === Number(val) ? val : null)),
   },
   //general run
   batch_name: {
@@ -105,11 +106,11 @@ export const inputConfig = {
     type: "json",
     default: [
       {
-        weight: 1,
+        weight: "[1]*1000",
         text: "A beautiful painting of a singular lighthouse, shining its light across a tumultuous sea of blood by greg rutkowski and thomas kinkade, Trending on artstation.",
       },
       {
-        weight: 2,
+        weight: "[2]*1000",
         text: "Yellow color scheme, this prompt is twice as important as the first",
       },
     ],
