@@ -68,6 +68,7 @@ const getJobInfo = async (jobId, jobConfig) => {
       batchNumber,
       frame,
       config: parsedConfig,
+      jobId,
       dimensions: { height, width },
     }
   } catch (e) {

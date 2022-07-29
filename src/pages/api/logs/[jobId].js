@@ -3,7 +3,7 @@ import readLastLines from "read-last-lines"
 import { getAuth } from "@utils/getAuth"
 
 const handler = async (req, res) => {
-  const { jobId } = req.query
+  const { jobId, lines = 100 } = req.query
 
   try {
     const auth = await getAuth({ req, res })
@@ -11,7 +11,9 @@ const handler = async (req, res) => {
       res.status(401)
     }
 
-    const logs = await readLastLines.read(`/workspace/logs/${jobId}.txt`, 100)
+    const linesToReturn = parseInt(lines)
+
+    const logs = await readLastLines.read(`/workspace/logs/${jobId}.txt`, linesToReturn)
 
     res.status(200).json({
       success: true,

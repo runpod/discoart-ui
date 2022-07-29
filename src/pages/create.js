@@ -107,6 +107,7 @@ export default function Home({ loggedIn }) {
   const [file, setFile] = useState()
   const [initImagePreview, setInitImagePreview] = useState()
   const [progress, setProgress] = useState([])
+  const [currentProgressJobId, setCurrentProgressJobId] = useState(null)
   const { data: jobData, mutate: refetchJobQueue } = useSWR("/api/list", null, {
     refreshInterval: 10000,
     keepPreviousData: true,
@@ -121,9 +122,20 @@ export default function Home({ loggedIn }) {
       refreshInterval: 360000,
     }
   )
+  const { data: logProgress } = useSWR(
+    currentProgressJobId && `/api/logs/${currentProgressJobId}?lines=1`,
+    null,
+    {
+      refreshInterval: 2000,
+    }
+  )
 
   useLayoutEffect(() => {
     setProgress(progressData?.progress)
+    if (!currentProgressJobId) {
+      const jobId = progressData?.progress?.[0]?.jobId
+      setCurrentProgressJobId(jobId)
+    }
   }, [progressData])
 
   const [open, setOpen] = useState(false)
@@ -227,8 +239,6 @@ export default function Home({ loggedIn }) {
 
     const formData = new FormData()
 
-    console.log(additionalSettings)
-
     const parsedAdvancedSettings = useAdditionalSettings ? JSON.parse(additionalSettings) : {}
 
     const payload = {
@@ -257,6 +267,11 @@ export default function Home({ loggedIn }) {
   }
 
   const handlePromptRemove = (index) => () => remove(index)
+
+  const handleCarouselChange = (index, item) => {
+    const jobId = item?.props?.jobId
+    setCurrentProgressJobId(jobId)
+  }
 
   useEffect(() => {
     const newWidth = window.innerWidth > 800 ? 800 : window.innerWidth
@@ -638,6 +653,7 @@ export default function Home({ loggedIn }) {
           >
             <Grid container justifyContent="center">
               <Carousel
+                onChange={handleCarouselChange}
                 width={previewWidth}
                 infiniteLoop
                 showThumbs={!smallScreen}
@@ -655,52 +671,71 @@ export default function Home({ loggedIn }) {
               >
                 {progress
                   ?.filter(({ latestImage }) => latestImage)
-                  ?.map(({ latestImage, dimensions, frame, config, batchNumber }) => (
-                    <Stack alignItems="center" spacing={1} key={latestImage}>
-                      {latestImage ? (
-                        <>
-                          <LinearProgress
-                            sx={{
-                              borderRadius: 5,
-                              width: previewWidth * 0.8,
-                              height: 20,
-                            }}
-                            variant="determinate"
-                            value={(frame / config?.steps) * 100}
+                  ?.map(({ latestImage, dimensions, frame, config, batchNumber, jobId }) => (
+                    <Stack alignItems="center" spacing={1} jobId={jobId} key={latestImage}>
+                      <Box
+                        sx={{
+                          position: "relative",
+                        }}
+                      >
+                        <LinearProgress
+                          sx={{
+                            borderRadius: 5,
+                            width: previewWidth * 0.8,
+                            height: 20,
+                          }}
+                          variant="determinate"
+                          value={(frame / config?.steps) * 100}
+                        />
+                        <Typography
+                          sx={{
+                            position: "absolute",
+                            top: 2,
+                            left: 0,
+                            right: 0,
+                          }}
+                          fontSize={10}
+                          variant="subtitle1"
+                        >{`Frame: ${frame}/${config?.steps}`}</Typography>
+                      </Box>
+                      <Box
+                        sx={{
+                          position: "relative",
+                        }}
+                      >
+                        <LinearProgress
+                          sx={{
+                            borderRadius: 5,
+                            width: previewWidth * 0.8,
+                            height: 20,
+                          }}
+                          variant="determinate"
+                          value={(batchNumber / config?.n_batches) * 100}
+                        ></LinearProgress>
+                        <Typography
+                          sx={{
+                            position: "absolute",
+                            top: 2,
+                            left: 0,
+                            right: 0,
+                          }}
+                          fontSize={10}
+                          variant="subtitle1"
+                        >{`Batch: ${batchNumber}/${config?.n_batches}`}</Typography>
+                      </Box>
+
+                      <Typography variant="h5">{logProgress?.logs}</Typography>
+                      {latestImage && (
+                        <Box>
+                          <Image
+                            alt=""
+                            {...getThumbnailDimensions({
+                              ...dimensions,
+                              maxWidth: previewWidth,
+                            })}
+                            src={latestImage}
                           />
-                          <Typography
-                            fontSize={10}
-                            variant="subtitle1"
-                          >{`Frame: ${frame}/${config?.steps}`}</Typography>
-                          <LinearProgress
-                            sx={{
-                              borderRadius: 5,
-                              width: previewWidth * 0.8,
-                              height: 20,
-                            }}
-                            variant="determinate"
-                            value={(batchNumber / config?.n_batches) * 100}
-                          />
-                          <Typography
-                            fontSize={10}
-                            variant="subtitle1"
-                          >{`Batch: ${batchNumber}/${config?.n_batches}`}</Typography>
-                          <Box>
-                            <Image
-                              alt=""
-                              {...getThumbnailDimensions({
-                                ...dimensions,
-                                maxWidth: previewWidth,
-                              })}
-                              src={latestImage}
-                            />
-                          </Box>
-                        </>
-                      ) : (
-                        <Stack alignItems="center" spacing={2}>
-                          <Typography>Initializing Job</Typography>
-                          <CircularProgress></CircularProgress>
-                        </Stack>
+                        </Box>
                       )}
                     </Stack>
                   ))}
