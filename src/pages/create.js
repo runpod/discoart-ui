@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useLayoutEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 // @mui
 import {
   Grid,
@@ -124,7 +124,7 @@ export default function Home({ loggedIn }) {
       .then((json) => setVersion(json?.version))
   }, [])
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     setProgress(progressData?.progress)
     if (!currentProgressJobId) {
       const jobId = progressData?.progress?.[0]?.jobId
