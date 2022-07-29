@@ -46,7 +46,9 @@ export default function Welcome({ loggedIn, setPassword }) {
       },
       method: "POST",
       body: JSON.stringify(payload),
-    }).then(() => router.replace("/"))
+    })
+      .then(() => router.replace("/"))
+      .catch((e) => setLoading(false))
   }
 
   const handleLogin = async () => {
