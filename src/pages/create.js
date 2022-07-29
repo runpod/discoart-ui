@@ -58,8 +58,6 @@ import { useLoginRedirect } from "@hooks/useLoginRedirect"
 
 const CURRENT_VERSION = "0.2.0"
 
-console.log(validationSchema)
-
 // TODO: add real validation schema here
 
 const getThumbnailDimensions = ({ height, width, maxWidth = 80 }) => {
@@ -101,6 +99,7 @@ export default function Home({ loggedIn }) {
   const [file, setFile] = useState()
   const [initImagePreview, setInitImagePreview] = useState()
   const [progress, setProgress] = useState([])
+  const [version, setVersion] = useState(CURRENT_VERSION)
   const [currentProgressJobId, setCurrentProgressJobId] = useState(null)
   const { data: jobData, mutate: refetchJobQueue } = useSWR("/api/list", null, {
     refreshInterval: 10000,
@@ -109,13 +108,6 @@ export default function Home({ loggedIn }) {
   const { data: progressData } = useSWR("/api/progress", null, {
     refreshInterval: 10000,
   })
-  const { data: version } = useSWR(
-    "https://raw.githubusercontent.com/Run-Pod/discoart-ui/main/version.txt",
-    null,
-    {
-      refreshInterval: 360000,
-    }
-  )
   const { data: logProgress } = useSWR(
     currentProgressJobId && `/api/logs/${currentProgressJobId}?lines=1`,
     null,
@@ -123,6 +115,14 @@ export default function Home({ loggedIn }) {
       refreshInterval: 2000,
     }
   )
+
+  useEffect(() => {
+    fetch("https://raw.githubusercontent.com/Run-Pod/discoart-ui/main/version.txt", {
+      cache: "no-store",
+    })
+      .then((data) => data.json())
+      .then((version) => setVersion(version))
+  })
 
   useLayoutEffect(() => {
     setProgress(progressData?.progress)
@@ -230,8 +230,6 @@ export default function Home({ loggedIn }) {
 
   const handleRenderStart = (data) => {
     const newRenderId = nanoid()
-
-    console.log(data)
 
     const formData = new FormData()
 
