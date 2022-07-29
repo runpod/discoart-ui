@@ -266,7 +266,10 @@ export default function Home({ loggedIn }) {
     })
   }
 
-  const handlePromptRemove = (index) => () => remove(index)
+  const handlePromptRemove = (index) => () => {
+    console.log(index)
+    remove(index)
+  }
 
   const handleCarouselChange = (index, item) => {
     const jobId = item?.props?.jobId
@@ -315,6 +318,8 @@ export default function Home({ loggedIn }) {
   const filteredJobs =
     mappedJobs?.filter(({ disposition }) => disposition === queueFilterOption) || []
 
+  console.log(fields)
+
   return (
     <Grid container spacing={4} padding={smallScreen ? 1 : 2}>
       <Grid item xs={12}>
@@ -333,8 +338,10 @@ export default function Home({ loggedIn }) {
                 const weight = `text_prompts.${index}.weight`
                 const prompt = `text_prompts.${index}.prompt`
 
+                console.log(field)
+
                 return (
-                  <>
+                  <Grid container spacing={1} key={field?.id}>
                     <Grid item xs={12} md={10}>
                       <ControlledTextField
                         multiline
@@ -351,7 +358,7 @@ export default function Home({ loggedIn }) {
                         <CloseIcon></CloseIcon>
                       </IconButton>
                     </Grid>
-                  </>
+                  </Grid>
                 )
               })}
               <Grid item xs={12}>
