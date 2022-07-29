@@ -16,6 +16,8 @@ import { useRouter } from "next/router"
 
 import ArtPodLogo from "./ArtPodLogo.png"
 import { getAuth } from "@utils/getAuth"
+import { LoadingButton } from "@mui/lab"
+import LoginIcon from "@mui/icons-material/Login"
 
 export async function getServerSideProps(context) {
   const auth = await getAuth(context)
@@ -27,11 +29,13 @@ export async function getServerSideProps(context) {
 
 export default function Welcome({ loggedIn, setPassword }) {
   const [cookies, setCookie] = useCookies(["password"])
+  const [loading, setLoading] = useState(false)
   const [passwordValue, setPasswordValue] = useState("")
   const [repeatPasswordValue, setRepeatPasswordValue] = useState("")
   const router = useRouter()
 
   const handleSetPassword = async () => {
+    setLoading(true)
     const payload = {
       password: passwordValue,
     }
@@ -46,6 +50,7 @@ export default function Welcome({ loggedIn, setPassword }) {
   }
 
   const handleLogin = async () => {
+    setLoading(true)
     setCookie("password", passwordValue)
     router.replace("/")
   }
@@ -99,13 +104,17 @@ export default function Welcome({ loggedIn, setPassword }) {
                 value={passwordValue}
                 onChange={(e) => setPasswordValue(e?.target?.value)}
               ></TextField>
-              <Button
+              <LoadingButton
                 disabled={!passwordValue || passwordValue !== repeatPasswordValue}
                 onClick={handleSetPassword}
                 variant="contained"
+                loading={loading}
+                loadingPosition="start"
+                loadingIndicator="Logging In..."
+                startIcon={<LoginIcon />}
               >
                 Set Password
-              </Button>
+              </LoadingButton>
             </>
           ) : (
             <>
@@ -115,9 +124,17 @@ export default function Welcome({ loggedIn, setPassword }) {
                 value={passwordValue}
                 onChange={(e) => setPasswordValue(e?.target?.value)}
               ></TextField>
-              <Button disabled={!passwordValue} onClick={handleLogin} variant="contained">
+              <LoadingButton
+                loading={loading}
+                loadingPosition="start"
+                disabled={!passwordValue}
+                onClick={handleLogin}
+                variant="contained"
+                loadingIndicator="Logging In..."
+                startIcon={<LoginIcon />}
+              >
                 Log In
-              </Button>
+              </LoadingButton>
             </>
           )}
         </Stack>
