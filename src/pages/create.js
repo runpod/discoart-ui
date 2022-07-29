@@ -4,11 +4,7 @@ import {
   Grid,
   Typography,
   Stack,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
   Button,
-  IconButton,
   Box,
   Autocomplete,
   TextField,
@@ -60,7 +56,7 @@ import { useDropzone } from "react-dropzone"
 import { getAuth } from "@utils/getAuth"
 import { useLoginRedirect } from "@hooks/useLoginRedirect"
 
-const CURRENT_VERSION = "0.1.3"
+const CURRENT_VERSION = "0.2.0"
 
 console.log(validationSchema)
 
