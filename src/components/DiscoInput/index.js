@@ -73,6 +73,7 @@ export const ControlledTextField = ({
           fullWidth
           {...field}
           error={error}
+          helperText={error?.message}
           inputRef={field.ref}
           InputProps={{
             endAdornment,

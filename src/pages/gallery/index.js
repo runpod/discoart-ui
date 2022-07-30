@@ -63,7 +63,7 @@ export async function getServerSideProps(context) {
 export default function Gallery({ auth, galleries }) {
   useLoginRedirect(auth?.loggedIn)
   return (
-    <Container maxWidth="xl" sx={{ p: 10 }}>
+    <Container maxWidth="xl" sx={{ p: { xs: 1, md: 10 } }}>
       <Stack>
         <Stack direction="row" justifyContent="space-between">
           <Typography variant="h4">Render Batches</Typography>

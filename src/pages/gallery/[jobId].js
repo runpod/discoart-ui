@@ -9,6 +9,7 @@ import {
   IconButton,
   Checkbox,
   Stack,
+  Grid,
   FormControlLabel,
 } from "@mui/material"
 import Image from "next/image"
@@ -138,49 +139,60 @@ export default function JobGallery({ auth, files }) {
   const allChecked = filteredFiles.every((file) => selected[file?.fileName])
 
   return (
-    <Container maxWidth="xl" sx={{ p: 2 }}>
-      <Stack direction="row" justifyContent="space-between" sx={{ pb: 2 }}>
-        <Stack direction="row" spacing={1}>
-          <Button variant="outlined" onClick={() => setOpen(true)}>
-            SETTINGS
-          </Button>
-          <FormControlLabel
-            label="Select All"
-            control={
-              <Checkbox
-                checked={allChecked}
-                indeterminate={!allChecked && Object.values(selected).length > 0}
-                onClick={allChecked ? handleDeselectAll : handleSelectAll}
-              />
-            }
-          />
-          <FormControlLabel
-            control={
-              <Checkbox value={showPartials} onClick={() => setShowPartials(!showPartials)} />
-            }
-            label="Show Partials"
-          ></FormControlLabel>
-        </Stack>
-        <Stack direction="row" spacing={1} sx={{ px: 2 }}>
-          <TextField
-            value={jobName}
-            onChange={(e) => setJobName(e?.target?.value)}
-            label="Download Name"
-          ></TextField>
-          <Button
-            href={`/api/download/${jobId}?selectedFileNames=${Object.keys(
-              selected
-            )}&zipName=${jobName}`}
-            variant="outlined"
-            color="success"
+    <Container maxWidth="xl" sx={{ p: { xs: 1, sm: 3 } }}>
+      <Grid container>
+        <Grid item xs={12} sm={6} mb={{ xs: 1, md: 2 }}>
+          <Stack direction="row" justifyContent={{ xs: "center", md: "start" }} spacing={1}>
+            <Button size="small" variant="outlined" onClick={() => setOpen(true)}>
+              SETTINGS
+            </Button>
+            <FormControlLabel
+              label="Select All"
+              control={
+                <Checkbox
+                  checked={allChecked}
+                  indeterminate={!allChecked && Object.values(selected).length > 0}
+                  onClick={allChecked ? handleDeselectAll : handleSelectAll}
+                />
+              }
+            />
+            <FormControlLabel
+              control={
+                <Checkbox value={showPartials} onClick={() => setShowPartials(!showPartials)} />
+              }
+              label="Show Partials"
+            ></FormControlLabel>
+          </Stack>
+        </Grid>
+        <Grid item xs={12} sm={6}>
+          <Stack
+            direction="row"
+            justifyContent={{ xs: "center", md: "end" }}
+            spacing={1}
+            sx={{ px: 2 }}
           >
-            DOWNLOAD
-          </Button>
-          <Button variant="outlined" color="error" onClick={setDeleteOpen}>
-            DELETE
-          </Button>
-        </Stack>
-      </Stack>
+            <TextField
+              value={jobName}
+              onChange={(e) => setJobName(e?.target?.value)}
+              label="Download Name"
+              size="small"
+            ></TextField>
+            <Button
+              href={`/api/download/${jobId}?selectedFileNames=${Object.keys(
+                selected
+              )}&zipName=${jobName}`}
+              variant="outlined"
+              color="success"
+              size="small"
+            >
+              DOWNLOAD
+            </Button>
+            <Button size="small" variant="outlined" color="error" onClick={setDeleteOpen}>
+              DELETE
+            </Button>
+          </Stack>
+        </Grid>
+      </Grid>
       <Masonry columns={{ sx: 1, md: 2, lg: 4 }} spacing={2}>
         {filteredFiles?.map(({ url, dimensions, fileName, baseUrl }) => (
           <Box

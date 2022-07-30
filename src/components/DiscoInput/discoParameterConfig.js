@@ -49,6 +49,12 @@ export const validateSchedule = (scheduleString, valueType, field) => {
   }
 }
 
+export const validateScheduleWeights = () => {}
+
+export const validateScheduleValues = () => {}
+
+export const validateScheduleFormat = () => {}
+
 export function getRandomInt(min, max) {
   min = Math.ceil(min)
   max = Math.floor(max)

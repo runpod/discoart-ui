@@ -197,6 +197,7 @@ export default function Create({ loggedIn }) {
         }
       },
       mapee: inputConfig,
+      delayError: 500,
     }),
 
     resolver: yupResolver(validationSchema),
