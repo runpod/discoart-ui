@@ -33,6 +33,7 @@ import {
   Accordion,
   AccordionSummary,
   AccordionDetails,
+  Alert,
 } from "@mui/material"
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore"
 import AddIcon from "@mui/icons-material/Add"
@@ -350,6 +351,13 @@ export default function Create({ loggedIn }) {
   return (
     <form onSubmit={handleSubmit(handleRenderStart)}>
       <Grid container spacing={4} padding={smallScreen ? 1 : 2}>
+        {CURRENT_VERSION !== version && (
+          <Grid item xs={12}>
+            <Alert severity="info" variant="filled">
+              {`Version ${version} is out! You have version ${CURRENT_VERSION}. Reset your pod to upgrade!`}
+            </Alert>
+          </Grid>
+        )}
         <Grid item xs={12}>
           <Accordion defaultExpanded>
             <AccordionSummary expandIcon={<ExpandMoreIcon />}>
@@ -357,11 +365,6 @@ export default function Create({ loggedIn }) {
             </AccordionSummary>
             <AccordionDetails>
               <Grid container spacing={4}>
-                {CURRENT_VERSION !== version && (
-                  <Grid item xs={12}>
-                    <Typography color="white">{`Version ${version} is out! You have version ${CURRENT_VERSION}. Reset your pod to upgrade!`}</Typography>
-                  </Grid>
-                )}
                 <Grid item xs={12}>
                   <FormControlLabel
                     color="info"
