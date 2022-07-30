@@ -7,8 +7,11 @@ const validateSchedule = (scheduleString, valueType, field) => {
     let cumulativeWeights = 0
     const scheduleRanges = scheduleString.split("+")
 
-    scheduleRanges.forEach((schedule) => {
+    for (let schedule of scheduleRanges) {
       const [rawValue, weight] = schedule.split("*")
+
+      if (!/^[0-9]+$/.test(weight)) return false
+
       const parsedWeight = parseInt(weight)
 
       if (isNaN(parsedWeight) || !Number.isInteger(parsedWeight)) return false
@@ -29,13 +32,19 @@ const validateSchedule = (scheduleString, valueType, field) => {
 
           if (isNaN(parsedValue)) return false
         }
+        if (valueType === "boolean") {
+          if (!["True", "False"].includes(value)) {
+            return false
+          }
+        }
       }
-    })
+    }
 
     if (cumulativeWeights !== 1000) return false
 
     return true
   } catch (e) {
+    console.log(e, field)
     return false
   }
 }
@@ -72,13 +81,13 @@ export const inputConfig = {
   batch_size: {
     type: "integer",
     default: 1,
-    label: "Images Per Render",
+    label: "Batch Size",
     validator: yup.number().integer().min(1).max(10),
   },
   n_batches: {
     type: "integer",
     default: 10,
-    label: "Images Per Batch",
+    label: "N Batch",
     validator: yup.number().integer().min(1).max(10000),
   },
   width: {
@@ -260,10 +269,12 @@ export const inputConfig = {
   },
   // cut stuff
   cutn_batches: {
-    default: 4,
-    type: "integer",
+    default: "[4]*1000",
+    type: "string",
     label: "Number Cut Batches",
-    validator: yup.number().integer(),
+    validator: yup.string().test("Number Cut Batches", "${path} is not valid", (value) => {
+      return validateSchedule(value, "integer")
+    }),
   },
   clip_guidance_scale: {
     default: 5000,
@@ -304,19 +315,62 @@ export const inputConfig = {
     }),
   },
   eta: { default: 0.8, type: "float", label: "ETA", validator: yup.number() },
-  clamp_grad: { default: true, type: "boolean", label: "Clamp Grad", validator: yup.boolean() },
-  clamp_max: { default: 0.05, type: "float", label: "Clamp Max", validator: yup.number() },
+  clamp_grad: {
+    default: "[True]*1000",
+    type: "string",
+    label: "Clamp Grad",
+    validator: yup.string().test("Clamp Grad", "${path} is not valid", (value) => {
+      return validateSchedule(value, "boolean", "clamp_grad")
+    }),
+  },
+  clamp_max: {
+    default: "[0.05]*1000",
+    type: "string",
+    label: "Clamp Max",
+    validator: yup.string().test("Clamp Max", "${path} is not valid", (value) => {
+      return validateSchedule(value, "float", "clamp_max")
+    }),
+  },
   clip_denoised: {
     default: false,
     type: "boolean",
     label: "Clip Denoised",
     validator: yup.boolean(),
   },
-  rand_mag: { default: 0.05, type: "float", label: "Random Mag", validator: yup.number() },
-  tv_scale: { default: 0, type: "integer", label: "TV Scale", validator: yup.number().integer() },
-  range_scale: { default: 150, type: "integer", label: "Range Scale", validator: yup.number() },
-  sat_scale: { default: 0, type: "integer", label: "Sat Scale", validator: yup.number() },
-  skip_augs: { default: false, type: "boolean", label: "Skip Augs", validator: yup.boolean() },
+  tv_scale: {
+    default: "[0]*1000",
+    type: "string",
+    label: "TV Scale",
+    validator: yup.string().test("TV Scale", "${path} is not valid", (value) => {
+      return validateSchedule(value, "integer", "tv_scale")
+    }),
+  },
+  range_scale: {
+    default: "[150]*1000",
+    type: "string",
+    label: "Range Scale",
+    validator: yup.string().test("Range Scale", "${path} is not valid", (value) => {
+      return validateSchedule(value, "integer", "range_scale")
+    }),
+  },
+  sat_scale: {
+    default: "[0]*1000",
+    type: "string",
+    label: "Sat Scale",
+    validator: yup.string().test("Range Scale", "${path} is not valid", (value) => {
+      return validateSchedule(value, "integer", "range_scale")
+    }),
+  },
+  skip_augs: {
+    default: "[False]*1000",
+    type: "string",
+    label: "Skip Augs",
+    validator: yup.string().test("Skip Augs", "${path} is not valid", (value) => {
+      const result = validateSchedule(value, "boolean", "skip_augs")
+      console.log("skip_augs", result)
+      return result
+    }),
+  },
 
   //symmetry
   use_vertical_symmetry: {

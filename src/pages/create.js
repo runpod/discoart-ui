@@ -62,6 +62,8 @@ import { useDropzone } from "react-dropzone"
 import { getAuth } from "@utils/getAuth"
 import { useLoginRedirect } from "@hooks/useLoginRedirect"
 
+import { useGlobalHelp } from "@hooks/useGlobalHelp"
+
 const getSubstring = (string, startString, endString) =>
   string.slice(string.lastIndexOf(startString) + 1, string.lastIndexOf(endString)).trim()
 
@@ -96,6 +98,7 @@ export default function Home({ loggedIn }) {
   useLoginRedirect(loggedIn)
 
   const theme = useTheme()
+  const [globalHelp, globalHelpActions] = useGlobalHelp()
   const smallScreen = useMediaQuery(theme.breakpoints.down("sm"))
   const [exportedJson, setExportedJson] = useState()
   const [jsonToImport, setJsonToImport] = useState()
@@ -343,16 +346,28 @@ export default function Home({ loggedIn }) {
     <form onSubmit={handleSubmit(handleRenderStart)}>
       <Grid container spacing={4} padding={smallScreen ? 1 : 2}>
         <Grid item xs={12}>
-          <Accordion>
+          <Accordion defaultExpanded>
             <AccordionSummary expandIcon={<ExpandMoreIcon />}>
               <Typography variant="h4">Settings</Typography>
             </AccordionSummary>
             <AccordionDetails>
               <Grid container spacing={4}>
-                <Grid item xs={12}>
-                  {CURRENT_VERSION !== version && (
+                {CURRENT_VERSION !== version && (
+                  <Grid item xs={12}>
                     <Typography color="white">{`Version ${version} is out! You have version ${CURRENT_VERSION}. Reset your pod to upgrade!`}</Typography>
-                  )}
+                  </Grid>
+                )}
+                <Grid item xs={12}>
+                  <FormControlLabel
+                    color="info"
+                    label="Show Help"
+                    control={
+                      <Switch
+                        checked={globalHelp.showHelp}
+                        onClick={globalHelpActions.toggleHelp}
+                      />
+                    }
+                  />
                 </Grid>
 
                 <Grid item xs={12}>
@@ -573,9 +588,7 @@ export default function Home({ loggedIn }) {
                 <Grid item xs={12} sm={4} md={3}>
                   <DynamicInput control={control} name={"clamp_max"} />
                 </Grid>
-                <Grid item xs={12} sm={4} md={3}>
-                  <DynamicInput control={control} name={"rand_mag"} />
-                </Grid>
+
                 <Grid item xs={12} sm={4} md={3}>
                   <DynamicInput control={control} name={"tv_scale"} />
                 </Grid>
@@ -589,11 +602,12 @@ export default function Home({ loggedIn }) {
                 <Grid item xs={12} sm={4} md={3}>
                   <DynamicInput control={control} name={"clamp_grad"} />
                 </Grid>
-                <Grid item xs={12} sm={4} md={3}>
-                  <DynamicInput control={control} name={"clip_denoised"} />
-                </Grid>
+
                 <Grid item xs={12} sm={4} md={3}>
                   <DynamicInput control={control} name={"skip_augs"} />
+                </Grid>
+                <Grid item xs={12} sm={4} md={3}>
+                  <DynamicInput control={control} name={"clip_denoised"} />
                 </Grid>
 
                 <Grid item xs={12}>
@@ -823,10 +837,9 @@ export default function Home({ loggedIn }) {
               <Table aria-label="simple table">
                 <TableHead>
                   <TableRow>
-                    {queueFilterOption === "processing" ||
-                      (queueFilterOption === "completed" && (
-                        <TableCell align="left">Preview</TableCell>
-                      ))}
+                    {(queueFilterOption === "processing" || queueFilterOption === "completed") && (
+                      <TableCell align="left">Preview</TableCell>
+                    )}
                     {!smallScreen && <TableCell align="left">Created</TableCell>}
                     <TableCell align="left">Started</TableCell>
                     <TableCell align="right">Status</TableCell>

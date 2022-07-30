@@ -1,33 +1,55 @@
 import { Controller } from "react-hook-form"
-import { TextField, Checkbox, FormControlLabel, Autocomplete } from "@mui/material"
+import { Box, TextField, Checkbox, FormControlLabel, Autocomplete, Typography } from "@mui/material"
+import { useGlobalHelp } from "@hooks/useGlobalHelp"
 
 import { inputConfig } from "./discoParameterConfig"
+import { helpDescriptions } from "./helpDescriptions"
 
 export const DynamicInput = ({ control, name, ...rest }) => {
+  const [globalHelp] = useGlobalHelp()
   const { type, label, options, default: defaultValue } = inputConfig[name]
+  const helpText = helpDescriptions[name]
 
-  return type && type === "string" ? (
-    <ControlledTextField control={control} name={name} label={label} {...rest} />
-  ) : type === "integer" ? (
-    <ControlledTextField control={control} name={name} label={label} {...rest} />
-  ) : type === "float" ? (
-    <ControlledTextField control={control} name={name} label={label} {...rest} />
-  ) : type === "json" ? (
-    <ControlledTextField control={control} name={name} label={label} {...rest} />
-  ) : type === "array" ? (
-    <ControlledTextField control={control} name={name} label={label} {...rest} />
-  ) : type === "boolean" ? (
-    <ControlledCheckbox control={control} name={name} label={label} {...rest} />
-  ) : type === "select" ? (
-    <ControlledAutocomplete
-      control={control}
-      name={name}
-      label={label}
-      options={options}
-      defaultValue={defaultValue}
-      {...rest}
-    />
-  ) : null
+  const Input =
+    type && type === "string" ? (
+      <ControlledTextField control={control} name={name} label={label} {...rest} />
+    ) : type === "integer" ? (
+      <ControlledTextField control={control} name={name} label={label} {...rest} />
+    ) : type === "float" ? (
+      <ControlledTextField control={control} name={name} label={label} {...rest} />
+    ) : type === "json" ? (
+      <ControlledTextField control={control} name={name} label={label} {...rest} />
+    ) : type === "array" ? (
+      <ControlledTextField control={control} name={name} label={label} {...rest} />
+    ) : type === "boolean" ? (
+      <ControlledCheckbox control={control} name={name} label={label} {...rest} />
+    ) : type === "select" ? (
+      <ControlledAutocomplete
+        control={control}
+        name={name}
+        label={label}
+        options={options}
+        defaultValue={defaultValue}
+        {...rest}
+      />
+    ) : null
+
+  return globalHelp?.showHelp ? (
+    <>
+      {Input}
+      <Box
+        sx={{
+          px: 1,
+        }}
+      >
+        <Typography fontSize={11} variant="subtitle1">
+          {helpText}
+        </Typography>
+      </Box>
+    </>
+  ) : (
+    Input
+  )
 }
 
 export const ControlledTextField = ({
