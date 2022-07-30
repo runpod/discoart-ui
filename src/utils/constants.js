@@ -1,2 +1,2 @@
 export const databasePath = "/workspace/database"
-export const CURRENT_VERSION = "0.3.1"
+export const CURRENT_VERSION = "0.3.2"
