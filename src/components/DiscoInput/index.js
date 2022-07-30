@@ -13,6 +13,8 @@ export const DynamicInput = ({ control, name, ...rest }) => {
   const Input =
     type && type === "string" ? (
       <ControlledTextField control={control} name={name} label={label} {...rest} />
+    ) : type === "schedule" ? (
+      <ControlledTextField control={control} name={name} label={label} {...rest} />
     ) : type === "integer" ? (
       <ControlledTextField control={control} name={name} label={label} {...rest} />
     ) : type === "float" ? (

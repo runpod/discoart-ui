@@ -1,4 +1,8 @@
-import { getRandomSeed, inputConfig } from "@components/DiscoInput/discoParameterConfig"
+import {
+  getRandomSeed,
+  inputConfig,
+  validateSchedule,
+} from "@components/DiscoInput/discoParameterConfig"
 import { compose, identity, omit, pick } from "ramda"
 import { parse } from "yaml"
 
@@ -107,10 +111,22 @@ export const jsonToState = (json) => {
     (parsed) => {
       const { height, width } = parseDimensions(parsed?.width_height)
 
+      let transformedSchedules = {}
+
+      Object.entries(parsed).forEach(([key, value]) => {
+        const config = inputConfig?.[key]
+        if (config?.type === "schedule") {
+          if (!validateSchedule(value)) {
+            transformedSchedules[key] = `[${value}]*1000`
+          }
+        }
+      })
+
       const clipModels = parsed?.clip_models
 
       return {
         ...parsed,
+        ...transformedSchedules,
         text_prompts: parseTextPrompts(parsed?.text_prompts),
         transformation_percent: JSON.stringify(parsed?.transformation_percent),
         clip_models: clipModels || inputConfig.clip_models.default,
