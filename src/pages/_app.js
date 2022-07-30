@@ -11,6 +11,7 @@ import CssBaseline from "@mui/material/CssBaseline"
 import { CookiesProvider } from "react-cookie"
 
 import { DarkTheme } from "../theme"
+import "../styles.css"
 
 const fetcher = (url) => axios.get(url).then((res) => res.data)
 

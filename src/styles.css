@@ -1,4 +1,4 @@
-/* .carousel .thumb {
+.carousel .thumb {
     -webkit-transition: border 0.15s ease-in;
     -moz-transition: border 0.15s ease-in;
     -ms-transition: border 0.15s ease-in;
@@ -8,11 +8,14 @@
     margin-right: 6px;
     white-space: nowrap;
     overflow: hidden;
+    border: none !important;
     padding: 2px; }
     .carousel .thumb:focus {
-      border: 3px solid #ccc;
+      border: 3px solid rgb(180, 167, 167) !important;
       outline: none; }
     .carousel .thumb.selected, .carousel .thumb:hover {
-      border: 3px solid rgb(212, 198, 198); }
+      border: 3px solid rgb(212, 198, 198) !important; 
+    }
     .carousel .thumb img {
-      vertical-align: top; } */
+      vertical-align: top;
+    }
