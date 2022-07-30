@@ -86,7 +86,7 @@ const setup = async () => {
 
 const startJob = async ({ parameters, jobId, gpuIndex }) => {
   jobStarting = true
-  setTimeout(() => (jobStarting = false), 60000)
+  setTimeout(() => (jobStarting = false), 30000)
   const database = await db
 
   console.log(`starting job on GPU CUDA DEVICE ${gpuIndex}`)
