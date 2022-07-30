@@ -1,0 +1,18 @@
+/* .carousel .thumb {
+    -webkit-transition: border 0.15s ease-in;
+    -moz-transition: border 0.15s ease-in;
+    -ms-transition: border 0.15s ease-in;
+    -o-transition: border 0.15s ease-in;
+    transition: border 0.15s ease-in;
+    display: inline-block;
+    margin-right: 6px;
+    white-space: nowrap;
+    overflow: hidden;
+    padding: 2px; }
+    .carousel .thumb:focus {
+      border: 3px solid #ccc;
+      outline: none; }
+    .carousel .thumb.selected, .carousel .thumb:hover {
+      border: 3px solid rgb(212, 198, 198); }
+    .carousel .thumb img {
+      vertical-align: top; } */

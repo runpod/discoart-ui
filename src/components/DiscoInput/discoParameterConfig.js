@@ -366,9 +366,7 @@ export const inputConfig = {
     type: "string",
     label: "Skip Augs",
     validator: yup.string().test("Skip Augs", "${path} is not valid", (value) => {
-      const result = validateSchedule(value, "boolean", "skip_augs")
-      console.log("skip_augs", result)
-      return result
+      return validateSchedule(value, "boolean", "skip_augs")
     }),
   },
 

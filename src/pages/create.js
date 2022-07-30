@@ -38,9 +38,14 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore"
 import AddIcon from "@mui/icons-material/Add"
 import CloseIcon from "@mui/icons-material/Close"
 import { nanoid } from "nanoid"
-import "react-responsive-carousel/lib/styles/carousel.min.css" // requires a loader
 import { Carousel } from "react-responsive-carousel"
 import useMediaQuery from "@mui/material/useMediaQuery"
+
+// CSS
+
+import "react-responsive-carousel/lib/styles/carousel.min.css" // requires a loader
+// import "./Create.module.css"
+
 // sections
 
 import { useFieldArray, useForm } from "react-hook-form"
@@ -93,7 +98,7 @@ export async function getServerSideProps({ req, res }) {
   }
 }
 
-export default function Home({ loggedIn }) {
+export default function Create({ loggedIn }) {
   useLoginRedirect(loggedIn)
 
   const theme = useTheme()
