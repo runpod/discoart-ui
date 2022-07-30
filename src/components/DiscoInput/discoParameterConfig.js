@@ -271,7 +271,7 @@ export const inputConfig = {
   cutn_batches: {
     default: "[4]*1000",
     type: "schedule",
-    label: "Number Cut Batches",
+    label: "Cutn batches Schedule",
     validator: yup.string().test("Number Cut Batches", "${path} is not valid", (value) => {
       return validateSchedule(value, "integer")
     }),
@@ -285,7 +285,7 @@ export const inputConfig = {
   cut_overview: {
     default: "[12]*400+[4]*600",
     type: "schedule",
-    label: "Cut Overview",
+    label: "Cut Overview Schedule",
     validator: yup.string().test("Cut Overview", "${path} is not valid", (value) => {
       return validateSchedule(value, "integer")
     }),
@@ -293,7 +293,7 @@ export const inputConfig = {
   cut_innercut: {
     default: "[4]*400+[12]*600",
     type: "schedule",
-    label: "Cut Innercut",
+    label: "Cut Innercut Schedule",
     validator: yup.string().test("Cut Innercut", "${path} is not valid", (value) => {
       return validateSchedule(value, "integer")
     }),
@@ -301,7 +301,7 @@ export const inputConfig = {
   cut_icgray_p: {
     default: "[0.2]*400+[0]*600",
     type: "schedule",
-    label: "Cut Innercut Gray",
+    label: "Cut Innercut Gray Schedule",
     validator: yup.string().test("Cut Innercut Gray", "${path} is not valid", (value) => {
       return validateSchedule(value, "float", "gray")
     }),
@@ -309,7 +309,7 @@ export const inputConfig = {
   cut_ic_pow: {
     default: "[1]*1000",
     type: "schedule",
-    label: "Cut Innercut Power",
+    label: "Cut Innercut Power Schedule",
     validator: yup.string().test("Cut Innercut Power", "${path} is not valid", (value) => {
       return validateSchedule(value, "integer", "cut_ic_pow")
     }),
@@ -318,7 +318,7 @@ export const inputConfig = {
   clamp_grad: {
     default: "[True]*1000",
     type: "schedule",
-    label: "Clamp Grad",
+    label: "Clamp Grad Schedule",
     validator: yup.string().test("Clamp Grad", "${path} is not valid", (value) => {
       return validateSchedule(value, "boolean", "clamp_grad")
     }),
@@ -326,7 +326,7 @@ export const inputConfig = {
   clamp_max: {
     default: "[0.05]*1000",
     type: "schedule",
-    label: "Clamp Max",
+    label: "Clamp Max Schedule",
     validator: yup.string().test("Clamp Max", "${path} is not valid", (value) => {
       return validateSchedule(value, "float", "clamp_max")
     }),
@@ -340,7 +340,7 @@ export const inputConfig = {
   tv_scale: {
     default: "[0]*1000",
     type: "schedule",
-    label: "TV Scale",
+    label: "TV Scale Schedule",
     validator: yup.string().test("TV Scale", "${path} is not valid", (value) => {
       return validateSchedule(value, "integer", "tv_scale")
     }),
@@ -348,7 +348,7 @@ export const inputConfig = {
   range_scale: {
     default: "[150]*1000",
     type: "schedule",
-    label: "Range Scale",
+    label: "Range Scale Schedule",
     validator: yup.string().test("Range Scale", "${path} is not valid", (value) => {
       return validateSchedule(value, "integer", "range_scale")
     }),
@@ -356,7 +356,7 @@ export const inputConfig = {
   sat_scale: {
     default: "[0]*1000",
     type: "schedule",
-    label: "Sat Scale",
+    label: "Sat Scale Schedule",
     validator: yup.string().test("Range Scale", "${path} is not valid", (value) => {
       return validateSchedule(value, "integer", "range_scale")
     }),
@@ -364,7 +364,7 @@ export const inputConfig = {
   skip_augs: {
     default: "[False]*1000",
     type: "schedule",
-    label: "Skip Augs",
+    label: "Skip Augs Schedule",
     validator: yup.string().test("Skip Augs", "${path} is not valid", (value) => {
       return validateSchedule(value, "boolean", "skip_augs")
     }),
