@@ -1,4 +1,5 @@
 import * as yup from "yup"
+import { uniqueNamesGenerator, adjectives, colors } from "unique-names-generator"
 
 import mapObject from "@utils/mapObject"
 
@@ -62,6 +63,10 @@ export function getRandomInt(min, max) {
 }
 
 export const getRandomSeed = () => getRandomInt(0, Math.pow(2, 23) - 1)
+export const getRandomName = () =>
+  `${uniqueNamesGenerator({
+    dictionaries: [adjectives, colors],
+  })}_runpod`
 
 export const inputConfig = {
   //seed
@@ -80,7 +85,7 @@ export const inputConfig = {
   //general run
   batch_name: {
     type: "string",
-    default: "RunPodDisco",
+    default: getRandomName,
     label: "Batch Name",
     validator: yup.string().max(100),
   },

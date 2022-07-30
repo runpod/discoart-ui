@@ -38,6 +38,7 @@
     "sqlite": "^4.1.2",
     "sqlite3": "^5.0.10",
     "swr": "2.0.0-beta.6",
+    "unique-names-generator": "^4.7.1",
     "use-global-hook": "^0.3.0",
     "yaml": "^2.1.1",
     "yarn": "^1.22.19",

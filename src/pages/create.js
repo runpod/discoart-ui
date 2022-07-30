@@ -1,39 +1,41 @@
 import { useCallback, useEffect, useState } from "react"
 // @mui
 import {
-  Grid,
-  Typography,
-  Stack,
-  Button,
-  Box,
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
+  Alert,
+  alpha,
   Autocomplete,
-  TextField,
-  Dialog,
-  DialogContent,
-  DialogActions,
-  LinearProgress,
-  Table,
-  TableHead,
-  TableRow,
-  TableCell,
-  TableBody,
-  Switch,
-  FormControlLabel,
+  Box,
+  Button,
   Card,
   Chip,
-  TablePagination,
-  useTheme,
-  SwipeableDrawer,
+  Dialog,
+  DialogActions,
+  DialogContent,
   Divider,
-  MenuItem,
-  InputLabel,
-  Select,
   FormControl,
-  alpha,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
-  Alert,
+  FormControlLabel,
+  Grid,
+  IconButton,
+  InputAdornment,
+  InputLabel,
+  LinearProgress,
+  MenuItem,
+  Select,
+  Stack,
+  SwipeableDrawer,
+  Switch,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TablePagination,
+  TableRow,
+  TextField,
+  Typography,
+  useTheme,
 } from "@mui/material"
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore"
 import AddIcon from "@mui/icons-material/Add"
@@ -41,6 +43,8 @@ import CloseIcon from "@mui/icons-material/Close"
 import { nanoid } from "nanoid"
 import { Carousel } from "react-responsive-carousel"
 import useMediaQuery from "@mui/material/useMediaQuery"
+import CasinoIcon from "@mui/icons-material/Casino"
+import { uniqueNamesGenerator, adjectives, colors } from "unique-names-generator"
 
 // CSS
 
@@ -54,7 +58,12 @@ import { yupResolver } from "@hookform/resolvers/yup"
 
 import { stateToJson, jsonToState } from "@utils/paramPort"
 import mapObject from "@utils/mapObject"
-import { inputConfig, validationSchema } from "@components/DiscoInput/discoParameterConfig"
+import {
+  getRandomName,
+  getRandomSeed,
+  inputConfig,
+  validationSchema,
+} from "@components/DiscoInput/discoParameterConfig"
 import { DynamicInput, ControlledTextField } from "@components/DiscoInput"
 import useOpenState from "@hooks/useOpenState"
 import Image from "next/image"
@@ -181,6 +190,14 @@ export default function Create({ loggedIn }) {
   const [queueFilterOption, setQueueFilterOption] = useState("processing")
   const [jsonValidationError, setJsonValidationError] = useState("")
 
+  const handleRandomizeSeed = () => {
+    setValue("seed", getRandomSeed())
+  }
+
+  const handleRandomizeName = () => {
+    setValue("batch_name", getRandomName())
+  }
+
   const onDrop = useCallback(async (acceptedFiles) => {
     const [file] = acceptedFiles
     if (file) {
@@ -190,7 +207,7 @@ export default function Create({ loggedIn }) {
   }, [])
   const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop })
 
-  const { getValues, reset, control, watch, handleSubmit } = useForm({
+  const { getValues, reset, control, watch, handleSubmit, setValue } = useForm({
     defaultValues: mapObject({
       valueMapper: (value) => {
         if (value?.defaultGenerator) {
@@ -488,10 +505,30 @@ export default function Create({ loggedIn }) {
                 </Grid>
 
                 <Grid item xs={12} sm={4} md={3}>
-                  <DynamicInput control={control} name={"seed"} />
+                  <DynamicInput
+                    control={control}
+                    name={"seed"}
+                    endAdornment={
+                      <InputAdornment position="end">
+                        <IconButton onClick={handleRandomizeSeed}>
+                          <CasinoIcon></CasinoIcon>
+                        </IconButton>
+                      </InputAdornment>
+                    }
+                  />
                 </Grid>
                 <Grid item xs={12} sm={4} md={3}>
-                  <DynamicInput control={control} name={"batch_name"} />
+                  <DynamicInput
+                    control={control}
+                    name={"batch_name"}
+                    endAdornment={
+                      <InputAdornment position="end">
+                        <IconButton onClick={handleRandomizeName}>
+                          <CasinoIcon></CasinoIcon>
+                        </IconButton>
+                      </InputAdornment>
+                    }
+                  />
                 </Grid>
                 <Grid item xs={12} sm={4} md={3}>
                   <DynamicInput control={control} name={"batch_size"} />
