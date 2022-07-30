@@ -114,11 +114,19 @@ export const jsonToState = (json) => {
       let transformedSchedules = {}
 
       Object.entries(parsed).forEach(([key, value]) => {
-        const config = inputConfig?.[key]
-        if (config?.type === "schedule") {
-          if (!validateSchedule(value)) {
-            transformedSchedules[key] = `[${value}]*1000`
+        try {
+          const config = inputConfig?.[key]
+          if (config?.type === "schedule") {
+            if (!validateSchedule(value)) {
+              if (config?.scheduleType === "boolean") {
+                transformedSchedules[key] = `[${value ? "True" : "False"}]*1000`
+              } else {
+                transformedSchedules[key] = `[${value}]*1000`
+              }
+            }
           }
+        } catch (e) {
+          console.log(e)
         }
       })
 

@@ -318,6 +318,7 @@ export const inputConfig = {
   clamp_grad: {
     default: "[True]*1000",
     type: "schedule",
+    scheduleType: "boolean",
     label: "Clamp Grad Schedule",
     validator: yup.string().test("Clamp Grad", "${path} is not valid", (value) => {
       return validateSchedule(value, "boolean", "clamp_grad")
@@ -364,6 +365,7 @@ export const inputConfig = {
   skip_augs: {
     default: "[False]*1000",
     type: "schedule",
+    scheduleType: "boolean",
     label: "Skip Augs Schedule",
     validator: yup.string().test("Skip Augs", "${path} is not valid", (value) => {
       return validateSchedule(value, "boolean", "skip_augs")
