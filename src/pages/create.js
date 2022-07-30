@@ -68,6 +68,7 @@ import { useLoginRedirect } from "@hooks/useLoginRedirect"
 
 import { CURRENT_VERSION } from "@utils/constants"
 import { useGlobalHelp } from "@hooks/useGlobalHelp"
+import { omit } from "ramda"
 
 const getSubstring = (string, startString, endString) =>
   string.slice(string.lastIndexOf(startString) + 1, string.lastIndexOf(endString)).trim()
@@ -117,6 +118,7 @@ export default function Create({ loggedIn }) {
   const [version, setVersion] = useState(CURRENT_VERSION)
   const [currentProgressJobId, setCurrentProgressJobId] = useState(null)
   const [progressMetrics, setProgressMetrics] = useState(null)
+  const [importSeed, , , toggleImportSeed] = useOpenState(false)
   const { data: jobData, mutate: refetchJobQueue } = useSWR("/api/list", null, {
     refreshInterval: 10000,
     keepPreviousData: true,
@@ -219,7 +221,8 @@ export default function Create({ loggedIn }) {
   const handleImport = (jsonString) => () => {
     try {
       const newState = jsonString ? jsonToState(jsonString) : jsonToState(jsonToImport)
-      reset(newState)
+
+      reset(importSeed ? newState : omit(["seed"], newState))
       setJsonValidationError("")
       closeImportModal()
     } catch (e) {
@@ -904,7 +907,9 @@ export default function Create({ loggedIn }) {
             <TextField
               fullWidth
               value={jsonToImport}
-              onChange={(e) => setJsonToImport(e?.target?.value)}
+              onChange={(e) => {
+                setJsonToImport(e?.target?.value)
+              }}
               multiline
               rows={30}
             />
@@ -919,6 +924,12 @@ export default function Create({ loggedIn }) {
                   </Typography>
                 </Box>
               )}
+              <Box px={3}>
+                <FormControlLabel
+                  control={<Switch checked={importSeed} onClick={toggleImportSeed} />}
+                  label="Import Seed"
+                />
+              </Box>
               <Box>
                 <Button variant="ghost" mr={3} onClick={closeImportModal}>
                   Close
