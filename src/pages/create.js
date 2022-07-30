@@ -156,8 +156,8 @@ export default function Create({ loggedIn }) {
         timeElapsed,
         timeRemaining,
         iterationSpeed,
-        currentFrame,
-        totalFrames,
+        currentFrame: parseInt(currentFrame),
+        totalFrames: parseInt(totalFrames),
       })
     } catch (e) {
       console.log(e)
