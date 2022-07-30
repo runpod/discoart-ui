@@ -102,7 +102,6 @@ export default function Welcome({ loggedIn, setPassword }) {
                 variant="contained"
                 loading={loading}
                 loadingPosition="start"
-                loadingIndicator="Logging In..."
                 startIcon={<LoginIcon />}
               >
                 Set Password
@@ -122,7 +121,6 @@ export default function Welcome({ loggedIn, setPassword }) {
                 disabled={!passwordValue}
                 onClick={handleLogin}
                 variant="contained"
-                loadingIndicator="Logging In..."
                 startIcon={<LoginIcon />}
               >
                 Log In
