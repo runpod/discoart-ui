@@ -1,5 +1,3 @@
-const CURRENT_VERSION = "0.2.3"
-
 import { useCallback, useEffect, useState } from "react"
 // @mui
 import {
@@ -62,6 +60,7 @@ import { useDropzone } from "react-dropzone"
 import { getAuth } from "@utils/getAuth"
 import { useLoginRedirect } from "@hooks/useLoginRedirect"
 
+import { CURRENT_VERSION } from "@utils/constants"
 import { useGlobalHelp } from "@hooks/useGlobalHelp"
 
 const getSubstring = (string, startString, endString) =>
