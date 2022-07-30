@@ -39,7 +39,7 @@ const handler = async (req, res) => {
         jobId
       )
 
-      batch_name = JSON.parse(job_details) || "RunPodDisco"
+      batch_name = JSON.parse(job_details)?.batch_name || "RunPodDisco"
     } catch (e) {}
 
     const fileNames = selectedFileNames.split(",") || []
