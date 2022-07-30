@@ -87,7 +87,7 @@ export const inputConfig = {
     type: "string",
     default: getRandomName,
     label: "Batch Name",
-    validator: yup.string().max(100),
+    validator: yup.string().min(1).max(150),
   },
   batch_size: {
     type: "integer",
@@ -105,13 +105,23 @@ export const inputConfig = {
     type: "integer",
     default: 1280,
     label: "Width",
-    validator: yup.number().integer().min(64).max(4096),
+    validator: yup
+      .number()
+      .integer()
+      .min(64)
+      .max(4096)
+      .test("divisibleBy64", "Must be divisible by 64", (number) => number % 64 === 0),
   },
   height: {
     type: "integer",
     default: 768,
     label: "Height",
-    validator: yup.number().integer().min(64).max(4096),
+    validator: yup
+      .number()
+      .integer()
+      .min(64)
+      .max(4096)
+      .test("divisibleBy64", "Must be divisible by 64", (number) => number % 64 === 0),
   },
   steps: {
     type: "integer",

@@ -44,7 +44,8 @@ import { nanoid } from "nanoid"
 import { Carousel } from "react-responsive-carousel"
 import useMediaQuery from "@mui/material/useMediaQuery"
 import CasinoIcon from "@mui/icons-material/Casino"
-import { uniqueNamesGenerator, adjectives, colors } from "unique-names-generator"
+import DragIndicatorIcon from "@mui/icons-material/DragIndicator"
+import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd"
 
 // CSS
 
@@ -181,8 +182,9 @@ export default function Create({ loggedIn }) {
 
   const [open, setOpen] = useState(false)
 
-  const toggleDrawer = (newOpen) => () => {
+  const toggleDrawer = (newOpen, filterOption) => () => {
     setOpen(newOpen)
+    setQueueFilterOption(filterOption)
   }
 
   const [exportOpen, openExportModal, closeExportModal] = useOpenState(false)
@@ -223,10 +225,21 @@ export default function Create({ loggedIn }) {
     resolver: yupResolver(validationSchema),
   })
 
-  const { fields, append, remove } = useFieldArray({
+  const {
+    fields,
+    append,
+    remove,
+    move: movePrompt,
+  } = useFieldArray({
     control,
     name: "text_prompts",
   })
+
+  const handleDrag = ({ source, destination }) => {
+    if (destination) {
+      movePrompt(source.index, destination.index)
+    }
+  }
 
   const { remove: removeClipModel, append: appendClipModel } = useFieldArray({
     control,
@@ -399,42 +412,63 @@ export default function Create({ loggedIn }) {
                 </Grid>
 
                 <Grid item xs={12}>
-                  {fields.map((field, index) => {
-                    const weight = `text_prompts.${index}.weight`
-                    const text = `text_prompts.${index}.text`
+                  <DragDropContext onDragEnd={handleDrag}>
+                    <div>
+                      <Droppable droppableId="test-items">
+                        {(provided, snapshot) => (
+                          <div {...provided.droppableProps} ref={provided.innerRef}>
+                            {fields.map((field, index) => {
+                              const weight = `text_prompts.${index}.weight`
+                              const text = `text_prompts.${index}.text`
 
-                    return (
-                      <Grid mb={2} container item spacing={1} key={field?.id} xs={12}>
-                        <Grid item xs={12} lg={8}>
-                          <ControlledTextField
-                            multiline
-                            control={control}
-                            name={text}
-                            label="Prompt"
-                          />
-                        </Grid>
-                        <Grid item xs={12} lg={4}>
-                          <ControlledTextField
-                            control={control}
-                            name={weight}
-                            label="Weight Schedule"
-                          />
-                        </Grid>
-                        <Grid item xs={12} sm={3} md={2} lg={2}>
-                          <Button
-                            fullWidth={false}
-                            size="small"
-                            color="info"
-                            variant={"outlined"}
-                            onClick={handlePromptRemove(index)}
-                            startIcon={<CloseIcon></CloseIcon>}
-                          >
-                            Remove Prompt
-                          </Button>
-                        </Grid>
-                      </Grid>
-                    )
-                  })}
+                              return (
+                                <Draggable key={field.id} draggableId={field.id} index={index}>
+                                  {(provided, snapshot) => (
+                                    <Grid
+                                      container
+                                      spacing={1}
+                                      mb={1}
+                                      key={field.id}
+                                      ref={provided.innerRef}
+                                      {...provided.draggableProps}
+                                    >
+                                      <Grid item xs={12} lg={8}>
+                                        <Stack direction="row">
+                                          <Box {...provided.dragHandleProps}>
+                                            <DragIndicatorIcon></DragIndicatorIcon>
+                                          </Box>
+
+                                          <ControlledTextField
+                                            multiline
+                                            control={control}
+                                            name={text}
+                                            label="Prompt"
+                                          />
+                                        </Stack>
+                                      </Grid>
+                                      <Grid item xs={12} lg={4}>
+                                        <Stack direction="row" spacing={1} alignItems="center">
+                                          <ControlledTextField
+                                            control={control}
+                                            name={weight}
+                                            label="Weight Schedule"
+                                          />
+                                          <IconButton onClick={handlePromptRemove(index)}>
+                                            <CloseIcon></CloseIcon>
+                                          </IconButton>
+                                        </Stack>
+                                      </Grid>
+                                    </Grid>
+                                  )}
+                                </Draggable>
+                              )
+                            })}
+                            {provided.placeholder}
+                          </div>
+                        )}
+                      </Droppable>
+                    </div>
+                  </DragDropContext>
                 </Grid>
                 <Grid item xs={6}>
                   <Button
@@ -1011,24 +1045,33 @@ export default function Create({ loggedIn }) {
             alignItems="center"
           >
             <Stack direction="row" spacing={{ xs: 0, sm: 1, md: 3 }}>
-              <Chip variant="outlined" color="info" label={`Queued: ${queuedJobCount}`}></Chip>
-              <Chip
+              <Button
+                size="small"
                 variant="outlined"
                 color="info"
-                label={`Processing: ${processingJobCount}`}
-              ></Chip>
-              <Chip variant="outlined" color="warning" label={`Error: ${errorJobCount}`}></Chip>
-              <Chip
+                onClick={toggleDrawer(true, "queued")}
+              >{`Queued: ${queuedJobCount}`}</Button>
+              <Button
+                size="small"
+                variant="outlined"
+                color="info"
+                onClick={toggleDrawer(true, "processing")}
+              >{`Processing: ${processingJobCount}`}</Button>
+              <Button
+                size="small"
+                variant="outlined"
+                onClick={toggleDrawer(true, "error")}
+                color={errorJobCount > 0 ? "error" : "info"}
+              >{`Error: ${errorJobCount}`}</Button>
+              <Button
+                size="small"
                 variant="outlined"
                 color="success"
-                label={`Completed: ${completedJobCount}`}
-              ></Chip>
+                onClick={toggleDrawer(true, "completed")}
+              >{`Completed: ${completedJobCount}`}</Button>
             </Stack>
             <Button size="small" variant="contained" type="submit">
               Queue Render
-            </Button>
-            <Button size="small" color="secondary" variant="contained" onClick={toggleDrawer(true)}>
-              Show Queue
             </Button>
           </Stack>
         </Box>
