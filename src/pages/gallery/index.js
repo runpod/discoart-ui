@@ -6,6 +6,9 @@ import { getImageDimensions } from "../api/progress"
 import { Masonry } from "@mui/lab"
 import { getAuth } from "@utils/getAuth"
 import { useLoginRedirect } from "@hooks/useLoginRedirect"
+import PermMediaIcon from "@mui/icons-material/PermMedia"
+
+// serverside
 const { promisify } = require("util")
 const sizeOf = promisify(require("image-size"))
 
@@ -63,11 +66,8 @@ export async function getServerSideProps(context) {
 export default function Gallery({ auth, galleries }) {
   useLoginRedirect(auth?.loggedIn)
   return (
-    <Container maxWidth="xl" sx={{ p: { xs: 1, md: 10 } }}>
+    <Container maxWidth="xl" sx={{ p: { xs: 1, sm: 3 } }}>
       <Stack>
-        <Stack direction="row" justifyContent="space-between">
-          <Typography variant="h4">Render Batches</Typography>
-        </Stack>
         <Masonry columns={{ sx: 1, md: 2, lg: 4 }} spacing={2}>
           {galleries?.map(({ url, dimensions, jobId, fileCount }) => (
             <Link key={url} href={`/gallery/${jobId}`}>
@@ -90,6 +90,15 @@ export default function Gallery({ auth, galleries }) {
                       borderRadius: 10,
                     }}
                   />
+                  <Box
+                    sx={{
+                      position: "absolute",
+                      top: 16,
+                      right: 16,
+                    }}
+                  >
+                    <PermMediaIcon color="info"></PermMediaIcon>
+                  </Box>
                 </Box>
               </Badge>
             </Link>
