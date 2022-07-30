@@ -117,7 +117,8 @@ export default function JobGallery({ auth, files }) {
   }
 
   const filteredFiles = files?.filter((file) => {
-    return showPartials ? true : file?.fileName.includes("done")
+    if (showPartials) return true
+    else return file?.fileName.includes("done") || file?.fileName.includes("gif")
   })
 
   const handleSelectAll = () => {
