@@ -36,6 +36,8 @@ import {
   TextField,
   Typography,
   useTheme,
+  styled,
+  linearProgressClasses,
 } from "@mui/material"
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore"
 import AddIcon from "@mui/icons-material/Add"
@@ -110,6 +112,23 @@ export async function getServerSideProps({ req, res }) {
     props: auth,
   }
 }
+
+const GradientLinearProgress = styled(LinearProgress)(
+  ({ theme }) => `
+        height: 10px;
+        border-radius: ${theme.general.borderRadiusSm};
+
+        &.${linearProgressClasses.colorPrimary} {
+            background-color: ${alpha(theme.colors.primary.main, 0.1)};
+            box-shadow: inset 0 1px 2px ${alpha(theme.colors.primary.dark, 0.2)};
+        }
+        
+        & .${linearProgressClasses.bar} {
+            border-radius: ${theme.general.borderRadiusSm};
+            background: ${theme.colors.gradients.purple1};
+        }
+    `
+)
 
 export default function Create({ loggedIn }) {
   useLoginRedirect(loggedIn)
@@ -824,7 +843,7 @@ export default function Create({ loggedIn }) {
                             position: "relative",
                           }}
                         >
-                          <LinearProgress
+                          <GradientLinearProgress
                             sx={{
                               borderRadius: 5,
                               width: previewWidth * 0.8,
@@ -857,7 +876,7 @@ export default function Create({ loggedIn }) {
                             position: "relative",
                           }}
                         >
-                          <LinearProgress
+                          <GradientLinearProgress
                             sx={{
                               borderRadius: 5,
                               width: previewWidth * 0.8,
@@ -865,7 +884,7 @@ export default function Create({ loggedIn }) {
                             }}
                             variant="determinate"
                             value={(batchNumber / config?.n_batches) * 100}
-                          ></LinearProgress>
+                          ></GradientLinearProgress>
                           <Typography
                             sx={{
                               position: "absolute",
