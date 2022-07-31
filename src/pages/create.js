@@ -151,14 +151,21 @@ export default function Create({ loggedIn }) {
       const timeRemaining = getSubstring(logProgress?.logs, "<", ",")
       const iterationSpeed = getSubstring(logProgress?.logs, ",", "/it")
       const frameProgress = getSubstring(logProgress?.logs, "|", "[")
-      const [currentFrame, totalFrames] = frameProgress.split("/")
+      const [rawCurrentFrame, rawTotalFrames] = frameProgress.split("/")
+
+      const currentFrame = parseInt(rawCurrentFrame)
+      const totalFrames = parseInt(rawTotalFrames)
+
+      if (isNaN(currentFrame) || isNaN(totalFrames)) {
+        setProgressMetrics(null)
+      }
 
       setProgressMetrics({
         timeElapsed,
         timeRemaining,
         iterationSpeed,
-        currentFrame: parseInt(currentFrame),
-        totalFrames: parseInt(totalFrames),
+        currentFrame,
+        totalFrames,
       })
     } catch (e) {
       // console.log(e)
