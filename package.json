@@ -3,9 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "DISCOART_OPTOUT_CLOUD_BACKUP='1' DISCOART_MODELS_YAML='/models.yaml' DISCOART_DISABLE_REMOTE_MODELS='1' DISCOART_OUTPUT_DIR=/workspace/out node -r esm src/daemon/index.js & next dev -p 3000",
+    "dev": "pm2 start src/daemon/index.js & next dev -p 3000",
     "build": "next build",
-    "start": "DISCOART_OPTOUT_CLOUD_BACKUP='1' DISCOART_MODELS_YAML='/models.yaml' DISCOART_DISABLE_REMOTE_MODELS='1' DISCOART_OUTPUT_DIR=/workspace/out node -r esm src/daemon/index.js & next start -p 3000 &",
+    "start": "pm2 start src/daemon/index.js & next start -p 3000 &",
     "lint": "next lint"
   },
   "dependencies": {

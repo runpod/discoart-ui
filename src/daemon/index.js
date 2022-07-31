@@ -1,14 +1,14 @@
 const { spawn } = require("child_process")
-import sqlite3 from "sqlite3"
-import { open } from "sqlite"
-import fs from "fs"
-import { head } from "ramda"
+const sqlite3 = require("sqlite3")
+const { open } = require("sqlite")
+const fs = require("fs")
+const { head } = require("ramda")
 
 const databasePath = "/workspace/database"
 
 let maxConcurrency = 1
 let jobStarting = false
-export let activeProcesses = []
+let activeProcesses = []
 
 const db = open({
   filename: databasePath,
@@ -93,9 +93,11 @@ const startJob = async ({ parameters, jobId, gpuIndex }) => {
 
   const command = `echo ${JSON.stringify(
     parameters
-  )} | CUDA_VISIBLE_DEVICES=${gpuIndex} python -m discoart create`
+  )} | WANDB_MODE=disabled DISCOART_OPTOUT_CLOUD_BACKUP='1' DISCOART_MODELS_YAML='/models.yaml' DISCOART_DISABLE_REMOTE_MODELS='1' DISCOART_OUTPUT_DIR=/workspace/out CUDA_VISIBLE_DEVICES=${gpuIndex} python -m discoart create`
 
   const job = spawn("bash", ["-c", command], { detached: true })
+
+  console.log(command)
 
   database.run(
     `
