@@ -147,26 +147,30 @@ export default function Create({ loggedIn }) {
 
   useEffect(() => {
     try {
-      const timeElapsed = getSubstring(logProgress?.logs, "[", "<")
-      const timeRemaining = getSubstring(logProgress?.logs, "<", ",")
-      const iterationSpeed = getSubstring(logProgress?.logs, ",", "/it")
-      const frameProgress = getSubstring(logProgress?.logs, "|", "[")
-      const [rawCurrentFrame, rawTotalFrames] = frameProgress.split("/")
-
-      const currentFrame = parseInt(rawCurrentFrame)
-      const totalFrames = parseInt(rawTotalFrames)
-
-      if (isNaN(currentFrame) || isNaN(totalFrames)) {
+      if (!logProgress?.logs?.includes("s/it]")) {
         setProgressMetrics(null)
-      }
+      } else {
+        const timeElapsed = getSubstring(logProgress?.logs, "[", "<")
+        const timeRemaining = getSubstring(logProgress?.logs, "<", ",")
+        const iterationSpeed = getSubstring(logProgress?.logs, ",", "/it")
+        const frameProgress = getSubstring(logProgress?.logs, "|", "[")
+        const [rawCurrentFrame, rawTotalFrames] = frameProgress.split("/")
 
-      setProgressMetrics({
-        timeElapsed,
-        timeRemaining,
-        iterationSpeed,
-        currentFrame,
-        totalFrames,
-      })
+        const currentFrame = parseInt(rawCurrentFrame)
+        const totalFrames = parseInt(rawTotalFrames)
+
+        if (isNaN(currentFrame) || isNaN(totalFrames)) {
+          setProgressMetrics(null)
+        } else {
+          setProgressMetrics({
+            timeElapsed,
+            timeRemaining,
+            iterationSpeed,
+            currentFrame,
+            totalFrames,
+          })
+        }
+      }
     } catch (e) {
       // console.log(e)
       setProgressMetrics(null)
