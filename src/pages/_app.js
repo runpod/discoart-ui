@@ -66,7 +66,7 @@ function MyApp({ Component, pageProps }) {
                 spacing={2}
                 justifyContent="space-between"
               >
-                {!smallScreen && (
+                {!smallScreen ? (
                   <Stack direction="row" spacing={2} alignItems="center">
                     <Breadcrumbs aria-label="breadcrumb">
                       <Link href="/create">
@@ -96,7 +96,7 @@ function MyApp({ Component, pageProps }) {
                       )}
                     </Breadcrumbs>
                   </Stack>
-                )}
+                ) : null}
                 <Stack direction="row" spacing={2} alignItems="center">
                   {route === "/create" || (
                     <Link href="/create">
