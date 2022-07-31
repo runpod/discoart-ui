@@ -22,6 +22,9 @@ import CircleOutlinedIcon from "@mui/icons-material/CircleOutlined"
 import CircleIcon from "@mui/icons-material/Circle"
 import VisibilityIcon from "@mui/icons-material/Visibility"
 import { omit } from "ramda"
+import GifBoxIcon from "@mui/icons-material/GifBox"
+
+// server
 const { promisify } = require("util")
 const sizeOf = promisify(require("image-size"))
 
@@ -49,9 +52,12 @@ export async function getServerSideProps(context) {
 
             const url = `/api/image/${jobId}/${fileName}`
 
+            const baseUrl = url.replace("gif", "png")
+            console.log(baseUrl)
+
             return {
               url,
-              baseUrl: url.replace("progress.gif", "done-0.png"),
+              baseUrl,
               fileName,
               dimensions,
             }
@@ -248,7 +254,7 @@ export default function JobGallery({ auth, files }) {
             >
               <a href={url} target="_blank" rel="noreferrer noopener">
                 <IconButton color="info" component="label">
-                  <VisibilityIcon />
+                  {url.includes("gif") ? <GifBoxIcon /> : <VisibilityIcon />}
                 </IconButton>
               </a>
             </Box>
