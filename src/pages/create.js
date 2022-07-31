@@ -1094,7 +1094,7 @@ export default function Create({ loggedIn }) {
               >{`Processing: ${processingJobCount}`}</Button>
               <Button
                 size="small"
-                variant="outlined"
+                variant={errorJobCount > 0 ? "contained" : "outlined"}
                 onClick={toggleDrawer(true, "error")}
                 color={errorJobCount > 0 ? "error" : "info"}
               >{`Error: ${errorJobCount}`}</Button>
