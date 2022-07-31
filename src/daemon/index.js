@@ -119,15 +119,27 @@ const startJob = async ({ parameters, jobId, gpuIndex }) => {
     promise: new Promise((resolve, reject) => {
       job.stdout.on("data", (data) => {
         const trimmed = `${data}`.trim()
-        // if (trimmed) console.log(trimmed)
-        if (trimmed.includes("ERROR")) reject(`${data}`)
+
+        // if (trimmed) {
+        //   console.log("STDOUT ----------------")
+        //   console.log(trimmed)
+        //   console.log("STDOUT ----------------")
+        // }
+
+        if (trimmed.includes("Traceback")) reject(`${data}`)
       })
 
       job.stderr.on("data", (data) => {
         const trimmed = `${data}`.trim()
-        // if (trimmed) console.log(trimmed)
+
+        // if (trimmed) {
+        //   console.log("STDERR ----------------")
+        //   console.log(trimmed)
+
+        //   console.log("STDERR ----------------")
+        // }
         debugStream.write(trimmed + "\n")
-        if (data.includes("ERROR") || data.includes("Error")) reject(`${data}`)
+        if (data.includes("Traceback") || data.includes("Error")) reject(`${data}`)
       })
       job.on("close", (code) => {
         debugStream.end()
