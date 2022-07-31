@@ -122,7 +122,6 @@ export default function JobGallery({ auth, files }) {
   })
 
   const handleSelectAll = () => {
-    console.log("select all")
     let newSelected = {}
     filteredFiles.forEach((file) => {
       const fileName = file?.fileName

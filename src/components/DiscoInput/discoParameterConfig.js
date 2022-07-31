@@ -45,7 +45,6 @@ export const validateSchedule = (scheduleString, valueType, field) => {
 
     return true
   } catch (e) {
-    console.log(e, field)
     return false
   }
 }
@@ -419,3 +418,15 @@ export const validationSchema = yup.object().shape(
     allowNull: false,
   })
 )
+
+export const getDefaultValues = () =>
+  mapObject({
+    valueMapper: (value) => {
+      if (value?.defaultGenerator) {
+        return value?.defaultGenerator()
+      } else {
+        return value?.default
+      }
+    },
+    mapee: inputConfig,
+  })

@@ -58,8 +58,8 @@ import { useFieldArray, useForm } from "react-hook-form"
 import { yupResolver } from "@hookform/resolvers/yup"
 
 import { stateToJson, jsonToState } from "@utils/paramPort"
-import mapObject from "@utils/mapObject"
 import {
+  getDefaultValues,
   getRandomName,
   getRandomSeed,
   inputConfig,
@@ -79,6 +79,7 @@ import { useLoginRedirect } from "@hooks/useLoginRedirect"
 import { CURRENT_VERSION } from "@utils/constants"
 import { useGlobalHelp } from "@hooks/useGlobalHelp"
 import { omit } from "ramda"
+import useInterval from "@hooks/useInterval"
 
 const getSubstring = (string, startString, endString) =>
   string.slice(string.lastIndexOf(startString) + 1, string.lastIndexOf(endString)).trim()
@@ -160,7 +161,7 @@ export default function Create({ loggedIn }) {
         totalFrames: parseInt(totalFrames),
       })
     } catch (e) {
-      console.log(e)
+      // console.log(e)
       setProgressMetrics(null)
     }
   }, [logProgress])
@@ -210,18 +211,8 @@ export default function Create({ loggedIn }) {
   const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop })
 
   const { getValues, reset, control, watch, handleSubmit, setValue } = useForm({
-    defaultValues: mapObject({
-      valueMapper: (value) => {
-        if (value?.defaultGenerator) {
-          return value?.defaultGenerator()
-        } else {
-          return value?.default
-        }
-      },
-      mapee: inputConfig,
-      delayError: 500,
-    }),
-
+    defaultValues: getDefaultValues(),
+    delayError: 500,
     resolver: yupResolver(validationSchema),
   })
 
@@ -234,6 +225,23 @@ export default function Create({ loggedIn }) {
     control,
     name: "text_prompts",
   })
+
+  useInterval(() => {
+    localStorage.setItem("artpod-settings", JSON.stringify(getValues()))
+  }, 3000)
+
+  useEffect(() => {
+    try {
+      const savedSettings = localStorage.getItem("artpod-settings")
+      if (savedSettings) {
+        const settingsObject = JSON.parse(savedSettings)
+
+        reset(settingsObject)
+      }
+    } catch (e) {
+      console.log(e)
+    }
+  }, [])
 
   const handleDrag = ({ source, destination }) => {
     if (destination) {
@@ -251,6 +259,8 @@ export default function Create({ loggedIn }) {
   const handleImport = (jsonString) => () => {
     try {
       const newState = jsonString ? jsonToState(jsonString) : jsonToState(jsonToImport)
+
+      console.log(newState)
 
       reset(importSeed ? newState : omit(["seed"], newState))
       setJsonValidationError("")
@@ -398,7 +408,7 @@ export default function Create({ loggedIn }) {
             </AccordionSummary>
             <AccordionDetails>
               <Grid container spacing={4}>
-                <Grid item xs={12}>
+                <Grid item xs={12} display="flex" justifyContent="center">
                   <FormControlLabel
                     color="info"
                     label="Show Help"
@@ -409,13 +419,26 @@ export default function Create({ loggedIn }) {
                       />
                     }
                   />
+                  <Button
+                    sx={{
+                      marginLeft: 10,
+                    }}
+                    onClick={() => {
+                      reset(getDefaultValues())
+                    }}
+                    color="warning"
+                    variant="outlined"
+                    size="small"
+                  >
+                    Reset Settings
+                  </Button>
                 </Grid>
 
                 <Grid item xs={12}>
                   <DragDropContext onDragEnd={handleDrag}>
                     <div>
                       <Droppable droppableId="test-items">
-                        {(provided, snapshot) => (
+                        {(provided) => (
                           <div {...provided.droppableProps} ref={provided.innerRef}>
                             {fields.map((field, index) => {
                               const weight = `text_prompts.${index}.weight`
@@ -423,7 +446,7 @@ export default function Create({ loggedIn }) {
 
                               return (
                                 <Draggable key={field.id} draggableId={field.id} index={index}>
-                                  {(provided, snapshot) => (
+                                  {(provided) => (
                                     <Grid
                                       container
                                       spacing={1}
@@ -1022,24 +1045,25 @@ export default function Create({ loggedIn }) {
           sx={{
             p: {
               xs: 1,
-              sm: 3,
             },
             position: "fixed",
             bottom: 0,
             left: 0,
             right: 0,
+            zIndex: 10,
             background: alpha(theme.palette.background.paper, 0.75),
           }}
         >
           <Stack
-            sx={{
-              width: "100%",
-            }}
             direction={{ xs: "column", sm: "row" }}
             spacing={{
               xs: 1,
               sm: 2,
               md: 3,
+            }}
+            sx={{
+              p: 1,
+              margin: "auto",
             }}
             justifyContent="center"
             alignItems="center"

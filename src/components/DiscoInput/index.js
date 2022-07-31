@@ -1,9 +1,10 @@
-import { Controller } from "react-hook-form"
+import { Controller, useController } from "react-hook-form"
 import { Box, TextField, Checkbox, FormControlLabel, Autocomplete, Typography } from "@mui/material"
 import { useGlobalHelp } from "@hooks/useGlobalHelp"
 
 import { inputConfig } from "./discoParameterConfig"
 import { helpDescriptions } from "./helpDescriptions"
+import { useEffect, useState } from "react"
 
 export const DynamicInput = ({ control, name, ...rest }) => {
   const [globalHelp] = useGlobalHelp()
@@ -110,30 +111,35 @@ export const ControlledAutocomplete = ({
   autoCompleteProps,
   textFieldProps,
 }) => {
+  const {
+    field: { onChange, value, ref },
+  } = useController({
+    name,
+    control,
+  })
+
+  const [inputValue, setInputValue] = useState(defaultValue)
+
+  useEffect(() => {
+    setInputValue(value)
+  }, [value])
+
   return (
-    <Controller
-      render={({ field: { ref, onChange, value, ...field } }) => (
-        <Autocomplete
-          options={options}
-          defaultValue={defaultValue}
-          onChange={(e, data) => {
-            onChange(data)
-          }}
-          renderInput={(params) => (
-            <TextField
-              label={label}
-              inputRef={ref}
-              {...textFieldProps}
-              {...field}
-              {...params}
-              size="small"
-            />
-          )}
-          {...autoCompleteProps}
-        />
+    <Autocomplete
+      options={options}
+      defaultValue={defaultValue}
+      onChange={(e, data) => {
+        onChange(data)
+      }}
+      value={value}
+      inputValue={inputValue}
+      onInputChange={(event, newInputValue) => {
+        setInputValue(newInputValue)
+      }}
+      renderInput={(params) => (
+        <TextField label={label} inputRef={ref} {...textFieldProps} {...params} size="small" />
       )}
-      name={name}
-      control={control}
+      {...autoCompleteProps}
     />
   )
 }

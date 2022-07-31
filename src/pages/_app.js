@@ -37,8 +37,6 @@ function MyApp({ Component, pageProps }) {
       ?.filter((path) => path)
       ?.map(capitalizeFirstLetter) || []
 
-  console.log(router)
-
   return (
     <SWRConfig
       value={{
@@ -68,8 +66,8 @@ function MyApp({ Component, pageProps }) {
                 spacing={2}
                 justifyContent="space-between"
               >
-                <Stack direction="row" spacing={2} alignItems="center">
-                  {!smallScreen && (
+                {!smallScreen && (
+                  <Stack direction="row" spacing={2} alignItems="center">
                     <Breadcrumbs aria-label="breadcrumb">
                       <Link href="/create">
                         <Typography
@@ -97,8 +95,8 @@ function MyApp({ Component, pageProps }) {
                         <Typography variant="h5">{router?.query?.jobId}</Typography>
                       )}
                     </Breadcrumbs>
-                  )}
-                </Stack>
+                  </Stack>
+                )}
                 <Stack direction="row" spacing={2} alignItems="center">
                   {route === "/create" || (
                     <Link href="/create">
@@ -113,18 +111,6 @@ function MyApp({ Component, pageProps }) {
                     </Link>
                   )}
 
-                  {/* {route === "/queue" || (
-                    <Link href="/queue">
-                      <Typography
-                        sx={{
-                          cursor: "pointer",
-                        }}
-                        variant="h4"
-                      >
-                        Queue
-                      </Typography>
-                    </Link>
-                  )} */}
                   {route === "/gallery" || (
                     <Link href="/gallery">
                       <Typography
