@@ -699,6 +699,9 @@ export default function Create({ loggedIn }) {
                 </Grid>
 
                 <Grid item xs={12} sm={4} md={3} lg={2}>
+                  <DynamicInput control={control} name={"perlin_mode"} />
+                </Grid>
+                <Grid item xs={12} sm={4} md={3} lg={2}>
                   <DynamicInput control={control} name={"cutn_batches"} />
                 </Grid>
                 <Grid item xs={12} sm={4} md={3} lg={2}>

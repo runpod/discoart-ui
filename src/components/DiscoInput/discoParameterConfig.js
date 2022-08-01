@@ -184,23 +184,18 @@ export const inputConfig = {
     label: "Number of Steps to Skip",
     validator: yup.number().integer(),
   },
-  //   init_generator: {
-  //     default: "perlin",
-  //     type: "select",
-  //     options: ["perlin", "voronoi"],
-  //     label: "Initial Noise Type",
-  //   },
-  //   perlin_init: {
-  //     default: false,
-  //     type: "boolean",
-  //     label: "Perlin Init",
-  //   },
-  //   perlin_mode: {
-  //     default: "mixed",
-  //     type: "select",
-  //     options: ["mixed", "color", "gray"],
-  //     label: "Perlin Mode",
-  //   },
+  perlin_init: {
+    default: false,
+    type: "boolean",
+    label: "Perlin Init",
+  },
+  perlin_mode: {
+    default: "",
+    type: "select",
+
+    options: ["mixed", "color", "gray"],
+    label: "Perlin Mode",
+  },
   //   voronoi_points: {
   //     default: 20,
   //     type: "integer",

@@ -177,9 +177,9 @@ const startJob = async ({ parameters, jobId, gpuIndex }) => {
           .catch((err) => {
             console.log(err)
           })
-        try {
-          fs.unlink(`/workspace/out/${jobId}/da.protobuf.lz4`, () => {})
-        } catch (e) {}
+        fs.unlink(`/workspace/out/${jobId}/da.protobuf.lz4`, () => {
+          console.log("cleaned up lz4 file")
+        })
       })
 
       .catch((err) => {
@@ -199,9 +199,9 @@ const startJob = async ({ parameters, jobId, gpuIndex }) => {
           .catch((err) => {
             console.log("ERROR", err)
           })
-        try {
-          fs.unlink(`/workspace/out/${jobId}/da.protobuf.lz4`)
-        } catch (e) {}
+        fs.unlink(`/workspace/out/${jobId}/da.protobuf.lz4`, () => {
+          console.log("cleaned up lz4 file")
+        })
       }),
   }
 
