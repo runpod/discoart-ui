@@ -734,7 +734,7 @@ export default function Create({ loggedIn }) {
         </Grid>
 
         <Grid item xs={12}>
-          <Accordion>
+          <Accordion defaultExpanded>
             <AccordionSummary expandIcon={<ExpandMoreIcon />}>
               <Typography variant="h4">{`Queue (${queued.length})`}</Typography>
             </AccordionSummary>
@@ -765,7 +765,7 @@ export default function Create({ loggedIn }) {
         </Grid>
 
         <Grid item xs={12}>
-          <Accordion>
+          <Accordion defaultExpanded>
             <AccordionSummary expandIcon={<ExpandMoreIcon />}>
               <Typography variant="h4">{`Progress Preview`}</Typography>
             </AccordionSummary>
