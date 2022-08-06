@@ -47,11 +47,11 @@ export default function ProgressCarousel({ progress = {}, handleImport, handleQu
 
   const [previewWidth, setPreviewWidth] = useState(smallScreen ? 350 : 500)
 
-  const [selectedGpuIndex, setSelectedGpuIndex] = useState("0")
+  const [selectedGpuIndex, setSelectedGpuIndex] = useState(0)
 
   const handleNextGpu = () => {
     const activeGpuCount = Object.values(progress)?.length
-    const newGpuIndex = selectedGpuIndex + 1
+    const newGpuIndex = parseInt(selectedGpuIndex) + 1
     if (newGpuIndex > activeGpuCount - 1) {
       setSelectedGpuIndex("0")
     } else {
@@ -62,9 +62,9 @@ export default function ProgressCarousel({ progress = {}, handleImport, handleQu
   const handlePrevGpu = () => {
     const activeGpuCount = Object.values(progress)?.length
 
-    const newGpuIndex = selectedGpuIndex - 1
+    const newGpuIndex = parseInt(selectedGpuIndex) - 1
     if (newGpuIndex < 0) {
-      setSelectedGpuIndex(activeGpuCount - 1)
+      setSelectedGpuIndex(`${activeGpuCount - 1}`)
     } else {
       setSelectedGpuIndex(`${newGpuIndex}`)
     }
@@ -73,6 +73,8 @@ export default function ProgressCarousel({ progress = {}, handleImport, handleQu
   const handleSelectGpu = (event, newGpuIndex) => {
     setSelectedGpuIndex(newGpuIndex)
   }
+
+  console.log(typeof selectedGpuIndex, selectedGpuIndex)
 
   return (
     <Stack spacing={1} alignItems={"center"}>
