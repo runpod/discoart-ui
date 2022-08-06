@@ -86,7 +86,7 @@ export default function ProgressCarousel({ progress = {}, handleImport, handleQu
         </IconButton>
         <ToggleButtonGroup value={selectedGpuIndex} exclusive onChange={handleSelectGpu}>
           {Object.entries(progress)?.map(([gpuIndex, gpuJob]) => (
-            <ToggleButton sx={{ width: 80 }} value={gpuIndex}>
+            <ToggleButton key={gpuIndex} sx={{ width: 80 }} value={gpuIndex}>
               <Stack alignItems="center">
                 <Stack direction="row" spacing={2}>
                   <MemoryIcon sx={{ mr: 0.5 }}></MemoryIcon>
