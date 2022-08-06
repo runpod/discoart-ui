@@ -2,7 +2,7 @@ const { spawn } = require("child_process")
 const sqlite3 = require("sqlite3")
 const { open } = require("sqlite")
 const fs = require("fs")
-const { head } = require("ramda")
+const { head, range } = require("ramda")
 const express = require("express")
 
 const app = express()
@@ -107,8 +107,6 @@ const startJob = async ({ parameters, jobId, gpuIndex }) => {
 
   const job = spawn("bash", ["-c", command], { detached: true })
 
-  console.log(command)
-
   database.run(
     `
       UPDATE jobs
@@ -196,7 +194,6 @@ const startJob = async ({ parameters, jobId, gpuIndex }) => {
       .catch((err) => {
         activeProcesses[gpuIndex] = null
         console.log("FATAL ERROR", err)
-        process.kill(-pid)
         database
           .run(
             `
@@ -274,7 +271,17 @@ const startDaemon = async () => {
         const nextJob = head(jobsNotInFlight)
 
         if (nextJob && !jobStarting) {
-          const gpuIndex = activeJobCount
+          const allGpuIndexes = range(0, maxConcurrency)
+
+          const availableGpus = []
+
+          allGpuIndexes.forEach((gpuIndex) => {
+            if (!activeProcesses.find((process) => process?.gpuIndex === gpuIndex)) {
+              availableGpus.push(gpuIndex)
+            }
+          })
+
+          const gpuIndex = availableGpus?.[0]
 
           const jobId = nextJob.job_id
 
@@ -299,7 +306,6 @@ startDaemon()
 
 app.get("/status", (req, res) => {
   try {
-    console.log(activeProcesses)
     res.status(200).json({
       activeProcesses: activeProcesses
         ?.filter((job) => job)
