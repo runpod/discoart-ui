@@ -1,13 +1,12 @@
 import { useCallback, useEffect, useState } from "react"
 // @mui
-import { alpha, LinearProgress, useTheme, styled, linearProgressClasses } from "@mui/material"
+import { Box, useTheme, CircularProgress } from "@mui/material"
 import { Carousel } from "react-responsive-carousel"
 import useMediaQuery from "@mui/material/useMediaQuery"
 
 // CSS
 import "react-responsive-carousel/lib/styles/carousel.min.css" // requires a loader
 
-import ArtPodLogo from "../pages/ArtPodLogo.png"
 import Image from "next/image"
 import ProgressCarouselItem from "./ProgressCarouselItem"
 import useSWR from "swr"
@@ -66,13 +65,22 @@ export default function ProgressCarousel({ handleImport, handleQueueRemove }) {
               src={latestImage}
             ></Image>
           ) : (
-            <Image
-              alt="thumbnail image"
-              key={index}
-              height={80}
-              width={80}
-              src={ArtPodLogo}
-            ></Image>
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                height: 60,
+                width: 80,
+              }}
+            >
+              <CircularProgress
+                sx={{
+                  ml: "-10px",
+                }}
+                size={30}
+              ></CircularProgress>
+            </Box>
           )
         )
       }}
