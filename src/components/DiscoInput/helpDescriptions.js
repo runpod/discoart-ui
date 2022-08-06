@@ -55,8 +55,8 @@ export const helpDescriptions = {
     "The number of steps to save intermediate results. It is a replacement to original `display_rate` parameter.\n",
   n_batches:
     "This variable sets the number of still images you want DD to create. These will get generated one at a time.",
-  batch_name:
-    'The name of the batch, the batch id will be named as "discoart-[batch_name]-[uuid]". To avoid your artworks be overridden by other users, please use a unique name.\n',
+  batch_name: "The name of the batch. You can filter by this name in the gallery.",
+  visualize_cuts: "Generates extra images that visualize how cuts are made in each step.",
   batch_size:
     "The number of samples generated at each step. Say `batch_size=3`, then you can generate three images at the same time. Not only this is faster than three serial, but it leverages loss function better and potentially yields higher quality images.\n\nOne can of course also do `n_batches=3` and `batch_size=1` to generate three images in one run. But using `batch_size=3` is marginally faster and yield higher quality images.\n\nHigh `batch_size` can lead to OOM. \n",
   clip_models:
