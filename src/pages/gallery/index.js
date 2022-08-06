@@ -1,108 +1,136 @@
-import { Grid, Container, Typography, Stack, Button, Box, Badge } from "@mui/material"
+import {
+  Container,
+  Typography,
+  Stack,
+  alpha,
+  Box,
+  LinearProgress,
+  Badge,
+  TextField,
+  useTheme,
+} from "@mui/material"
 import Image from "next/image"
-import fs from "fs/promises"
 import Link from "next/link"
-import { getImageDimensions } from "../api/progress"
 import { Masonry } from "@mui/lab"
 import { getAuth } from "@utils/getAuth"
 import { useLoginRedirect } from "@hooks/useLoginRedirect"
 import PermMediaIcon from "@mui/icons-material/PermMedia"
+import { useState } from "react"
 
-// serverside
-const { promisify } = require("util")
-const sizeOf = promisify(require("image-size"))
+import useSWR from "swr"
 
 export async function getServerSideProps(context) {
   try {
     const auth = await getAuth(context)
 
-    const directories = (await fs.readdir(`/workspace/out`))?.filter((name) => !name.includes("."))
-
-    const galleries = (
-      await Promise.all(
-        directories.map(async (dir) => {
-          try {
-            const dirPath = `/workspace/out/${dir}/`
-            const filePath = `${dirPath}0-done-0.png`
-
-            const files = (await fs.readdir(dirPath)).filter((fileName) =>
-              fileName.includes("done")
-            )
-            const fileCount = files?.length
-
-            const { height, width } = await sizeOf(filePath)
-
-            const dimensions = getImageDimensions(height, width)
-
-            return {
-              url: `/api/image/${dir}/0-done-0.png`,
-              dimensions,
-              jobId: dir,
-              fileCount,
-            }
-          } catch (e) {
-            console.log(e)
-            return null
-          }
-        })
-      )
-    )
-      .filter((gallery) => gallery)
-      .sort((a, b) => a.jobId - b.jobId)
-
     return {
       props: {
-        galleries,
         auth,
       },
     }
   } catch (e) {
     return {
-      props: { galleries: [] },
+      props: {
+        auth: {
+          loggedIn: false,
+        },
+      },
     }
   }
 }
 
-export default function Gallery({ auth, galleries }) {
+export default function Gallery({ auth }) {
+  const theme = useTheme()
+  const [filterString, setFilterString] = useState("")
+
+  const { data } = useSWR("/api/gallery", null, {
+    refreshInterval: 10000,
+  })
+
+  const galleries = data?.galleries
+
+  const filteredGalleries = galleries?.filter((gallery) => {
+    return gallery?.settings?.batch_name?.includes(filterString)
+  })
+
   useLoginRedirect(auth?.loggedIn)
+
   return (
     <Container maxWidth="xl" sx={{ p: { xs: 1, sm: 3 } }}>
-      <Stack>
+      <Stack spacing={2}>
+        <TextField
+          sx={{ width: 200, ml: 1 }}
+          value={filterString}
+          onChange={(e) => setFilterString(e?.target?.value)}
+          label="Batch Name Filter"
+          size="small"
+        ></TextField>
         <Masonry columns={{ sx: 1, md: 2, lg: 4 }} spacing={2}>
-          {galleries?.map(({ url, dimensions, jobId, fileCount }) => (
-            <Link key={url} href={`/gallery/${jobId}`}>
-              <Badge badgeContent={fileCount} color="primary">
-                <Box
-                  sx={{
-                    transition: "transform .5s, box-shadow 1s",
-                    cursor: "pointer",
-                    "&:hover": {
-                      transform: "scale(1.05)",
-                    },
-                  }}
-                >
-                  <Image
-                    key={jobId}
-                    src={url}
-                    alt=""
-                    {...dimensions}
-                    style={{
-                      borderRadius: 10,
-                    }}
-                  />
+          {filteredGalleries?.map(
+            ({ url, dimensions, jobId, fileCount, job, jobComplete, settings }) => (
+              <Link key={url} href={`/gallery/${jobId}`}>
+                <Badge badgeContent={fileCount} color="primary">
                   <Box
                     sx={{
-                      position: "absolute",
-                      top: 16,
-                      right: 16,
+                      transition: "transform .5s, box-shadow 1s",
+                      cursor: "pointer",
+                      "&:hover": {
+                        transform: "scale(1.05)",
+                      },
                     }}
                   >
-                    <PermMediaIcon color="info"></PermMediaIcon>
+                    <Image
+                      key={jobId}
+                      src={url}
+                      alt=""
+                      {...dimensions}
+                      style={{
+                        borderRadius: 10,
+                      }}
+                    />
+                    <Box
+                      sx={{
+                        position: "absolute",
+                        top: 16,
+                        right: 16,
+                      }}
+                    >
+                      <PermMediaIcon color="info"></PermMediaIcon>
+                    </Box>
+                    <Box
+                      sx={{
+                        borderRadius: "0px 0px 10px 10px",
+                        background: alpha(theme.palette.background.paper, 0.6),
+                        position: "absolute",
+                        py: 0.5,
+                        px: 1,
+                        bottom: 0,
+                        left: 0,
+                        right: 0,
+                      }}
+                    >
+                      <Typography variant="subtitle1">{settings?.batch_name}</Typography>
+                      {!jobComplete && job?.should_process && (
+                        <Box sx={{ position: "relative" }}>
+                          <LinearProgress
+                            sx={{ height: 15 }}
+                            variant="determinate"
+                            value={(fileCount / settings?.n_batches) * 100}
+                          ></LinearProgress>
+                          <Box sx={{ position: "absolute", bottom: 0, left: 4, right: 0 }}>
+                            <Typography
+                              fontSize={10}
+                              align="center"
+                            >{`${fileCount}/${settings?.n_batches}`}</Typography>
+                          </Box>
+                        </Box>
+                      )}
+                    </Box>
                   </Box>
-                </Box>
-              </Badge>
-            </Link>
-          ))}
+                </Badge>
+              </Link>
+            )
+          )}
         </Masonry>
       </Stack>
     </Container>

@@ -84,10 +84,10 @@ export const helpDescriptions = {
   stop_event:
     "A multiprocessing/asyncio/threading.Event that once set, will stop all generation of `n_batches` and immediately return from `create`.\n",
   text_clip_on_cpu:
-    "Place text transformers of CLIP models on CPU. This saves more VRAM and will not hurt the speed at all on T4, P100, 3090; however, there are few community members report issue on V100 when it is `False`.\n",
-  gif_fps: "The frame rate of the generated GIF.\n",
+    "Place text transformers of CLIP models on CPU. This saves more VRAM and will not hurt the speed at all on T4, P100, 3090.\n",
+  gif_fps: "The frame rate of the generated GIF. -1 if you don't want to generate a gif",
   gif_size_ratio:
-    "The relative size vs. the original image, small size ratio gives smaller file size.\n",
+    "The relative size vs. the original image, a smaller size ratio gives smaller file size.\n",
   truncate_overlength_prompt:
     "All CLIP models use 77 as the context length. Setting this parameter truncates the prompt to the length of the model's context length. This will avoid errors, but may artifically make your prompt shorter!\n",
 }

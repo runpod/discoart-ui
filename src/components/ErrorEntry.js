@@ -5,7 +5,7 @@ import LogViewer from "./LogViewer"
 import SettingsViewer from "./SettingsViewer"
 import Image from "next/image"
 
-export default function QueueEntry({ job, handleQueueRemove, handleImport, index }) {
+export default function ErrorEntry({ job, handleQueueRemove, handleImport, index }) {
   const theme = useTheme()
   const { job_id } = job
 
@@ -16,6 +16,7 @@ export default function QueueEntry({ job, handleQueueRemove, handleImport, index
 
   return (
     <Stack
+      key={job.job_id}
       sx={{
         padding: 2,
         outline: `1px solid ${theme.colors.info.main}`,
@@ -26,23 +27,21 @@ export default function QueueEntry({ job, handleQueueRemove, handleImport, index
       justifyContent="space-between"
       alignItems="center"
     >
-      <Stack direction="row" spacing={3} alignItems="center">
-        <Typography variant="h4">{index + 1}</Typography>
-        <Stack>
-          <Typography variant="h4">{jobDetails?.batch_name}</Typography>
-          <Typography variant="subtitle1">
-            {`${jobDetails?.text_prompts?.prompts?.[0]?.text?.substring(0, 50)}...`}
-          </Typography>
-        </Stack>
+      <Stack>
+        <Typography variant="h4">{jobDetails?.batch_name}</Typography>
+        <Typography variant="subtitle1">
+          {`${jobDetails?.text_prompts?.prompts?.[0]?.text?.substring(0, 50)}...`}
+        </Typography>
       </Stack>
-
       <Stack direction="row" spacing={1}>
         <Button variant="outlined" size="small" onClick={() => setSettingsViewerOpen(true)}>
           SETTINGS
         </Button>
-
+        <Button variant="outlined" size="small" onClick={() => setLogViewerOpen(true)}>
+          LOGS
+        </Button>
         <Button variant="outlined" size="small" onClick={handleQueueRemove(job_id)}>
-          CANCEL
+          REMOVE
         </Button>
       </Stack>
 

@@ -21,7 +21,13 @@ const handler = async (req, res) => {
 
     const database = await db
 
-    await database.run(`DELETE from jobs where job_id = ?`, payload?.jobId)
+    await database.run(
+      `
+        DELETE FROM jobs
+          WHERE job_id = ?
+    `,
+      payload?.jobId
+    )
 
     res.status(200).json({
       success: true,

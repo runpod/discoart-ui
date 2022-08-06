@@ -154,7 +154,7 @@ export const inputConfig = {
   save_rate: {
     default: 20,
     type: "integer",
-    label: "Progress Rate",
+    label: "Save Partials Rate",
     validator: yup.number().integer(),
   },
   truncate_overlength_prompt: {
@@ -178,6 +178,7 @@ export const inputConfig = {
   //   type: "schedule",
   //   label: "Init Image Path",
   // },
+
   skip_steps: {
     default: 0,
     type: "integer",
@@ -190,7 +191,7 @@ export const inputConfig = {
     label: "Perlin Init",
   },
   perlin_mode: {
-    default: "",
+    default: null,
     type: "select",
 
     options: ["mixed", "color", "gray"],
@@ -281,6 +282,42 @@ export const inputConfig = {
     default: "ddim",
     options: ["ddim", "plms"],
     label: "Diffusion Sampling Mode",
+  },
+
+  init_scale: {
+    default: "[1000]*1000",
+    type: "schedule",
+    label: "Init Scale Schedule",
+    validator: yup.string().test("Init Scale", "${path} is not valid", (value) => {
+      return validateSchedule(value, "integer")
+    }),
+  },
+
+  text_clip_on_cpu: {
+    default: false,
+    type: "boolean",
+    label: "Text Clip on CPU",
+    validator: yup.boolean(),
+  },
+
+  gif_fps: {
+    default: 10,
+    type: "integer",
+    label: "GIF FPS",
+    validator: yup.number().integer(),
+  },
+
+  gif_size_ratio: {
+    default: 0.25,
+    type: "float",
+    label: "Gif Size Ratio",
+    validator: yup.number().positive(),
+  },
+  visualize_cuts: {
+    default: false,
+    type: "boolean",
+    label: "Visualize Cuts",
+    validator: yup.boolean(),
   },
   // cut stuff
   cutn_batches: {

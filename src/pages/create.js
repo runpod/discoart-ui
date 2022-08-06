@@ -38,23 +38,17 @@ import {
   useTheme,
   styled,
   linearProgressClasses,
+  CircularProgress,
 } from "@mui/material"
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore"
 import AddIcon from "@mui/icons-material/Add"
 import CloseIcon from "@mui/icons-material/Close"
 import { nanoid } from "nanoid"
-import { Carousel } from "react-responsive-carousel"
 import useMediaQuery from "@mui/material/useMediaQuery"
 import CasinoIcon from "@mui/icons-material/Casino"
 import DragIndicatorIcon from "@mui/icons-material/DragIndicator"
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd"
-
-// CSS
-
-import "react-responsive-carousel/lib/styles/carousel.min.css" // requires a loader
-// import "./Create.module.css"
-
-// sections
+import AutoFixHighIcon from "@mui/icons-material/AutoFixHigh"
 
 import { useFieldArray, useForm } from "react-hook-form"
 import { yupResolver } from "@hookform/resolvers/yup"
@@ -70,7 +64,7 @@ import {
 import { DynamicInput, ControlledTextField } from "@components/DiscoInput"
 import useOpenState from "@hooks/useOpenState"
 import Image from "next/image"
-import QueueEntry from "@components/QueueEntry"
+
 import useSWR from "swr"
 import { useDropzone } from "react-dropzone"
 
@@ -82,28 +76,11 @@ import { CURRENT_VERSION } from "@utils/constants"
 import { useGlobalHelp } from "@hooks/useGlobalHelp"
 import { omit } from "ramda"
 import useInterval from "@hooks/useInterval"
-
-const getSubstring = (string, startString, endString) =>
-  string.slice(string.lastIndexOf(startString) + 1, string.lastIndexOf(endString)).trim()
+import Queue from "@components/Queue"
+import ErrorList from "@components/ErrorList"
+import ProgressCarousel from "@components/ProgressCarousel"
 
 // TODO: add real validation schema here
-
-const getThumbnailDimensions = ({ height, width, maxWidth = 80 }) => {
-  try {
-    const aspectRatio = height / width
-
-    const adjustedWidth = Math.min(maxWidth, width)
-
-    const adjustedHeight = adjustedWidth * aspectRatio
-
-    return {
-      height: adjustedHeight,
-      width: adjustedWidth,
-    }
-  } catch (e) {
-    return { height: 300, width: 400 }
-  }
-}
 
 export async function getServerSideProps({ req, res }) {
   const auth = await getAuth({ req, res })
@@ -112,23 +89,6 @@ export async function getServerSideProps({ req, res }) {
     props: auth,
   }
 }
-
-const GradientLinearProgress = styled(LinearProgress)(
-  ({ theme }) => `
-        height: 10px;
-        border-radius: ${theme.general.borderRadiusSm};
-
-        &.${linearProgressClasses.colorPrimary} {
-            background-color: ${alpha(theme.colors.primary.main, 0.1)};
-            box-shadow: inset 0 1px 2px ${alpha(theme.colors.primary.dark, 0.2)};
-        }
-        
-        & .${linearProgressClasses.bar} {
-            border-radius: ${theme.general.borderRadiusSm};
-            background: ${theme.colors.gradients.purple1};
-        }
-    `
-)
 
 export default function Create({ loggedIn }) {
   useLoginRedirect(loggedIn)
@@ -140,61 +100,17 @@ export default function Create({ loggedIn }) {
   const [jsonToImport, setJsonToImport] = useState()
   const [additionalSettings, setAdditionalSettings] = useState("")
   const [useAdditionalSettings, setUseAdditionalSettings] = useState(false)
-  const [previewWidth, setPreviewWidth] = useState(smallScreen ? 350 : 500)
+
   const [refreshModelAutocomplete, setRefreshModelAutocomplete] = useState(false)
   const [file, setFile] = useState()
   const [initImagePreview, setInitImagePreview] = useState()
-  const [progress, setProgress] = useState([])
   const [version, setVersion] = useState(CURRENT_VERSION)
-  const [currentProgressJobId, setCurrentProgressJobId] = useState(null)
-  const [progressMetrics, setProgressMetrics] = useState(null)
   const [importSeed, , , toggleImportSeed] = useOpenState(false)
+
   const { data: jobData, mutate: refetchJobQueue } = useSWR("/api/list", null, {
     refreshInterval: 10000,
     keepPreviousData: true,
   })
-  const { data: progressData } = useSWR("/api/progress", null, {
-    refreshInterval: 10000,
-  })
-  const { data: logProgress } = useSWR(
-    currentProgressJobId && `/api/logs/${currentProgressJobId}?lines=1`,
-    null,
-    {
-      refreshInterval: 2000,
-    }
-  )
-
-  useEffect(() => {
-    try {
-      if (!logProgress?.logs?.includes("s/it]")) {
-        setProgressMetrics(null)
-      } else {
-        const timeElapsed = getSubstring(logProgress?.logs, "[", "<")
-        const timeRemaining = getSubstring(logProgress?.logs, "<", ",")
-        const iterationSpeed = getSubstring(logProgress?.logs, ",", "/it")
-        const frameProgress = getSubstring(logProgress?.logs, "|", "[")
-        const [rawCurrentFrame, rawTotalFrames] = frameProgress.split("/")
-
-        const currentFrame = parseInt(rawCurrentFrame)
-        const totalFrames = parseInt(rawTotalFrames)
-
-        if (isNaN(currentFrame) || isNaN(totalFrames)) {
-          setProgressMetrics(null)
-        } else {
-          setProgressMetrics({
-            timeElapsed,
-            timeRemaining,
-            iterationSpeed,
-            currentFrame,
-            totalFrames,
-          })
-        }
-      }
-    } catch (e) {
-      // console.log(e)
-      setProgressMetrics(null)
-    }
-  }, [logProgress])
 
   useEffect(() => {
     fetch("https://raw.githubusercontent.com/Run-Pod/discoart-ui/main/version.txt", {
@@ -204,23 +120,14 @@ export default function Create({ loggedIn }) {
       .then((json) => setVersion(json?.version))
   }, [])
 
-  useEffect(() => {
-    setProgress(progressData?.progress)
-
-    const jobId = progressData?.progress?.[0]?.jobId
-    setCurrentProgressJobId(jobId)
-  }, [progressData])
-
   const [open, setOpen] = useState(false)
 
-  const toggleDrawer = (newOpen, filterOption) => () => {
+  const toggleDrawer = (newOpen) => () => {
     setOpen(newOpen)
-    setQueueFilterOption(filterOption)
   }
 
   const [exportOpen, openExportModal, closeExportModal] = useOpenState(false)
   const [importOpen, openImportModal, closeImportModal] = useOpenState(false)
-  const [queueFilterOption, setQueueFilterOption] = useState("processing")
   const [jsonValidationError, setJsonValidationError] = useState("")
 
   const handleRandomizeSeed = () => {
@@ -229,6 +136,16 @@ export default function Create({ loggedIn }) {
 
   const handleRandomizeName = () => {
     setValue("batch_name", getRandomName())
+  }
+
+  const handleRoundHeight = () => {
+    const height = getValues("height")
+    setValue("height", Math.round(height / 64) * 64)
+  }
+
+  const handleRoundWidth = () => {
+    const width = getValues("width")
+    setValue("width", Math.round(width / 64) * 64)
   }
 
   const onDrop = useCallback(async (acceptedFiles) => {
@@ -290,8 +207,6 @@ export default function Create({ loggedIn }) {
     try {
       const newState = jsonString ? jsonToState(jsonString) : jsonToState(jsonToImport)
 
-      console.log(newState)
-
       reset(importSeed ? newState : omit(["seed"], newState))
       setJsonValidationError("")
       closeImportModal()
@@ -312,17 +227,6 @@ export default function Create({ loggedIn }) {
       console.log(e)
     }
   }
-  const [page, setPage] = useState(0)
-  const [rowsPerPage, setRowsPerPage] = useState(5)
-
-  const handleChangePage = (event, newPage) => {
-    setPage(newPage)
-  }
-
-  const handleChangeRowsPerPage = (event) => {
-    setRowsPerPage(parseInt(event.target.value, 10))
-    setPage(0)
-  }
 
   const handleQueueRemove = (jobId) => async () => {
     const payload = {
@@ -335,7 +239,9 @@ export default function Create({ loggedIn }) {
       },
       method: "POST",
       body: JSON.stringify(payload),
-    }).then(() => refetchJobQueue())
+    }).then(() => {
+      refetchJobQueue()
+    })
   }
 
   const handleRenderStart = (data) => {
@@ -374,52 +280,20 @@ export default function Create({ loggedIn }) {
     remove(index)
   }
 
-  const handleCarouselChange = (index, item) => {
-    const jobId = item?.props?.data_job_id
-    setCurrentProgressJobId(jobId)
-  }
+  let processing = []
+  let queued = []
+  let error = []
 
-  useEffect(() => {
-    const newWidth = window.innerWidth > 800 ? 800 : window.innerWidth
-    setPreviewWidth(newWidth)
-  }, [])
-
-  let processingJobCount = 0
-  let queuedJobCount = 0
-  let errorJobCount = 0
-  let completedJobCount = 0
-
-  const mappedJobs =
-    jobData?.jobs?.map((job) => {
-      if (job.error) {
-        errorJobCount++
-        return {
-          ...job,
-          disposition: "error",
-        }
-      } else if (job.completed_at) {
-        completedJobCount++
-        return {
-          ...job,
-          disposition: "completed",
-        }
-      } else if (job.started_at) {
-        processingJobCount++
-        return {
-          ...job,
-          disposition: "processing",
-        }
-      } else {
-        queuedJobCount++
-        return {
-          ...job,
-          disposition: "queued",
-        }
-      }
-    }) || []
-
-  const filteredJobs =
-    mappedJobs?.filter(({ disposition }) => disposition === queueFilterOption) || []
+  jobData?.jobs?.forEach((job) => {
+    if (job.error) {
+      error.push(job)
+    } else if (job.completed_at) {
+    } else if (job.processing) {
+      processing.push(job)
+    } else {
+      queued.push(job)
+    }
+  })
 
   return (
     <form onSubmit={handleSubmit(handleRenderStart)}>
@@ -537,6 +411,9 @@ export default function Create({ loggedIn }) {
                 <Grid item xs={6} sm={4} md={3}>
                   <DynamicInput control={control} name={"truncate_overlength_prompt"} />
                 </Grid>
+                <Grid item xs={6} sm={4} md={3}>
+                  <DynamicInput control={control} name={"text_clip_on_cpu"} />
+                </Grid>
                 <Grid item xs={12}>
                   <Divider></Divider>
                 </Grid>
@@ -627,16 +504,34 @@ export default function Create({ loggedIn }) {
                   <DynamicInput control={control} name={"steps"} />
                 </Grid>
                 <Grid item xs={12} sm={4} md={3}>
-                  <DynamicInput control={control} name={"width"} />
+                  <DynamicInput
+                    control={control}
+                    name={"width"}
+                    endAdornment={
+                      <InputAdornment position="end">
+                        <IconButton onClick={handleRoundWidth}>
+                          <AutoFixHighIcon></AutoFixHighIcon>
+                        </IconButton>
+                      </InputAdornment>
+                    }
+                  />
                 </Grid>
                 <Grid item xs={12} sm={4} md={3}>
-                  <DynamicInput control={control} name={"height"} />
+                  <DynamicInput
+                    control={control}
+                    name={"height"}
+                    endAdornment={
+                      <InputAdornment position="end">
+                        <IconButton onClick={handleRoundHeight}>
+                          <AutoFixHighIcon></AutoFixHighIcon>
+                        </IconButton>
+                      </InputAdornment>
+                    }
+                  />
                 </Grid>
+
                 <Grid item xs={12} sm={4} md={3}>
-                  <DynamicInput control={control} name={"save_rate"} />
-                </Grid>
-                <Grid item xs={12} sm={4} md={3}>
-                  <DynamicInput control={control} name={"skip_steps"} />
+                  <DynamicInput control={control} name={"init_scale"} />
                 </Grid>
                 <Grid item xs={12} sm={4} md={3}>
                   <Stack spacing={2}>
@@ -647,7 +542,7 @@ export default function Create({ loggedIn }) {
                           borderRadius: 5,
                         }}
                       >
-                        <img src={initImagePreview} />
+                        <img alt="init image preview" src={initImagePreview} />
                         <Button
                           onClick={() => {
                             setFile(null)
@@ -679,7 +574,23 @@ export default function Create({ loggedIn }) {
                     )}
                   </Stack>
                 </Grid>
+                <Grid item xs={12}>
+                  <Divider></Divider>
+                </Grid>
 
+                <Grid item xs={12} sm={4} md={3}>
+                  <DynamicInput control={control} name={"save_rate"} />
+                </Grid>
+                <Grid item xs={12} sm={4} md={3}>
+                  <DynamicInput control={control} name={"gif_fps"} />
+                </Grid>
+                <Grid item xs={12} sm={4} md={3}>
+                  <DynamicInput control={control} name={"gif_size_ratio"} />
+                </Grid>
+
+                <Grid item xs={12} sm={4} md={3}>
+                  <DynamicInput control={control} name={"visualize_cuts"} />
+                </Grid>
                 <Grid item xs={12}>
                   <Divider></Divider>
                 </Grid>
@@ -805,212 +716,60 @@ export default function Create({ loggedIn }) {
         </Grid>
 
         <Grid item xs={12}>
+          <Accordion>
+            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+              <Typography variant="h4">{`Queue (${queued.length})`}</Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              <Grid
+                container
+                sx={{
+                  p: {
+                    xs: 1,
+                    md: 3,
+                  },
+                }}
+              >
+                <Grid item xs={12}>
+                  <Queue
+                    jobs={queued}
+                    handleQueueRemove={handleQueueRemove}
+                    handleImport={handleImport}
+                  ></Queue>
+                </Grid>
+              </Grid>
+            </AccordionDetails>
+          </Accordion>
+        </Grid>
+
+        <Grid item xs={12}>
           <Divider></Divider>
         </Grid>
 
         <Grid item xs={12}>
-          {progress && (
-            <Card
-              sx={{
-                p: {
-                  sm: 1,
-                  md: 3,
-                  lg: 6,
-                },
-              }}
-            >
+          <Accordion>
+            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+              <Typography variant="h4">{`Progress Preview`}</Typography>
+            </AccordionSummary>
+            <AccordionDetails>
               <Grid container justifyContent="center">
-                <Carousel
-                  onChange={handleCarouselChange}
-                  width={previewWidth}
-                  infiniteLoop
-                  showThumbs={!smallScreen}
-                  renderThumbs={() => {
-                    return progress
-                      ?.filter(({ latestImage }) => latestImage)
-                      ?.map(({ latestImage, dimensions }) => (
-                        <Image
-                          key={latestImage}
-                          {...getThumbnailDimensions(dimensions)}
-                          src={latestImage}
-                        ></Image>
-                      ))
-                  }}
-                >
-                  {progress
-                    ?.filter(({ latestImage }) => latestImage)
-                    ?.map(({ latestImage, dimensions, frame, config, batchNumber, jobId }) => (
-                      <Stack alignItems="center" spacing={1} data_job_id={jobId} key={latestImage}>
-                        <Box
-                          sx={{
-                            position: "relative",
-                          }}
-                        >
-                          <GradientLinearProgress
-                            sx={{
-                              borderRadius: 5,
-                              width: previewWidth * 0.8,
-                              height: 20,
-                            }}
-                            variant="determinate"
-                            value={
-                              ((progressMetrics?.currentFrame || 0) /
-                                (progressMetrics?.totalFrames || 100)) *
-                              100
-                            }
-                          />
-                          <Typography
-                            sx={{
-                              position: "absolute",
-                              top: 2,
-                              left: 0,
-                              right: 0,
-                            }}
-                            fontSize={10}
-                            variant="subtitle1"
-                          >{`${
-                            progressMetrics
-                              ? `Frame: ${progressMetrics.currentFrame}/${progressMetrics?.totalFrames}   ${progressMetrics.timeElapsed}<${progressMetrics.timeRemaining}, ${progressMetrics.iterationSpeed}/it`
-                              : ""
-                          }`}</Typography>
-                        </Box>
-                        <Box
-                          sx={{
-                            position: "relative",
-                          }}
-                        >
-                          <GradientLinearProgress
-                            sx={{
-                              borderRadius: 5,
-                              width: previewWidth * 0.8,
-                              height: 20,
-                            }}
-                            variant="determinate"
-                            value={(batchNumber / config?.n_batches) * 100}
-                          ></GradientLinearProgress>
-                          <Typography
-                            sx={{
-                              position: "absolute",
-                              top: 2,
-                              left: 0,
-                              right: 0,
-                            }}
-                            fontSize={10}
-                            variant="subtitle1"
-                          >{`${batchNumber}/${config?.n_batches}`}</Typography>
-                        </Box>
-
-                        {!progressMetrics && (
-                          <Typography variant="h5">{logProgress?.logs || " "}</Typography>
-                        )}
-                        <Button
-                          size="small"
-                          onClick={handleQueueRemove(currentProgressJobId)}
-                          variant="outlined"
-                        >
-                          Cancel Render
-                        </Button>
-                        {latestImage && (
-                          <Box>
-                            <Image
-                              alt=""
-                              {...getThumbnailDimensions({
-                                ...dimensions,
-                                maxWidth: previewWidth,
-                              })}
-                              src={latestImage}
-                            />
-                          </Box>
-                        )}
-                      </Stack>
-                    ))}
-                </Carousel>
+                <ProgressCarousel
+                  handleQueueRemove={handleQueueRemove}
+                  handleImport={handleImport}
+                ></ProgressCarousel>
               </Grid>
-            </Card>
-          )}
+            </AccordionDetails>
+          </Accordion>
         </Grid>
 
-        <SwipeableDrawer
-          anchor="bottom"
+        <ErrorList
           open={open}
           onClose={toggleDrawer(false)}
-          onOpen={toggleDrawer(true)}
-        >
-          <Grid
-            container
-            sx={{
-              p: {
-                xs: 1,
-                md: 3,
-              },
-            }}
-          >
-            <Grid item xs={12}>
-              <Stack
-                mb={2}
-                direction="row"
-                justifyContent="space-between"
-                px={2}
-                alignItems="center"
-              >
-                <Typography variant="h4">Generation Queue</Typography>
-                <FormControl>
-                  <InputLabel id="demo-simple-select-label">Job Filter</InputLabel>
-                  <Select
-                    labelId="demo-simple-select-label"
-                    id="demo-simple-select"
-                    value={queueFilterOption}
-                    label="Job Filter"
-                    onChange={(event) => {
-                      setQueueFilterOption(event.target.value)
-                    }}
-                  >
-                    <MenuItem value={"queued"}>{`Queued: ${queuedJobCount}`}</MenuItem>
-                    <MenuItem value={"processing"}>{`Processing: ${processingJobCount}`}</MenuItem>
-                    <MenuItem value={"completed"}>{`Completed: ${completedJobCount}`}</MenuItem>
-                    <MenuItem value={"error"}>{`Error: ${errorJobCount}`}</MenuItem>
-                  </Select>
-                </FormControl>
-              </Stack>
-              <Table aria-label="simple table">
-                <TableHead>
-                  <TableRow>
-                    {(queueFilterOption === "processing" || queueFilterOption === "completed") && (
-                      <TableCell align="left">Preview</TableCell>
-                    )}
-                    {!smallScreen && <TableCell align="left">Created</TableCell>}
-                    <TableCell align="left">Started</TableCell>
-                    <TableCell align="right">Status</TableCell>
-                    <TableCell align="right"></TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {filteredJobs
-                    .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                    ?.map((job) => (
-                      <QueueEntry
-                        smallScreen={smallScreen}
-                        filter={queueFilterOption}
-                        key={job.job_id}
-                        job={job}
-                        handleQueueRemove={handleQueueRemove}
-                        handleImport={handleImport}
-                      ></QueueEntry>
-                    ))}
-                </TableBody>
-              </Table>
-              <TablePagination
-                component="div"
-                count={filteredJobs.length || 0}
-                page={page}
-                onPageChange={handleChangePage}
-                rowsPerPageOptions={[5, 10, 20]}
-                rowsPerPage={rowsPerPage}
-                onRowsPerPageChange={handleChangeRowsPerPage}
-              />
-            </Grid>
-          </Grid>
-        </SwipeableDrawer>
+          jobs={error}
+          handleQueueRemove={handleQueueRemove}
+          handleImport={handleImport}
+        ></ErrorList>
+
         <Dialog fullWidth maxWidth="lg" open={exportOpen} onClose={closeExportModal}>
           <DialogContent>
             {<TextField fullWidth multiline rows={30} readOnly value={exportedJson} />}
@@ -1101,32 +860,15 @@ export default function Create({ loggedIn }) {
             justifyContent="center"
             alignItems="center"
           >
-            <Stack direction="row" spacing={{ xs: 0, sm: 1, md: 3 }}>
+            {error.length > 0 && (
               <Button
                 size="small"
-                variant="outlined"
-                color="info"
-                onClick={toggleDrawer(true, "queued")}
-              >{`Queued: ${queuedJobCount}`}</Button>
-              <Button
-                size="small"
-                variant="outlined"
-                color="info"
-                onClick={toggleDrawer(true, "processing")}
-              >{`Processing: ${processingJobCount}`}</Button>
-              <Button
-                size="small"
-                variant={errorJobCount > 0 ? "contained" : "outlined"}
+                disabled={!error.length}
+                variant={error.length > 0 ? "contained" : "outlined"}
                 onClick={toggleDrawer(true, "error")}
-                color={errorJobCount > 0 ? "error" : "info"}
-              >{`Error: ${errorJobCount}`}</Button>
-              <Button
-                size="small"
-                variant="outlined"
-                color="success"
-                onClick={toggleDrawer(true, "completed")}
-              >{`Completed: ${completedJobCount}`}</Button>
-            </Stack>
+                color={error.length > 0 ? "error" : "info"}
+              >{`Errors: ${error.length}`}</Button>
+            )}
             <Button size="small" variant="contained" type="submit">
               Queue Render
             </Button>

@@ -7,7 +7,6 @@ import { compose, identity, omit, pick } from "ramda"
 import { parse } from "yaml"
 
 const parseTextPrompts = (parsedJson) => {
-  console.log(parsedJson)
   try {
     if (!parsedJson) return []
     // string

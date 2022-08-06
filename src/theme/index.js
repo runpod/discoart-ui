@@ -330,6 +330,7 @@ export const DarkTheme = createTheme({
         root: {
           backgroundColor: alpha(darken("#070C27", 0.5), 0.4),
           backdropFilter: "blur(2px)",
+          transition: "none !important",
 
           "&.MuiBackdrop-invisible": {
             backgroundColor: "transparent",

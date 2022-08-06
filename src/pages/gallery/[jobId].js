@@ -13,7 +13,6 @@ import {
   FormControlLabel,
 } from "@mui/material"
 import Image from "next/image"
-import fs from "fs"
 import { useState } from "react"
 import SettingsViewer from "@components/SettingsViewer"
 import { useRouter } from "next/router"
@@ -27,6 +26,15 @@ import GifBoxIcon from "@mui/icons-material/GifBox"
 // server
 const { promisify } = require("util")
 const sizeOf = promisify(require("image-size"))
+import sqlite3 from "sqlite3"
+import { open } from "sqlite"
+import { databasePath } from "@utils/constants"
+import fs from "fs/promises"
+
+const db = open({
+  filename: databasePath,
+  driver: sqlite3.Database,
+})
 
 import useOpenState from "@hooks/useOpenState"
 import { getImageDimensions } from "../api/progress"
@@ -42,38 +50,66 @@ export async function getServerSideProps(context) {
 
     const directoryName = `/workspace/out/${jobId}`
 
+    const database = await db
+
+    const jobPromise = database.get(
+      `
+      SELECT * from jobs
+        WHERE job_id = ?
+    `,
+      jobId
+    )
+
+    let job = null
+
+    try {
+      const rawJob = await jobPromise
+      job = {
+        ...rawJob,
+        job_details: JSON.parse(rawJob?.job_details),
+      }
+    } catch (e) {
+      console.log(e)
+    }
+
     const files = (
       await Promise.all(
-        fs.readdirSync(directoryName)?.map(async (fileName) => {
+        (
+          await fs.readdir(directoryName)
+        )?.map(async (fileName) => {
           try {
-            const { height, width } = await sizeOf(`${directoryName}/${fileName}`)
+            const filePath = `${directoryName}/${fileName}`
+            const { height, width } = await sizeOf(filePath)
 
             const dimensions = getImageDimensions(height, width)
+            const stat = await fs.stat(filePath)
 
             const url = `/api/image/${jobId}/${fileName}`
 
             const baseUrl = url.replace("gif", "png")
-            console.log(baseUrl)
 
             return {
               url,
               baseUrl,
               fileName,
               dimensions,
+              time: stat?.mtime?.getTime(),
             }
           } catch (e) {
+            console.log("error", e)
             return null
           }
         })
       )
     )
       .filter((file) => file)
-      .sort((a, b) => a.url - b.url)
+      .sort((a, b) => b.time - a.time)
 
     return {
       props: {
         auth,
         files,
+        job,
       },
     }
   } catch (e) {
@@ -87,7 +123,7 @@ export async function getServerSideProps(context) {
   }
 }
 
-export default function JobGallery({ auth, files }) {
+export default function JobGallery({ auth, files, job }) {
   useLoginRedirect(auth?.loggedIn)
   const theme = useTheme()
   const [open, setOpen] = useState(false)
@@ -96,7 +132,7 @@ export default function JobGallery({ auth, files }) {
   const { jobId } = router.query
   const [selected, setSelected] = useState({})
   const [jobName, setJobName] = useState(jobId)
-  const [showPartials, setShowPartials] = useState(false)
+  const [filterString, setFilterString] = useState("done")
 
   const handleToggleSelect = (fileName) => () => {
     const alreadySelected = selected[fileName]
@@ -123,8 +159,7 @@ export default function JobGallery({ auth, files }) {
   }
 
   const filteredFiles = files?.filter((file) => {
-    if (showPartials) return true
-    else return file?.fileName.includes("done") || file?.fileName.includes("gif")
+    return file?.fileName.includes(filterString)
   })
 
   const handleSelectAll = () => {
@@ -162,12 +197,12 @@ export default function JobGallery({ auth, files }) {
                 />
               }
             />
-            <FormControlLabel
-              control={
-                <Checkbox value={showPartials} onClick={() => setShowPartials(!showPartials)} />
-              }
-              label="Show Partials"
-            ></FormControlLabel>
+            <TextField
+              value={filterString}
+              onChange={(e) => setFilterString(e?.target?.value)}
+              label="File Name Filter"
+              size="small"
+            ></TextField>
           </Stack>
         </Grid>
         <Grid item xs={12} sm={6}>

@@ -3,6 +3,10 @@ const sqlite3 = require("sqlite3")
 const { open } = require("sqlite")
 const fs = require("fs")
 const { head } = require("ramda")
+const express = require("express")
+
+const app = express()
+const port = 9999
 
 const databasePath = "/workspace/database"
 
@@ -26,7 +30,10 @@ const setup = async () => {
       started_at INTEGER,
       completed_at INTEGER,
       job_details TEXT,
-      error INTEGER
+      error INTEGER,
+      show_gallery INTEGER,
+      show_queue INTEGER,
+      should_process INTEGER
     )
   `)
 
@@ -38,6 +45,9 @@ const setup = async () => {
   `)
 
   await database.exec("ALTER TABLE jobs ADD COLUMN error INTEGER").catch(() => {})
+  await database.exec("ALTER TABLE jobs ADD COLUMN show_gallery INTEGER").catch(() => {})
+  await database.exec("ALTER TABLE jobs ADD COLUMN show_queue INTEGER").catch(() => {})
+  await database.exec("ALTER TABLE jobs ADD COLUMN should_process INTEGER").catch(() => {})
 
   if (!fs.existsSync(`/workspace/out/`)) {
     fs.mkdirSync(`/workspace/out/`)
@@ -116,6 +126,7 @@ const startJob = async ({ parameters, jobId, gpuIndex }) => {
     gpuIndex,
     pid: job.pid,
     process: job,
+    jobDetails: parameters,
     promise: new Promise((resolve, reject) => {
       job.stdout.on("data", (data) => {
         const trimmed = `${data}`.trim()
@@ -185,6 +196,7 @@ const startJob = async ({ parameters, jobId, gpuIndex }) => {
       .catch((err) => {
         activeProcesses[gpuIndex] = null
         console.log("FATAL ERROR", err)
+        process.kill(-pid)
         database
           .run(
             `
@@ -212,7 +224,10 @@ const pruneDeletedJobs = async (activeJobs) => {
   try {
     const database = await db
 
-    const queuedJobs = await database.all(`SELECT job_id FROM jobs`)
+    const queuedJobs = await database.all(`
+      SELECT job_id FROM jobs 
+        WHERE should_process = 1
+    `)
 
     activeJobs.forEach(({ id, pid }, index) => {
       const matchedJob = queuedJobs.find((job) => job.job_id === id)
@@ -247,6 +262,7 @@ const startDaemon = async () => {
           `
           SELECT job_id, job_details FROM jobs
             WHERE completed_at is null
+            AND should_process = 1
             ORDER BY created_at ASC
         `
         )
@@ -280,3 +296,49 @@ const startDaemon = async () => {
 }
 
 startDaemon()
+
+app.get("/status", (req, res) => {
+  try {
+    console.log(activeProcesses)
+    res.status(200).json({
+      activeProcesses: activeProcesses
+        ?.filter((job) => job)
+        ?.map(({ id, gpuIndex, pid, jobDetails }) => {
+          return {
+            id,
+            gpuIndex,
+            pid,
+            jobDetails,
+          }
+        }),
+    })
+  } catch (e) {
+    res.status(200).json({
+      activeProcesses: [],
+    })
+  }
+})
+
+app.get("/kill", (req, res) => {
+  try {
+    const { jobId } = req?.query
+
+    const job = activeProcesses.find((job) => job.id === jobId)
+
+    if (job) {
+      console.log("killing job", id)
+      process.kill(-job.pid)
+      activeProcesses[job.gpuIndex] = null
+    }
+
+    res.status(200).json({ success: true })
+  } catch (e) {
+    res.status(200).json({
+      success: false,
+    })
+  }
+})
+
+app.listen(port, () => {
+  console.log(`Example app listening on port ${port}`)
+})

@@ -3,6 +3,7 @@ import { open } from "sqlite"
 import fs from "fs/promises"
 const path = require("path")
 import { getAuth } from "@utils/getAuth"
+import fetch from "node-fetch"
 
 const databasePath = "/workspace/database"
 
@@ -62,9 +63,23 @@ const getJobInfo = async (jobId, jobConfig) => {
     const height = parsedConfig?.width_height?.[1]
     const width = parsedConfig?.width_height?.[0]
 
+    let latestImage
+    let fileHandle
+
+    try {
+      var mime = "image/png"
+      var encoding = "base64"
+      fileHandle = await fs.open(`${directoryName}/${latestProgressFileName}`)
+      const data = await fileHandle.readFile({ encoding })
+      latestImage = "data:" + mime + ";" + encoding + "," + data
+    } catch (e) {
+    } finally {
+      await fileHandle?.close()
+    }
+
     return {
       finishedImages,
-      latestImage: latestProgressFileName && `/api/image/${jobId}/${latestProgressFileName}`,
+      latestImage,
       batchNumber,
       frame,
       config: parsedConfig,
@@ -86,14 +101,11 @@ const handler = async (req, res) => {
       res.status(401)
     }
 
-    const runningJobs = await database.all(
-      `SELECT job_id, job_details from jobs
-        WHERE started_at is not null 
-        AND completed_at is null 
-        ORDER BY created_at ASC`
-    )
+    const response = await (await fetch("http://localhost:9999/status")).json()
 
-    if (!runningJobs.length) {
+    const activeJobs = response?.activeProcesses
+
+    if (!activeJobs.length) {
       res.status(200).json({
         success: true,
         progress: [],
@@ -101,9 +113,7 @@ const handler = async (req, res) => {
       return
     }
 
-    const progress = await Promise.all(
-      runningJobs.map((job) => getJobInfo(job.job_id, job.job_details))
-    )
+    const progress = await Promise.all(activeJobs.map((job) => getJobInfo(job.id, job.jobDetails)))
 
     res.status(200).json({
       success: true,

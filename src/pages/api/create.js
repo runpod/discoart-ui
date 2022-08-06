@@ -4,8 +4,7 @@ import formidable from "formidable"
 import fs from "fs"
 
 import { getAuth } from "@utils/getAuth"
-
-const databasePath = "/workspace/database"
+import { databasePath } from "@utils/constants"
 
 const db = open({
   filename: databasePath,
@@ -61,8 +60,8 @@ const handler = async (req, res) => {
 
     if (jobId && job_details)
       await database.run(
-        `INSERT INTO jobs (job_id, created_at, job_details)
-        VALUES (:job_id, :created_at, :job_details)`,
+        `INSERT INTO jobs (job_id, created_at, job_details, show_gallery, show_queue, should_process)
+        VALUES (:job_id, :created_at, :job_details, 1, 1, 1)`,
         {
           ":job_id": jobId,
           ":created_at": Date.now(),
