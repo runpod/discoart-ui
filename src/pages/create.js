@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 // @mui
 import {
   Accordion,
@@ -20,12 +20,7 @@ import {
   Grid,
   IconButton,
   InputAdornment,
-  InputLabel,
-  LinearProgress,
-  MenuItem,
-  Select,
   Stack,
-  SwipeableDrawer,
   Switch,
   Table,
   TableBody,
@@ -49,6 +44,7 @@ import CasinoIcon from "@mui/icons-material/Casino"
 import DragIndicatorIcon from "@mui/icons-material/DragIndicator"
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd"
 import AutoFixHighIcon from "@mui/icons-material/AutoFixHigh"
+import QueueIcon from "@mui/icons-material/Queue"
 
 import { useFieldArray, useForm } from "react-hook-form"
 import { yupResolver } from "@hookform/resolvers/yup"
@@ -79,6 +75,7 @@ import useInterval from "@hooks/useInterval"
 import Queue from "@components/Queue"
 import ErrorList from "@components/ErrorList"
 import ProgressCarousel from "@components/ProgressCarousel"
+import { LoadingButton } from "@mui/lab"
 
 // TODO: add real validation schema here
 
@@ -107,9 +104,10 @@ export default function Create({ loggedIn }) {
   const [version, setVersion] = useState(CURRENT_VERSION)
   const [importSeed, , , toggleImportSeed] = useOpenState(false)
 
+  const [loading, setLoading] = useState(false)
+
   const { data: jobData, mutate: refetchJobQueue } = useSWR("/api/list", null, {
     refreshInterval: 10000,
-    keepPreviousData: true,
   })
 
   useEffect(() => {
@@ -233,18 +231,22 @@ export default function Create({ loggedIn }) {
       jobId,
     }
 
+    setLoading(true)
+
     await fetch("/api/remove", {
       headers: {
         "Content-Type": "application/json",
       },
       method: "POST",
       body: JSON.stringify(payload),
-    }).then(() => {
-      refetchJobQueue()
     })
+      .then(() => refetchJobQueue())
+      .then(() => setLoading(false))
+      .catch(() => setLoading(false))
   }
 
   const handleRenderStart = (data) => {
+    setLoading(true)
     const newRenderId = nanoid()
 
     const formData = new FormData()
@@ -266,7 +268,10 @@ export default function Create({ loggedIn }) {
     fetch("/api/create", {
       method: "POST",
       body: formData,
-    }).then(() => refetchJobQueue())
+    })
+      .then(() => refetchJobQueue())
+      .then(() => setLoading(false))
+      .catch(() => setLoading(false))
   }
 
   const handlePromptAdd = () => {
@@ -280,20 +285,27 @@ export default function Create({ loggedIn }) {
     remove(index)
   }
 
-  let processing = []
-  let queued = []
-  let error = []
+  const [queued, processing, error] = useMemo(() => {
+    let processing = []
+    let queued = []
+    let error = []
 
-  jobData?.jobs?.forEach((job) => {
-    if (job.error) {
-      error.push(job)
-    } else if (job.completed_at) {
-    } else if (job.processing) {
-      processing.push(job)
-    } else {
-      queued.push(job)
-    }
-  })
+    jobData?.jobs?.forEach((job) => {
+      if (job.error) {
+        error.push(job)
+      } else if (job.completed_at) {
+      } else if (job.processing) {
+        processing.push(job)
+      } else {
+        queued.push(job)
+      }
+    })
+
+    return [queued, processing, error]
+  }, [jobData])
+
+  console.log("jobdata", jobData)
+  console.log("queue", queued)
 
   return (
     <form onSubmit={handleSubmit(handleRenderStart)}>
@@ -695,9 +707,15 @@ export default function Create({ loggedIn }) {
                 <Grid item xs={12}>
                   <Stack sx={{ mt: 3 }} direction="row" justifyContent="space-between">
                     <Stack direction="row" spacing={2}>
-                      <Button variant="contained" type="submit">
+                      <LoadingButton
+                        loading={loading}
+                        startIcon={<QueueIcon />}
+                        loadingPosition="start"
+                        variant="contained"
+                        type="submit"
+                      >
                         Queue Render
-                      </Button>
+                      </LoadingButton>
                     </Stack>
 
                     <Stack direction="row" spacing={2}>
@@ -869,9 +887,16 @@ export default function Create({ loggedIn }) {
                 color={error.length > 0 ? "error" : "info"}
               >{`Errors: ${error.length}`}</Button>
             )}
-            <Button size="small" variant="contained" type="submit">
+            <LoadingButton
+              loadingPosition="start"
+              startIcon={<QueueIcon />}
+              loading={loading}
+              size="small"
+              variant="contained"
+              type="submit"
+            >
               Queue Render
-            </Button>
+            </LoadingButton>
           </Stack>
         </Box>
       </Grid>

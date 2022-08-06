@@ -7,6 +7,7 @@ import useMediaQuery from "@mui/material/useMediaQuery"
 // CSS
 import "react-responsive-carousel/lib/styles/carousel.min.css" // requires a loader
 
+import ArtPodLogo from "../pages/ArtPodLogo.png"
 import Image from "next/image"
 import ProgressCarouselItem from "./ProgressCarouselItem"
 import useSWR from "swr"
@@ -56,16 +57,24 @@ export default function ProgressCarousel({ handleImport, handleQueueRemove }) {
       infiniteLoop
       showThumbs={!smallScreen}
       renderThumbs={() => {
-        return data?.progress
-          ?.filter(({ latestImage }) => latestImage)
-          ?.map(({ latestImage, dimensions }) => (
+        return data?.progress?.map(({ latestImage, dimensions }, index) =>
+          latestImage ? (
             <Image
               alt="thumbnail image"
               key={latestImage}
               {...getThumbnailDimensions(dimensions)}
               src={latestImage}
             ></Image>
-          ))
+          ) : (
+            <Image
+              alt="thumbnail image"
+              key={index}
+              height={80}
+              width={80}
+              src={ArtPodLogo}
+            ></Image>
+          )
+        )
       }}
     >
       {data?.progress?.map(({ latestImage, dimensions, config, batchNumber, jobId }) => (

@@ -230,12 +230,7 @@ export default function ProgressCarouselItem({
                 alignItems: "center",
               }}
             >
-              <CircularProgress
-                sx={{
-                  zIndex: 2,
-                }}
-                size="large"
-              ></CircularProgress>
+              <CircularProgress size={100}></CircularProgress>
             </Box>
           </Box>
         )}

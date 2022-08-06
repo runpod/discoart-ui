@@ -4,6 +4,7 @@ import { format } from "date-fns"
 import LogViewer from "./LogViewer"
 import SettingsViewer from "./SettingsViewer"
 import Image from "next/image"
+import { LoadingButton } from "@mui/lab"
 
 export default function QueueEntry({ job, handleQueueRemove, handleImport, index }) {
   const theme = useTheme()
@@ -11,6 +12,18 @@ export default function QueueEntry({ job, handleQueueRemove, handleImport, index
 
   const [logViewerOpen, setLogViewerOpen] = useState(false)
   const [settingsViewerOpen, setSettingsViewerOpen] = useState(false)
+
+  const [loading, setLoading] = useState(false)
+
+  const handleRemove = async () => {
+    setLoading(true)
+    try {
+      await handleQueueRemove(job_id)()
+      setLoading(false)
+    } catch (e) {
+      setLoading(false)
+    }
+  }
 
   const jobDetails = JSON.parse(job?.job_details)
 
@@ -41,9 +54,9 @@ export default function QueueEntry({ job, handleQueueRemove, handleImport, index
           SETTINGS
         </Button>
 
-        <Button variant="outlined" size="small" onClick={handleQueueRemove(job_id)}>
+        <LoadingButton loading={loading} variant="outlined" size="small" onClick={handleRemove}>
           CANCEL
-        </Button>
+        </LoadingButton>
       </Stack>
 
       <LogViewer open={logViewerOpen} onClose={() => setLogViewerOpen(false)} jobId={job_id} />
