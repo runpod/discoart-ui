@@ -70,25 +70,29 @@ function MyApp({ Component, pageProps }) {
                   <Stack direction="row" spacing={2} alignItems="center">
                     <Breadcrumbs aria-label="breadcrumb">
                       <Link href="/create">
-                        <Typography
-                          sx={{
-                            cursor: "pointer",
-                          }}
-                          variant={"h4"}
-                        >
-                          ArtPod
-                        </Typography>
-                      </Link>
-                      {route.includes("gallery") && (
-                        <Link href="/gallery">
+                        <a textDecoration="none">
                           <Typography
                             sx={{
                               cursor: "pointer",
                             }}
                             variant={"h4"}
                           >
-                            Gallery
+                            ArtPod
                           </Typography>
+                        </a>
+                      </Link>
+                      {route.includes("gallery") && (
+                        <Link href="/gallery">
+                          <a textDecoration="none">
+                            <Typography
+                              sx={{
+                                cursor: "pointer",
+                              }}
+                              variant={"h4"}
+                            >
+                              Gallery
+                            </Typography>
+                          </a>
                         </Link>
                       )}
                       {route === "/gallery/[jobId]" && (
@@ -113,14 +117,16 @@ function MyApp({ Component, pageProps }) {
 
                   {route === "/gallery" || (
                     <Link href="/gallery">
-                      <Typography
-                        sx={{
-                          cursor: "pointer",
-                        }}
-                        variant="h4"
-                      >
-                        Gallery
-                      </Typography>
+                      <a>
+                        <Typography
+                          sx={{
+                            cursor: "pointer",
+                          }}
+                          variant="h4"
+                        >
+                          Gallery
+                        </Typography>
+                      </a>
                     </Link>
                   )}
                   <Button ml={{ sx: 0, md: 3 }} onClick={handleLogout}>
