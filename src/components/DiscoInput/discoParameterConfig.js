@@ -84,7 +84,7 @@ export const inputConfig = {
   //general run
   batch_name: {
     type: "string",
-    default: getRandomName,
+    defaultGenerator: getRandomName,
     label: "Batch Name",
     validator: yup.string().min(1).max(150),
   },
@@ -283,12 +283,6 @@ export const inputConfig = {
     options: ["ddim", "plms"],
     label: "Diffusion Sampling Mode",
   },
-
-  // init_scale: {
-  //   default: 1000,
-  //   type: "integer",
-  //   label: "Init Scale",
-  // },
 
   text_clip_on_cpu: {
     default: false,
