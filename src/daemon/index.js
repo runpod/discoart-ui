@@ -233,7 +233,11 @@ const pruneDeletedJobs = async (activeJobs) => {
 
       if (!matchedJob || aboveConcurrency) {
         console.log("killing job", id)
-        process.kill(-pid)
+        try {
+          process.kill(-pid)
+        } catch (e) {
+          console.log("failed to kill process", e)
+        }
       }
     })
   } catch (e) {
