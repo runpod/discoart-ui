@@ -19,3 +19,8 @@
     .carousel .thumb img {
       vertical-align: top;
     }
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
