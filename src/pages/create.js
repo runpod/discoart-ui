@@ -542,9 +542,9 @@ export default function Create({ loggedIn }) {
                   />
                 </Grid>
 
-                <Grid item xs={12} sm={4} md={3}>
+                {/* <Grid item xs={12} sm={4} md={3}>
                   <DynamicInput control={control} name={"init_scale"} />
-                </Grid>
+                </Grid> */}
                 <Grid item xs={12} sm={4} md={3}>
                   <Stack spacing={2}>
                     {file ? (

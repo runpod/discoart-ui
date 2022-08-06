@@ -284,11 +284,11 @@ export const inputConfig = {
     label: "Diffusion Sampling Mode",
   },
 
-  init_scale: {
-    default: 1000,
-    type: "integer",
-    label: "Init Scale",
-  },
+  // init_scale: {
+  //   default: 1000,
+  //   type: "integer",
+  //   label: "Init Scale",
+  // },
 
   text_clip_on_cpu: {
     default: false,
