@@ -63,19 +63,21 @@ const getJobInfo = async (jobId, jobConfig) => {
     const height = parsedConfig?.width_height?.[1]
     const width = parsedConfig?.width_height?.[0]
 
-    let latestImage
-    let fileHandle
+    const latestImage = `/api/image/${jobId}/${latestProgressFileName}`
 
-    try {
-      var mime = "image/png"
-      var encoding = "base64"
-      fileHandle = await fs.open(`${directoryName}/${latestProgressFileName}`)
-      const data = await fileHandle.readFile({ encoding })
-      latestImage = "data:" + mime + ";" + encoding + "," + data
-    } catch (e) {
-    } finally {
-      await fileHandle?.close()
-    }
+    //     let latestImage
+    //     let fileHandle
+
+    //     try {
+    //       var mime = "image/png"
+    //       var encoding = "base64"
+    //       fileHandle = await fs.open(`${directoryName}/${latestProgressFileName}`)
+    //       const data = await fileHandle.readFile({ encoding })
+    //       latestImage = "data:" + mime + ";" + encoding + "," + data
+    //     } catch (e) {
+    //     } finally {
+    //       await fileHandle?.close()
+    //     }
 
     return {
       finishedImages,
