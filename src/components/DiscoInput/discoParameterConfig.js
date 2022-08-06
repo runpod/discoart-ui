@@ -284,6 +284,15 @@ export const inputConfig = {
     label: "Diffusion Sampling Mode",
   },
 
+  init_scale: {
+    default: "[1000]*1000",
+    type: "schedule",
+    label: "Init Scale Schedule",
+    validator: yup.string().test("Init Scale Schedule", "${path} is not valid", (value) => {
+      return validateSchedule(value, "integer")
+    }),
+  },
+
   text_clip_on_cpu: {
     default: false,
     type: "boolean",
@@ -315,9 +324,6 @@ export const inputConfig = {
     default: "[4]*1000",
     type: "schedule",
     label: "Cutn batches Schedule",
-    validator: yup.string().test("Number Cut Batches", "${path} is not valid", (value) => {
-      return validateSchedule(value, "integer")
-    }),
   },
   clip_guidance_scale: {
     default: 5000,
