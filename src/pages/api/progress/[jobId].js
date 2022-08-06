@@ -1,7 +1,9 @@
 import sqlite3 from "sqlite3"
 import { open } from "sqlite"
-
+const path = require("path")
 import { getAuth } from "@utils/getAuth"
+import fetch from "node-fetch"
+import { getJobInfo } from "."
 
 const databasePath = "/workspace/database"
 
@@ -11,32 +13,31 @@ const db = open({
 })
 
 const handler = async (req, res) => {
-  const payload = req?.body
-
   try {
     const auth = await getAuth({ req, res })
     if (!auth?.loggedIn) {
       res.status(401)
     }
 
-    const database = await db
+    const { jobId } = req.query
 
-    await (await fetch(`http://localhost:9999/kill?jobId=${payload?.jobId}`)).json()
+    const response = await (await fetch("http://localhost:9999/status")).json()
 
-    await database.run(
-      `
-        DELETE FROM jobs
-          WHERE job_id = ?
-    `,
-      payload?.jobId
-    )
+    const activeJobs = response?.activeProcesses
+
+    const matchedJob = activeJobs.find((job) => job.id === jobId)
+
+    jobProgress = await getJobInfo(matchedJob.id, matchedJob.jobDetails)
 
     res.status(200).json({
       success: true,
+      jobProgress,
     })
   } catch (e) {
+    console.log(e)
     res.status(200).json({
       success: false,
+      jobProgress: {},
     })
   }
 }

@@ -15,6 +15,7 @@ import {
   DialogActions,
   DialogContent,
   Divider,
+  Container,
   FormControl,
   FormControlLabel,
   Grid,
@@ -107,6 +108,10 @@ export default function Create({ loggedIn }) {
   const [loading, setLoading] = useState(false)
 
   const { data: jobData, mutate: refetchJobQueue } = useSWR("/api/list", null, {
+    refreshInterval: 10000,
+  })
+
+  const { data: progressData, mutate: refetchProgress } = useSWR("/api/progress", null, {
     refreshInterval: 10000,
   })
 
@@ -240,7 +245,10 @@ export default function Create({ loggedIn }) {
       method: "POST",
       body: JSON.stringify(payload),
     })
-      .then(() => refetchJobQueue())
+      .then(() => {
+        refetchProgress()
+        refetchJobQueue()
+      })
       .then(() => setLoading(false))
       .catch(() => setLoading(false))
   }
@@ -309,464 +317,609 @@ export default function Create({ loggedIn }) {
 
   return (
     <form onSubmit={handleSubmit(handleRenderStart)}>
-      <Grid container spacing={4} padding={smallScreen ? 1 : 2}>
-        {CURRENT_VERSION !== version && (
+      <Container
+        maxWidth="xl"
+        sx={{
+          py: 0,
+          m: "auto",
+        }}
+      >
+        <Grid container spacing={4} padding={smallScreen ? 1 : 2}>
+          {CURRENT_VERSION !== version && (
+            <Grid item xs={12}>
+              <Alert severity="info" variant="filled">
+                {`Version ${version} is out! You have version ${CURRENT_VERSION}. Reset your pod to upgrade!`}
+              </Alert>
+            </Grid>
+          )}
           <Grid item xs={12}>
-            <Alert severity="info" variant="filled">
-              {`Version ${version} is out! You have version ${CURRENT_VERSION}. Reset your pod to upgrade!`}
-            </Alert>
-          </Grid>
-        )}
-        <Grid item xs={12}>
-          <Accordion defaultExpanded>
-            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-              <Typography variant="h4">Settings</Typography>
-            </AccordionSummary>
-            <AccordionDetails>
-              <Grid container spacing={4}>
-                <Grid item xs={12} display="flex" justifyContent="center">
-                  <FormControlLabel
-                    color="info"
-                    label="Show Help"
-                    control={
-                      <Switch
-                        checked={globalHelp.showHelp}
-                        onClick={globalHelpActions.toggleHelp}
+            <Accordion defaultExpanded>
+              <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                <Typography variant="h4">Settings</Typography>
+              </AccordionSummary>
+              <AccordionDetails>
+                <Grid container spacing={4}>
+                  <Grid item xs={12} display="flex" justifyContent="center">
+                    <FormControlLabel
+                      color="info"
+                      label="Show Help"
+                      control={
+                        <Switch
+                          checked={globalHelp.showHelp}
+                          onClick={globalHelpActions.toggleHelp}
+                        />
+                      }
+                    />
+                    <Button
+                      sx={{
+                        marginLeft: 10,
+                      }}
+                      onClick={() => {
+                        reset(getDefaultValues())
+                      }}
+                      color="warning"
+                      variant="outlined"
+                      size="small"
+                    >
+                      Reset Settings
+                    </Button>
+                  </Grid>
+
+                  <Grid container justifyContent="center" item xs={12}>
+                    <Box width={400}>
+                      <DynamicInput
+                        control={control}
+                        name={"batch_name"}
+                        endAdornment={
+                          <InputAdornment position="end">
+                            <IconButton onClick={handleRandomizeName}>
+                              <CasinoIcon></CasinoIcon>
+                            </IconButton>
+                          </InputAdornment>
+                        }
                       />
-                    }
-                  />
-                  <Button
-                    sx={{
-                      marginLeft: 10,
-                    }}
-                    onClick={() => {
-                      reset(getDefaultValues())
-                    }}
-                    color="warning"
-                    variant="outlined"
-                    size="small"
-                  >
-                    Reset Settings
-                  </Button>
-                </Grid>
+                    </Box>
+                  </Grid>
+                  <Grid item xs={12}>
+                    <Divider></Divider>
+                  </Grid>
 
-                <Grid item xs={12}>
-                  <DragDropContext onDragEnd={handleDrag}>
-                    <div>
-                      <Droppable droppableId="test-items">
-                        {(provided) => (
-                          <div {...provided.droppableProps} ref={provided.innerRef}>
-                            {fields.map((field, index) => {
-                              const weight = `text_prompts.${index}.weight`
-                              const text = `text_prompts.${index}.text`
+                  <Grid item xs={12}>
+                    <DragDropContext onDragEnd={handleDrag}>
+                      <div>
+                        <Droppable droppableId="test-items">
+                          {(provided) => (
+                            <div {...provided.droppableProps} ref={provided.innerRef}>
+                              {fields.map((field, index) => {
+                                const weight = `text_prompts.${index}.weight`
+                                const text = `text_prompts.${index}.text`
 
-                              return (
-                                <Draggable key={field.id} draggableId={field.id} index={index}>
-                                  {(provided) => (
-                                    <Grid
-                                      container
-                                      spacing={1}
-                                      mb={1}
-                                      key={field.id}
-                                      ref={provided.innerRef}
-                                      {...provided.draggableProps}
-                                    >
-                                      <Grid item xs={12} lg={8}>
-                                        <Stack direction="row">
-                                          <Box {...provided.dragHandleProps}>
-                                            <DragIndicatorIcon></DragIndicatorIcon>
-                                          </Box>
+                                return (
+                                  <Draggable key={field.id} draggableId={field.id} index={index}>
+                                    {(provided) => (
+                                      <Grid
+                                        container
+                                        spacing={1}
+                                        mb={1}
+                                        key={field.id}
+                                        ref={provided.innerRef}
+                                        {...provided.draggableProps}
+                                      >
+                                        <Grid item xs={12} lg={8}>
+                                          <Stack direction="row">
+                                            <Box {...provided.dragHandleProps}>
+                                              <DragIndicatorIcon></DragIndicatorIcon>
+                                            </Box>
 
-                                          <ControlledTextField
-                                            multiline
-                                            control={control}
-                                            name={text}
-                                            label="Prompt"
-                                          />
-                                        </Stack>
+                                            <ControlledTextField
+                                              multiline
+                                              control={control}
+                                              name={text}
+                                              label="Prompt"
+                                            />
+                                          </Stack>
+                                        </Grid>
+                                        <Grid item xs={12} lg={4}>
+                                          <Stack direction="row" spacing={1} alignItems="center">
+                                            <ControlledTextField
+                                              control={control}
+                                              name={weight}
+                                              label="Weight Schedule"
+                                            />
+                                            <IconButton onClick={handlePromptRemove(index)}>
+                                              <CloseIcon></CloseIcon>
+                                            </IconButton>
+                                          </Stack>
+                                        </Grid>
                                       </Grid>
-                                      <Grid item xs={12} lg={4}>
-                                        <Stack direction="row" spacing={1} alignItems="center">
-                                          <ControlledTextField
-                                            control={control}
-                                            name={weight}
-                                            label="Weight Schedule"
-                                          />
-                                          <IconButton onClick={handlePromptRemove(index)}>
-                                            <CloseIcon></CloseIcon>
-                                          </IconButton>
-                                        </Stack>
-                                      </Grid>
-                                    </Grid>
-                                  )}
-                                </Draggable>
-                              )
-                            })}
-                            {provided.placeholder}
-                          </div>
-                        )}
-                      </Droppable>
-                    </div>
-                  </DragDropContext>
-                </Grid>
-                <Grid item xs={6}>
-                  <Button
-                    variant="outlined"
-                    fullWidth={smallScreen}
-                    onClick={handlePromptAdd}
-                    size="small"
-                    startIcon={<AddIcon></AddIcon>}
-                  >
-                    Add Prompt
-                  </Button>
-                </Grid>
-                <Grid item xs={6} sm={4} md={3}>
-                  <DynamicInput control={control} name={"truncate_overlength_prompt"} />
-                </Grid>
-                <Grid item xs={6} sm={4} md={3}>
-                  <DynamicInput control={control} name={"text_clip_on_cpu"} />
-                </Grid>
-                <Grid item xs={12}>
-                  <Divider></Divider>
-                </Grid>
-                <Grid item xs={12}>
-                  <Grid container spacing={2}>
-                    <Grid item xs={12}>
-                      <Grid container spacing={1}>
-                        {clipModels?.map((option, index) => {
-                          return (
-                            <Grid item key={option}>
-                              <Chip
-                                key={option}
-                                variant="outlined"
-                                label={option}
-                                onDelete={() => removeClipModel(index)}
-                              />
-                            </Grid>
-                          )
-                        })}
+                                    )}
+                                  </Draggable>
+                                )
+                              })}
+                              {provided.placeholder}
+                            </div>
+                          )}
+                        </Droppable>
+                      </div>
+                    </DragDropContext>
+                  </Grid>
+                  <Grid item xs={6}>
+                    <Button
+                      variant="outlined"
+                      fullWidth={smallScreen}
+                      onClick={handlePromptAdd}
+                      size="small"
+                      startIcon={<AddIcon></AddIcon>}
+                    >
+                      Add Prompt
+                    </Button>
+                  </Grid>
+                  <Grid item xs={6} sm={4} md={3}>
+                    <DynamicInput control={control} name={"truncate_overlength_prompt"} />
+                  </Grid>
+                  <Grid item xs={6} sm={4} md={3}>
+                    <DynamicInput control={control} name={"text_clip_on_cpu"} />
+                  </Grid>
+                  <Grid item xs={12}>
+                    <Divider></Divider>
+                  </Grid>
+                  <Grid item xs={12}>
+                    <Grid container spacing={2}>
+                      <Grid item xs={12}>
+                        <Grid container spacing={1}>
+                          {clipModels?.map((option, index) => {
+                            return (
+                              <Grid item key={option}>
+                                <Chip
+                                  key={option}
+                                  variant="outlined"
+                                  label={option}
+                                  onDelete={() => removeClipModel(index)}
+                                />
+                              </Grid>
+                            )
+                          })}
+                        </Grid>
+                      </Grid>
+                      <Grid item xs={12}>
+                        <Autocomplete
+                          key={refreshModelAutocomplete}
+                          options={inputConfig?.["clip_models"]?.options?.filter(
+                            (option) => !clipModels?.includes(option)
+                          )}
+                          disableCloseOnSelect={true}
+                          onChange={(e, data) => {
+                            appendClipModel(data)
+                          }}
+                          onBlur={() => setRefreshModelAutocomplete(!refreshModelAutocomplete)}
+                          renderInput={(params) => (
+                            <TextField label={"Add Clip Models"} {...params} size="small" />
+                          )}
+                        />
+                      </Grid>
+
+                      <Grid item xs={12} md={6}>
+                        <DynamicInput control={control} name={"diffusion_model"} />
+                      </Grid>
+                      <Grid item xs={12} md={3}>
+                        <DynamicInput control={control} name={"diffusion_sampling_mode"} />
+                      </Grid>
+                      <Grid item xs={12} md={3}>
+                        <DynamicInput control={control} name={"use_secondary_model"} />
                       </Grid>
                     </Grid>
-                    <Grid item xs={12}>
-                      <Autocomplete
-                        key={refreshModelAutocomplete}
-                        options={inputConfig?.["clip_models"]?.options?.filter(
-                          (option) => !clipModels?.includes(option)
-                        )}
-                        disableCloseOnSelect={true}
-                        onChange={(e, data) => {
-                          appendClipModel(data)
-                        }}
-                        onBlur={() => setRefreshModelAutocomplete(!refreshModelAutocomplete)}
-                        renderInput={(params) => (
-                          <TextField label={"Add Clip Models"} {...params} size="small" />
-                        )}
-                      />
-                    </Grid>
-
-                    <Grid item xs={12} md={6}>
-                      <DynamicInput control={control} name={"diffusion_model"} />
-                    </Grid>
-                    <Grid item xs={12} md={3}>
-                      <DynamicInput control={control} name={"diffusion_sampling_mode"} />
-                    </Grid>
-                    <Grid item xs={12} md={3}>
-                      <DynamicInput control={control} name={"use_secondary_model"} />
-                    </Grid>
                   </Grid>
-                </Grid>
 
-                <Grid item xs={12}>
-                  <Divider></Divider>
-                </Grid>
+                  <Grid item xs={12}>
+                    <Divider></Divider>
+                  </Grid>
 
-                <Grid item xs={12} sm={4} md={3}>
-                  <DynamicInput
-                    control={control}
-                    name={"seed"}
-                    endAdornment={
-                      <InputAdornment position="end">
-                        <IconButton onClick={handleRandomizeSeed}>
-                          <CasinoIcon></CasinoIcon>
-                        </IconButton>
-                      </InputAdornment>
-                    }
-                  />
-                </Grid>
-                <Grid item xs={12} sm={4} md={3}>
-                  <DynamicInput
-                    control={control}
-                    name={"batch_name"}
-                    endAdornment={
-                      <InputAdornment position="end">
-                        <IconButton onClick={handleRandomizeName}>
-                          <CasinoIcon></CasinoIcon>
-                        </IconButton>
-                      </InputAdornment>
-                    }
-                  />
-                </Grid>
-                <Grid item xs={12} sm={4} md={3}>
-                  <DynamicInput control={control} name={"batch_size"} />
-                </Grid>
-                <Grid item xs={12} sm={4} md={3}>
-                  <DynamicInput control={control} name={"n_batches"} />
-                </Grid>
-                <Grid item xs={12} sm={4} md={3}>
-                  <DynamicInput control={control} name={"steps"} />
-                </Grid>
-                <Grid item xs={12} sm={4} md={3}>
-                  <DynamicInput
-                    control={control}
-                    name={"width"}
-                    endAdornment={
-                      <InputAdornment position="end">
-                        <IconButton onClick={handleRoundWidth}>
-                          <AutoFixHighIcon></AutoFixHighIcon>
-                        </IconButton>
-                      </InputAdornment>
-                    }
-                  />
-                </Grid>
-                <Grid item xs={12} sm={4} md={3}>
-                  <DynamicInput
-                    control={control}
-                    name={"height"}
-                    endAdornment={
-                      <InputAdornment position="end">
-                        <IconButton onClick={handleRoundHeight}>
-                          <AutoFixHighIcon></AutoFixHighIcon>
-                        </IconButton>
-                      </InputAdornment>
-                    }
-                  />
-                </Grid>
+                  <Grid item xs={12} sm={4} md={3}>
+                    <DynamicInput
+                      control={control}
+                      name={"seed"}
+                      endAdornment={
+                        <InputAdornment position="end">
+                          <IconButton onClick={handleRandomizeSeed}>
+                            <CasinoIcon></CasinoIcon>
+                          </IconButton>
+                        </InputAdornment>
+                      }
+                    />
+                  </Grid>
 
-                <Grid item xs={12} sm={4} md={3}>
-                  <DynamicInput control={control} name={"init_scale"} />
-                </Grid>
-                <Grid item xs={12} sm={4} md={3}>
-                  <DynamicInput control={control} name={"skip_steps"} />
-                </Grid>
-                <Grid item xs={12} sm={4} md={3}>
-                  <Stack spacing={2}>
-                    {file ? (
-                      <Stack
-                        spacing={2}
-                        sx={{
-                          borderRadius: 5,
-                        }}
-                      >
-                        <img alt="init image preview" src={initImagePreview} />
-                        <Button
-                          onClick={() => {
-                            setFile(null)
-                            setInitImagePreview(null)
+                  <Grid item xs={12} sm={4} md={3}>
+                    <DynamicInput control={control} name={"batch_size"} />
+                  </Grid>
+                  <Grid item xs={12} sm={4} md={3}>
+                    <DynamicInput control={control} name={"n_batches"} />
+                  </Grid>
+                  <Grid item xs={12} sm={4} md={3}>
+                    <DynamicInput control={control} name={"steps"} />
+                  </Grid>
+                  <Grid item xs={12} sm={4} md={3}>
+                    <DynamicInput
+                      control={control}
+                      name={"width"}
+                      endAdornment={
+                        <InputAdornment position="end">
+                          <IconButton onClick={handleRoundWidth}>
+                            <AutoFixHighIcon></AutoFixHighIcon>
+                          </IconButton>
+                        </InputAdornment>
+                      }
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={4} md={3}>
+                    <DynamicInput
+                      control={control}
+                      name={"height"}
+                      endAdornment={
+                        <InputAdornment position="end">
+                          <IconButton onClick={handleRoundHeight}>
+                            <AutoFixHighIcon></AutoFixHighIcon>
+                          </IconButton>
+                        </InputAdornment>
+                      }
+                    />
+                  </Grid>
+
+                  <Grid item xs={12} sm={4} md={3}>
+                    <DynamicInput control={control} name={"init_scale"} />
+                  </Grid>
+                  <Grid item xs={12} sm={4} md={3}>
+                    <DynamicInput control={control} name={"skip_steps"} />
+                  </Grid>
+                  <Grid item xs={12} sm={4} md={3}>
+                    <Stack spacing={2}>
+                      {file ? (
+                        <Stack
+                          spacing={2}
+                          sx={{
+                            borderRadius: 5,
                           }}
-                          variant="outlined"
                         >
-                          Remove Init Image
+                          <img alt="init image preview" src={initImagePreview} />
+                          <Button
+                            onClick={() => {
+                              setFile(null)
+                              setInitImagePreview(null)
+                            }}
+                            variant="outlined"
+                          >
+                            Remove Init Image
+                          </Button>
+                        </Stack>
+                      ) : (
+                        <Card
+                          {...getRootProps()}
+                          sx={{
+                            cursor: "pointer",
+                            p: 3,
+                            display: "flex",
+                            justifyContent: "center",
+                            alignItems: "center",
+                          }}
+                        >
+                          <input {...getInputProps()} />
+                          {isDragActive ? (
+                            <Typography>Drop File Here</Typography>
+                          ) : (
+                            <Typography>Drop Init Image Here or Click to Select</Typography>
+                          )}
+                        </Card>
+                      )}
+                    </Stack>
+                  </Grid>
+                  <Grid item xs={12}>
+                    <Divider></Divider>
+                  </Grid>
+
+                  <Grid item xs={12} sm={4} md={3}>
+                    <DynamicInput control={control} name={"save_rate"} />
+                  </Grid>
+                  <Grid item xs={12} sm={4} md={3}>
+                    <DynamicInput control={control} name={"gif_fps"} />
+                  </Grid>
+                  <Grid item xs={12} sm={4} md={3}>
+                    <DynamicInput control={control} name={"gif_size_ratio"} />
+                  </Grid>
+
+                  <Grid item xs={12} sm={4} md={3}>
+                    <DynamicInput control={control} name={"visualize_cuts"} />
+                  </Grid>
+                  <Grid item xs={12}>
+                    <Divider></Divider>
+                  </Grid>
+
+                  <Grid item xs={12} sm={4} md={3} lg={2}>
+                    <DynamicInput control={control} name={"use_vertical_symmetry"} />
+                  </Grid>
+                  <Grid item xs={12} sm={4} md={3} lg={2}>
+                    <DynamicInput control={control} name={"use_horizontal_symmetry"} />
+                  </Grid>
+                  <Grid item xs={12} sm={4} md={3} lg={2}>
+                    <DynamicInput control={control} name={"transformation_percent"} />
+                  </Grid>
+
+                  <Grid item xs={12}>
+                    <Divider></Divider>
+                  </Grid>
+
+                  <Grid item xs={12} sm={4} md={3} lg={2}>
+                    <DynamicInput control={control} name={"perlin_mode"} />
+                  </Grid>
+                  <Grid item xs={12} sm={4} md={3} lg={2}>
+                    <DynamicInput control={control} name={"cutn_batches"} />
+                  </Grid>
+                  <Grid item xs={12} sm={4} md={3} lg={2}>
+                    <DynamicInput control={control} name={"clip_guidance_scale"} />
+                  </Grid>
+                  <Grid item xs={12} sm={4} md={3}>
+                    <DynamicInput control={control} name={"cut_ic_pow"} />
+                  </Grid>
+                  <Grid item xs={12} sm={4} md={3}>
+                    <DynamicInput control={control} name={"cut_overview"} />
+                  </Grid>
+                  <Grid item xs={12} sm={4} md={3}>
+                    <DynamicInput control={control} name={"cut_innercut"} />
+                  </Grid>
+                  <Grid item xs={12} sm={4} md={3}>
+                    <DynamicInput control={control} name={"cut_icgray_p"} />
+                  </Grid>
+
+                  <Grid item xs={12} sm={4} md={3}>
+                    <DynamicInput control={control} name={"eta"} />
+                  </Grid>
+                  <Grid item xs={12} sm={4} md={3}>
+                    <DynamicInput control={control} name={"clamp_max"} />
+                  </Grid>
+
+                  <Grid item xs={12} sm={4} md={3}>
+                    <DynamicInput control={control} name={"tv_scale"} />
+                  </Grid>
+                  <Grid item xs={12} sm={4} md={3}>
+                    <DynamicInput control={control} name={"range_scale"} />
+                  </Grid>
+                  <Grid item xs={12} sm={4} md={3}>
+                    <DynamicInput control={control} name={"sat_scale"} />
+                  </Grid>
+
+                  <Grid item xs={12} sm={4} md={3}>
+                    <DynamicInput control={control} name={"clamp_grad"} />
+                  </Grid>
+
+                  <Grid item xs={12} sm={4} md={3}>
+                    <DynamicInput control={control} name={"skip_augs"} />
+                  </Grid>
+                  <Grid item xs={12} sm={4} md={3}>
+                    <DynamicInput control={control} name={"clip_denoised"} />
+                  </Grid>
+
+                  <Grid item xs={12}>
+                    <Divider></Divider>
+                  </Grid>
+
+                  <Grid item xs={12}>
+                    <Typography variant="subtitle1">
+                      Custom additional settings in JSON format that will be sent to the server. You
+                      can override existing settings or use ones that are not exposed in this UI.
+                      Warning: Advanced feature!
+                    </Typography>
+                  </Grid>
+                  <Grid item xs={12}>
+                    <FormControlLabel
+                      color="info"
+                      label="Enable Advanced Custom Settings"
+                      control={
+                        <Switch
+                          checked={useAdditionalSettings}
+                          onClick={() => setUseAdditionalSettings(!useAdditionalSettings)}
+                        ></Switch>
+                      }
+                    />
+                  </Grid>
+                  <Grid item xs={12}>
+                    <TextField
+                      fullWidth
+                      multiline
+                      disabled={!useAdditionalSettings}
+                      label={"Custom Settings"}
+                      value={additionalSettings}
+                      onChange={(e) => setAdditionalSettings(e?.target?.value)}
+                    ></TextField>
+                  </Grid>
+                  <Grid item xs={12}>
+                    <Stack sx={{ mt: 3 }} direction="row" justifyContent="space-between">
+                      <Stack direction="row" spacing={2}>
+                        <LoadingButton
+                          loading={loading}
+                          startIcon={<QueueIcon />}
+                          loadingPosition="start"
+                          variant="contained"
+                          type="submit"
+                        >
+                          Queue Render
+                        </LoadingButton>
+                      </Stack>
+
+                      <Stack direction="row" spacing={2}>
+                        <Button variant="outlined" onClick={openImportModal}>
+                          Import Settings
+                        </Button>
+                        <Button variant="outlined" onClick={handleExport}>
+                          Export Settings
                         </Button>
                       </Stack>
-                    ) : (
-                      <Card
-                        {...getRootProps()}
-                        sx={{
-                          cursor: "pointer",
-                          p: 3,
-                          display: "flex",
-                          justifyContent: "center",
-                          alignItems: "center",
-                        }}
-                      >
-                        <input {...getInputProps()} />
-                        {isDragActive ? (
-                          <Typography>Drop File Here</Typography>
-                        ) : (
-                          <Typography>Drop Init Image Here or Click to Select</Typography>
-                        )}
-                      </Card>
-                    )}
-                  </Stack>
-                </Grid>
-                <Grid item xs={12}>
-                  <Divider></Divider>
-                </Grid>
-
-                <Grid item xs={12} sm={4} md={3}>
-                  <DynamicInput control={control} name={"save_rate"} />
-                </Grid>
-                <Grid item xs={12} sm={4} md={3}>
-                  <DynamicInput control={control} name={"gif_fps"} />
-                </Grid>
-                <Grid item xs={12} sm={4} md={3}>
-                  <DynamicInput control={control} name={"gif_size_ratio"} />
-                </Grid>
-
-                <Grid item xs={12} sm={4} md={3}>
-                  <DynamicInput control={control} name={"visualize_cuts"} />
-                </Grid>
-                <Grid item xs={12}>
-                  <Divider></Divider>
-                </Grid>
-
-                <Grid item xs={12} sm={4} md={3} lg={2}>
-                  <DynamicInput control={control} name={"use_vertical_symmetry"} />
-                </Grid>
-                <Grid item xs={12} sm={4} md={3} lg={2}>
-                  <DynamicInput control={control} name={"use_horizontal_symmetry"} />
-                </Grid>
-                <Grid item xs={12} sm={4} md={3} lg={2}>
-                  <DynamicInput control={control} name={"transformation_percent"} />
-                </Grid>
-
-                <Grid item xs={12}>
-                  <Divider></Divider>
-                </Grid>
-
-                <Grid item xs={12} sm={4} md={3} lg={2}>
-                  <DynamicInput control={control} name={"perlin_mode"} />
-                </Grid>
-                <Grid item xs={12} sm={4} md={3} lg={2}>
-                  <DynamicInput control={control} name={"cutn_batches"} />
-                </Grid>
-                <Grid item xs={12} sm={4} md={3} lg={2}>
-                  <DynamicInput control={control} name={"clip_guidance_scale"} />
-                </Grid>
-                <Grid item xs={12} sm={4} md={3}>
-                  <DynamicInput control={control} name={"cut_ic_pow"} />
-                </Grid>
-                <Grid item xs={12} sm={4} md={3}>
-                  <DynamicInput control={control} name={"cut_overview"} />
-                </Grid>
-                <Grid item xs={12} sm={4} md={3}>
-                  <DynamicInput control={control} name={"cut_innercut"} />
-                </Grid>
-                <Grid item xs={12} sm={4} md={3}>
-                  <DynamicInput control={control} name={"cut_icgray_p"} />
-                </Grid>
-
-                <Grid item xs={12} sm={4} md={3}>
-                  <DynamicInput control={control} name={"eta"} />
-                </Grid>
-                <Grid item xs={12} sm={4} md={3}>
-                  <DynamicInput control={control} name={"clamp_max"} />
-                </Grid>
-
-                <Grid item xs={12} sm={4} md={3}>
-                  <DynamicInput control={control} name={"tv_scale"} />
-                </Grid>
-                <Grid item xs={12} sm={4} md={3}>
-                  <DynamicInput control={control} name={"range_scale"} />
-                </Grid>
-                <Grid item xs={12} sm={4} md={3}>
-                  <DynamicInput control={control} name={"sat_scale"} />
-                </Grid>
-
-                <Grid item xs={12} sm={4} md={3}>
-                  <DynamicInput control={control} name={"clamp_grad"} />
-                </Grid>
-
-                <Grid item xs={12} sm={4} md={3}>
-                  <DynamicInput control={control} name={"skip_augs"} />
-                </Grid>
-                <Grid item xs={12} sm={4} md={3}>
-                  <DynamicInput control={control} name={"clip_denoised"} />
-                </Grid>
-
-                <Grid item xs={12}>
-                  <Divider></Divider>
-                </Grid>
-
-                <Grid item xs={12}>
-                  <Typography variant="subtitle1">
-                    Custom additional settings in JSON format that will be sent to the server. You
-                    can override existing settings or use ones that are not exposed in this UI.
-                    Warning: Advanced feature!
-                  </Typography>
-                </Grid>
-                <Grid item xs={12}>
-                  <FormControlLabel
-                    color="info"
-                    label="Enable Advanced Custom Settings"
-                    control={
-                      <Switch
-                        checked={useAdditionalSettings}
-                        onClick={() => setUseAdditionalSettings(!useAdditionalSettings)}
-                      ></Switch>
-                    }
-                  />
-                </Grid>
-                <Grid item xs={12}>
-                  <TextField
-                    fullWidth
-                    multiline
-                    disabled={!useAdditionalSettings}
-                    label={"Custom Settings"}
-                    value={additionalSettings}
-                    onChange={(e) => setAdditionalSettings(e?.target?.value)}
-                  ></TextField>
-                </Grid>
-                <Grid item xs={12}>
-                  <Stack sx={{ mt: 3 }} direction="row" justifyContent="space-between">
-                    <Stack direction="row" spacing={2}>
-                      <LoadingButton
-                        loading={loading}
-                        startIcon={<QueueIcon />}
-                        loadingPosition="start"
-                        variant="contained"
-                        type="submit"
-                      >
-                        Queue Render
-                      </LoadingButton>
                     </Stack>
-
-                    <Stack direction="row" spacing={2}>
-                      <Button variant="outlined" onClick={openImportModal}>
-                        Import Settings
-                      </Button>
-                      <Button variant="outlined" onClick={handleExport}>
-                        Export Settings
-                      </Button>
-                    </Stack>
-                  </Stack>
+                  </Grid>
                 </Grid>
-              </Grid>
-            </AccordionDetails>
-          </Accordion>
-        </Grid>
+              </AccordionDetails>
+            </Accordion>
+          </Grid>
 
-        <Grid item xs={12}>
-          <Accordion defaultExpanded>
-            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-              <Typography variant="h4">{`Queue (${queued.length})`}</Typography>
-            </AccordionSummary>
-            <AccordionDetails>
-              <Grid
-                container
-                sx={{
-                  p: {
-                    xs: 1,
-                    md: 3,
-                  },
+          <Grid item xs={12}>
+            <Accordion defaultExpanded>
+              <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                <Typography variant="h4">{`Queue (${queued.length})`}</Typography>
+              </AccordionSummary>
+              <AccordionDetails>
+                <Grid
+                  container
+                  sx={{
+                    p: {
+                      xs: 1,
+                      md: 3,
+                    },
+                  }}
+                >
+                  <Grid item xs={12}>
+                    <Queue
+                      jobs={queued}
+                      handleQueueRemove={handleQueueRemove}
+                      handleImport={handleImport}
+                    ></Queue>
+                  </Grid>
+                </Grid>
+              </AccordionDetails>
+            </Accordion>
+          </Grid>
+
+          <Grid item xs={12}>
+            <Divider></Divider>
+          </Grid>
+
+          <ErrorList
+            open={open}
+            onClose={toggleDrawer(false)}
+            jobs={error}
+            handleQueueRemove={handleQueueRemove}
+            handleImport={handleImport}
+          ></ErrorList>
+
+          <Dialog fullWidth maxWidth="lg" open={exportOpen} onClose={closeExportModal}>
+            <DialogContent>
+              {<TextField fullWidth multiline rows={30} readOnly value={exportedJson} />}
+            </DialogContent>
+            <DialogActions>
+              <Button variant="ghost" mr={3} onClick={closeExportModal}>
+                Close
+              </Button>
+              <Button
+                onClick={() => {
+                  navigator.clipboard.writeText(exportedJson)
                 }}
+                variant="contained"
               >
-                <Grid item xs={12}>
-                  <Queue
-                    jobs={queued}
-                    handleQueueRemove={handleQueueRemove}
-                    handleImport={handleImport}
-                  ></Queue>
-                </Grid>
-              </Grid>
-            </AccordionDetails>
-          </Accordion>
-        </Grid>
+                Copy To Clipboard
+              </Button>
+            </DialogActions>
+          </Dialog>
+          <Dialog fullWidth maxWidth="lg" open={importOpen} onClose={closeImportModal}>
+            <DialogContent>
+              <TextField
+                fullWidth
+                value={jsonToImport}
+                onChange={(e) => {
+                  setJsonToImport(e?.target?.value)
+                }}
+                multiline
+                rows={30}
+              />
+            </DialogContent>
 
-        <Grid item xs={12}>
-          <Divider></Divider>
-        </Grid>
+            <DialogActions>
+              <Stack
+                direction="row"
+                width="100%"
+                alignItems="center"
+                justifyContent="space-between"
+              >
+                {jsonValidationError && (
+                  <Box sx={{ pl: 3 }}>
+                    <Typography variant="h5" color="red">
+                      {jsonValidationError}
+                    </Typography>
+                  </Box>
+                )}
+                <Box px={3}>
+                  <FormControlLabel
+                    control={<Switch checked={importSeed} onClick={toggleImportSeed} />}
+                    label="Import Seed"
+                  />
+                </Box>
+                <Box>
+                  <Button variant="ghost" mr={3} onClick={closeImportModal}>
+                    Close
+                  </Button>
+                  <Button onClick={handleImport()} variant="contained">
+                    Import
+                  </Button>
+                </Box>
+              </Stack>
+            </DialogActions>
+          </Dialog>
 
+          <Box
+            sx={{
+              p: {
+                xs: 1,
+              },
+              position: "fixed",
+              bottom: 0,
+              left: 0,
+              right: 0,
+              zIndex: 10,
+              background: alpha(theme.palette.background.paper, 0.75),
+            }}
+          >
+            <Stack
+              direction={{ xs: "column", sm: "row" }}
+              spacing={{
+                xs: 1,
+                sm: 2,
+                md: 3,
+              }}
+              sx={{
+                p: 1,
+                margin: "auto",
+              }}
+              justifyContent="center"
+              alignItems="center"
+            >
+              {error.length > 0 && (
+                <Button
+                  size="small"
+                  disabled={!error.length}
+                  variant={error.length > 0 ? "contained" : "outlined"}
+                  onClick={toggleDrawer(true, "error")}
+                  color={error.length > 0 ? "error" : "info"}
+                >{`Errors: ${error.length}`}</Button>
+              )}
+              <LoadingButton
+                loadingPosition="start"
+                startIcon={<QueueIcon />}
+                loading={loading}
+                size="small"
+                variant="contained"
+                type="submit"
+              >
+                Queue Render
+              </LoadingButton>
+            </Stack>
+          </Box>
+        </Grid>
+      </Container>
+      <Grid
+        container
+        padding={smallScreen ? 1 : 0}
+        maxWidth="xl"
+        sx={{
+          py: 0,
+          m: "auto",
+          overflow: "visible",
+        }}
+      >
         <Grid item xs={12}>
           <Accordion defaultExpanded>
             <AccordionSummary expandIcon={<ExpandMoreIcon />}>
@@ -775,6 +928,7 @@ export default function Create({ loggedIn }) {
             <AccordionDetails>
               <Grid container justifyContent="center">
                 <ProgressCarousel
+                  progress={progressData?.progress}
                   handleQueueRemove={handleQueueRemove}
                   handleImport={handleImport}
                 ></ProgressCarousel>
@@ -782,126 +936,12 @@ export default function Create({ loggedIn }) {
             </AccordionDetails>
           </Accordion>
         </Grid>
-
-        <ErrorList
-          open={open}
-          onClose={toggleDrawer(false)}
-          jobs={error}
-          handleQueueRemove={handleQueueRemove}
-          handleImport={handleImport}
-        ></ErrorList>
-
-        <Dialog fullWidth maxWidth="lg" open={exportOpen} onClose={closeExportModal}>
-          <DialogContent>
-            {<TextField fullWidth multiline rows={30} readOnly value={exportedJson} />}
-          </DialogContent>
-          <DialogActions>
-            <Button variant="ghost" mr={3} onClick={closeExportModal}>
-              Close
-            </Button>
-            <Button
-              onClick={() => {
-                navigator.clipboard.writeText(exportedJson)
-              }}
-              variant="contained"
-            >
-              Copy To Clipboard
-            </Button>
-          </DialogActions>
-        </Dialog>
-        <Dialog fullWidth maxWidth="lg" open={importOpen} onClose={closeImportModal}>
-          <DialogContent>
-            <TextField
-              fullWidth
-              value={jsonToImport}
-              onChange={(e) => {
-                setJsonToImport(e?.target?.value)
-              }}
-              multiline
-              rows={30}
-            />
-          </DialogContent>
-
-          <DialogActions>
-            <Stack direction="row" width="100%" alignItems="center" justifyContent="space-between">
-              {jsonValidationError && (
-                <Box sx={{ pl: 3 }}>
-                  <Typography variant="h5" color="red">
-                    {jsonValidationError}
-                  </Typography>
-                </Box>
-              )}
-              <Box px={3}>
-                <FormControlLabel
-                  control={<Switch checked={importSeed} onClick={toggleImportSeed} />}
-                  label="Import Seed"
-                />
-              </Box>
-              <Box>
-                <Button variant="ghost" mr={3} onClick={closeImportModal}>
-                  Close
-                </Button>
-                <Button onClick={handleImport()} variant="contained">
-                  Import
-                </Button>
-              </Box>
-            </Stack>
-          </DialogActions>
-        </Dialog>
         <Box
           sx={{
             height: 100,
             width: "100%",
           }}
         ></Box>
-        <Box
-          sx={{
-            p: {
-              xs: 1,
-            },
-            position: "fixed",
-            bottom: 0,
-            left: 0,
-            right: 0,
-            zIndex: 10,
-            background: alpha(theme.palette.background.paper, 0.75),
-          }}
-        >
-          <Stack
-            direction={{ xs: "column", sm: "row" }}
-            spacing={{
-              xs: 1,
-              sm: 2,
-              md: 3,
-            }}
-            sx={{
-              p: 1,
-              margin: "auto",
-            }}
-            justifyContent="center"
-            alignItems="center"
-          >
-            {error.length > 0 && (
-              <Button
-                size="small"
-                disabled={!error.length}
-                variant={error.length > 0 ? "contained" : "outlined"}
-                onClick={toggleDrawer(true, "error")}
-                color={error.length > 0 ? "error" : "info"}
-              >{`Errors: ${error.length}`}</Button>
-            )}
-            <LoadingButton
-              loadingPosition="start"
-              startIcon={<QueueIcon />}
-              loading={loading}
-              size="small"
-              variant="contained"
-              type="submit"
-            >
-              Queue Render
-            </LoadingButton>
-          </Stack>
-        </Box>
       </Grid>
     </form>
   )

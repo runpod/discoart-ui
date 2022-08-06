@@ -321,6 +321,7 @@ app.get("/status", (req, res) => {
             jobDetails,
           }
         }),
+      maxConcurrency,
     })
   } catch (e) {
     res.status(200).json({

@@ -27,8 +27,15 @@ import useSWR from "swr"
 const getSubstring = (string, startString, endString) =>
   string.slice(string.lastIndexOf(startString) + 1, string.lastIndexOf(endString)).trim()
 
-const getThumbnailDimensions = ({ height, width, maxWidth = 80 }) => {
+const getThumbnailDimensions = ({ height, width, maxWidth = 80, fullRes }) => {
   try {
+    if (fullRes) {
+      return {
+        height,
+        width,
+      }
+    }
+
     const aspectRatio = height / width
 
     const adjustedWidth = Math.min(maxWidth, width)
@@ -69,16 +76,13 @@ export default function ProgressCarouselItem({
   jobId,
   handleImport,
   handleQueueRemove,
+  fullRes,
+  previewWidth,
 }) {
   const theme = useTheme()
   const smallScreen = useMediaQuery(theme.breakpoints.down("sm"))
 
   const [progressMetrics, setProgressMetrics] = useState(null)
-
-  useEffect(() => {
-    const newWidth = window.innerWidth > 800 ? 800 : window.innerWidth
-    setPreviewWidth(newWidth)
-  }, [])
 
   const [logViewerOpen, setLogViewerOpen] = useState(false)
   const [settingsViewerOpen, setSettingsViewerOpen] = useState(false)
@@ -119,11 +123,15 @@ export default function ProgressCarouselItem({
     }
   }, [logProgress])
 
-  const [previewWidth, setPreviewWidth] = useState(smallScreen ? 350 : 500)
-
   return (
     <>
-      <Stack alignItems="center" spacing={1} data_job_id={jobId} key={latestImage}>
+      <Stack
+        alignItems="center"
+        spacing={1}
+        data_job_id={jobId}
+        key={latestImage}
+        minHeight="600px"
+      >
         <Typography>{config?.batch_name}</Typography>
         {latestImage ? (
           <>
@@ -135,7 +143,7 @@ export default function ProgressCarouselItem({
               <GradientLinearProgress
                 sx={{
                   borderRadius: 5,
-                  width: previewWidth * 0.8,
+                  width: Math.min(previewWidth * 0.8, 600),
                   height: 20,
                 }}
                 variant="determinate"
@@ -151,6 +159,7 @@ export default function ProgressCarouselItem({
                   left: 0,
                   right: 0,
                 }}
+                align="center"
                 fontSize={10}
                 variant="subtitle1"
               >{`${
@@ -167,7 +176,7 @@ export default function ProgressCarouselItem({
               <GradientLinearProgress
                 sx={{
                   borderRadius: 5,
-                  width: previewWidth * 0.8,
+                  width: Math.min(previewWidth * 0.8, 600),
                   height: 20,
                 }}
                 variant="determinate"
@@ -180,6 +189,7 @@ export default function ProgressCarouselItem({
                   left: 0,
                   right: 0,
                 }}
+                align="center"
                 fontSize={10}
                 variant="subtitle1"
               >{`${batchNumber}/${config?.n_batches}`}</Typography>
@@ -200,40 +210,48 @@ export default function ProgressCarouselItem({
             LOGS
           </Button>
         </Stack>
-        {latestImage ? (
-          <Box>
+        <Box
+          sx={{
+            display: "flex",
+            height: "100%",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          {latestImage ? (
             <Image
               alt=""
               {...getThumbnailDimensions({
                 ...dimensions,
                 maxWidth: previewWidth,
+                fullRes,
               })}
               src={latestImage}
             />
-          </Box>
-        ) : (
-          <Box
-            sx={{
-              position: "relative",
-            }}
-          >
-            <Image alt="" height={512} width={512} src={ArtPodLogo} />
+          ) : (
             <Box
               sx={{
-                position: "absolute",
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
+                position: "relative",
               }}
             >
-              <CircularProgress size={100}></CircularProgress>
+              <Image alt="" height={256} width={256} src={ArtPodLogo} />
+              <Box
+                sx={{
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              >
+                <CircularProgress color="info" size={100}></CircularProgress>
+              </Box>
             </Box>
-          </Box>
-        )}
+          )}
+        </Box>
       </Stack>
       <LogViewer open={logViewerOpen} onClose={() => setLogViewerOpen(false)} jobId={jobId} />
       <SettingsViewer

@@ -136,15 +136,7 @@ function MyApp({ Component, pageProps }) {
               </Stack>
             </Toolbar>
           </AppBar>
-          <Container
-            maxWidth="xl"
-            sx={{
-              py: 0,
-              m: "auto",
-            }}
-          >
-            <Component {...pageProps} />
-          </Container>
+          <Component {...pageProps} />
         </CookiesProvider>
       </ThemeProvider>
     </SWRConfig>

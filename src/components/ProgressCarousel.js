@@ -1,15 +1,22 @@
-import { useCallback, useEffect, useState } from "react"
+import { useEffect, useState } from "react"
 // @mui
-import { Box, useTheme, CircularProgress } from "@mui/material"
-import { Carousel } from "react-responsive-carousel"
+import {
+  Box,
+  useTheme,
+  Switch,
+  Stack,
+  FormControlLabel,
+  ToggleButtonGroup,
+  ToggleButton,
+  Typography,
+  IconButton,
+} from "@mui/material"
+import MemoryIcon from "@mui/icons-material/Memory"
 import useMediaQuery from "@mui/material/useMediaQuery"
+import NavigateNextIcon from "@mui/icons-material/NavigateNext"
+import NavigateBeforeIcon from "@mui/icons-material/NavigateBefore"
 
-// CSS
-import "react-responsive-carousel/lib/styles/carousel.min.css" // requires a loader
-
-import Image from "next/image"
 import ProgressCarouselItem from "./ProgressCarouselItem"
-import useSWR from "swr"
 
 const getThumbnailDimensions = ({ height, width, maxWidth = 80 }) => {
   try {
@@ -28,75 +35,96 @@ const getThumbnailDimensions = ({ height, width, maxWidth = 80 }) => {
   }
 }
 
-export default function ProgressCarousel({ handleImport, handleQueueRemove }) {
+export default function ProgressCarousel({ progress = {}, handleImport, handleQueueRemove }) {
   const theme = useTheme()
   const smallScreen = useMediaQuery(theme.breakpoints.down("sm"))
-
-  const [carouselKey, setCarouselKey] = useState(1)
+  const [fullRes, setFullRes] = useState(false)
 
   useEffect(() => {
     const newWidth = window.innerWidth > 800 ? 800 : window.innerWidth
     setPreviewWidth(newWidth)
   }, [])
 
-  const { data } = useSWR("/api/progress", null, {
-    refreshInterval: 10000,
-  })
-
   const [previewWidth, setPreviewWidth] = useState(smallScreen ? 350 : 500)
 
-  useEffect(() => {
-    setCarouselKey((prevKey) => prevKey + 1)
-  }, [data?.progress?.length])
+  const [selectedGpuIndex, setSelectedGpuIndex] = useState("0")
+
+  const handleNextGpu = () => {
+    const activeGpuCount = Object.values(progress)?.length
+    const newGpuIndex = selectedGpuIndex + 1
+    if (newGpuIndex > activeGpuCount - 1) {
+      setSelectedGpuIndex("0")
+    } else {
+      setSelectedGpuIndex(`${newGpuIndex}`)
+    }
+  }
+
+  const handlePrevGpu = () => {
+    const activeGpuCount = Object.values(progress)?.length
+
+    const newGpuIndex = selectedGpuIndex - 1
+    if (newGpuIndex < 0) {
+      setSelectedGpuIndex(activeGpuCount - 1)
+    } else {
+      setSelectedGpuIndex(`${newGpuIndex}`)
+    }
+  }
+
+  const handleSelectGpu = (event, newGpuIndex) => {
+    setSelectedGpuIndex(newGpuIndex)
+  }
 
   return (
-    <Carousel
-      key={carouselKey}
-      width={previewWidth}
-      infiniteLoop
-      showThumbs={!smallScreen}
-      renderThumbs={() => {
-        return data?.progress?.map(({ latestImage, dimensions }, index) =>
-          latestImage ? (
-            <Image
-              alt="thumbnail image"
-              key={latestImage}
-              {...getThumbnailDimensions(dimensions)}
-              src={latestImage}
-            ></Image>
-          ) : (
-            <Box
-              sx={{
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-                height: 60,
-                width: 80,
-              }}
-            >
-              <CircularProgress
-                sx={{
-                  ml: "-10px",
-                }}
-                size={30}
-              ></CircularProgress>
-            </Box>
-          )
-        )
-      }}
-    >
-      {data?.progress?.map(({ latestImage, dimensions, config, batchNumber, jobId }) => (
+    <Stack spacing={1} alignItems={"center"}>
+      <FormControlLabel
+        control={<Switch checked={fullRes} onClick={() => setFullRes(!fullRes)}></Switch>}
+        label="Display Full Resolution"
+      />
+      <Stack direction="row">
+        <IconButton onClick={handlePrevGpu}>
+          <NavigateBeforeIcon></NavigateBeforeIcon>
+        </IconButton>
+        <ToggleButtonGroup value={selectedGpuIndex} exclusive onChange={handleSelectGpu}>
+          {Object.entries(progress)?.map(([gpuIndex, gpuJob]) => (
+            <ToggleButton sx={{ width: 80 }} value={gpuIndex}>
+              <Stack alignItems="center">
+                <Stack direction="row" spacing={2}>
+                  <MemoryIcon sx={{ mr: 0.5 }}></MemoryIcon>
+                  {gpuIndex}
+                </Stack>
+                <Typography fontSize={10} variant="subtitle1">
+                  {gpuJob && gpuJob?.latestImage ? "render" : gpuJob ? "Init" : "idle"}
+                </Typography>
+              </Stack>
+            </ToggleButton>
+          ))}
+        </ToggleButtonGroup>
+
+        <IconButton onClick={handleNextGpu}>
+          <NavigateNextIcon></NavigateNextIcon>
+        </IconButton>
+      </Stack>
+
+      {progress?.[selectedGpuIndex] ? (
         <ProgressCarouselItem
-          key={jobId}
-          latestImage={latestImage}
-          dimensions={dimensions}
-          config={config}
-          batchNumber={batchNumber}
-          jobId={jobId}
+          fullRes={fullRes}
+          previewWidth={previewWidth}
+          {...progress?.[selectedGpuIndex]}
           handleImport={handleImport}
           handleQueueRemove={handleQueueRemove}
         ></ProgressCarouselItem>
-      ))}
-    </Carousel>
+      ) : (
+        <Box
+          sx={{
+            height: 600,
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <Typography variant="h2">GPU Idle</Typography>
+        </Box>
+      )}
+    </Stack>
   )
 }

@@ -4,6 +4,7 @@ import fs from "fs/promises"
 const path = require("path")
 import { getAuth } from "@utils/getAuth"
 import fetch from "node-fetch"
+import { range } from "ramda"
 
 const databasePath = "/workspace/database"
 
@@ -28,7 +29,7 @@ export const getImageDimensions = (height, width, maxHeight = 400) => {
   }
 }
 
-const getJobInfo = async (jobId, jobConfig) => {
+export const getJobInfo = async (jobId, jobConfig) => {
   try {
     const directoryName = `/workspace/out/${jobId}`
     const files = await fs.readdir(directoryName)
@@ -63,7 +64,7 @@ const getJobInfo = async (jobId, jobConfig) => {
     const height = parsedConfig?.width_height?.[1]
     const width = parsedConfig?.width_height?.[0]
 
-    const latestImage = `/api/image/${jobId}/${latestProgressFileName}`
+    const latestImage = latestProgressFileName && `/api/image/${jobId}/${latestProgressFileName}`
 
     //     let latestImage
     //     let fileHandle
@@ -106,16 +107,18 @@ const handler = async (req, res) => {
     const response = await (await fetch("http://localhost:9999/status")).json()
 
     const activeJobs = response?.activeProcesses
+    const maxConcurrency = response?.maxConcurrency
 
-    if (!activeJobs.length) {
-      res.status(200).json({
-        success: true,
-        progress: [],
-      })
-      return
+    let progress = {}
+
+    for (let gpuIndex of range(0, maxConcurrency)) {
+      const matchedJob = activeJobs.find((job) => job.gpuIndex === gpuIndex)
+      if (matchedJob) {
+        progress[gpuIndex] = await getJobInfo(matchedJob.id, matchedJob.jobDetails)
+      } else {
+        progress[gpuIndex] = null
+      }
     }
-
-    const progress = await Promise.all(activeJobs.map((job) => getJobInfo(job.id, job.jobDetails)))
 
     res.status(200).json({
       success: true,
@@ -125,6 +128,7 @@ const handler = async (req, res) => {
     console.log(e)
     res.status(200).json({
       success: false,
+      progress: [],
     })
   }
 }
