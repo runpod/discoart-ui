@@ -10,7 +10,7 @@ const db = open({
   driver: sqlite3.Database,
 })
 
-import { getImageDimensions } from "../api/progress"
+import { getImageDimensions } from "../progress"
 import { getAuth } from "@utils/getAuth"
 import fs from "fs/promises"
 
@@ -77,12 +77,9 @@ const handler = async (req, res) => {
     })
   } catch (e) {
     console.log(e)
-    return {
-      props: {
-        auth,
-        files: [],
-      },
-    }
+    res.status(200).json({
+      files,
+    })
   }
 }
 
