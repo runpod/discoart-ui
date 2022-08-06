@@ -546,6 +546,9 @@ export default function Create({ loggedIn }) {
                   <DynamicInput control={control} name={"init_scale"} />
                 </Grid>
                 <Grid item xs={12} sm={4} md={3}>
+                  <DynamicInput control={control} name={"skip_steps"} />
+                </Grid>
+                <Grid item xs={12} sm={4} md={3}>
                   <Stack spacing={2}>
                     {file ? (
                       <Stack
