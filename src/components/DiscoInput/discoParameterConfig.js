@@ -285,12 +285,9 @@ export const inputConfig = {
   },
 
   init_scale: {
-    default: "[1000]*1000",
-    type: "schedule",
-    label: "Init Scale Schedule",
-    validator: yup.string().test("Init Scale", "${path} is not valid", (value) => {
-      return validateSchedule(value, "integer")
-    }),
+    default: 1000,
+    type: "integer",
+    label: "Init Scale",
   },
 
   text_clip_on_cpu: {
