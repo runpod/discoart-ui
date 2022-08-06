@@ -69,65 +69,67 @@ export default function Gallery({ auth }) {
           {filteredGalleries?.map(
             ({ url, dimensions, jobId, fileCount, job, jobComplete, settings }) => (
               <Link key={url} href={`/gallery/${jobId}`}>
-                <Badge badgeContent={fileCount} color="primary">
-                  <Box
-                    sx={{
-                      transition: "transform .5s, box-shadow 1s",
-                      cursor: "pointer",
-                      "&:hover": {
-                        transform: "scale(1.05)",
-                      },
-                    }}
-                  >
-                    <Image
-                      key={jobId}
-                      src={url}
-                      alt=""
-                      {...dimensions}
-                      style={{
-                        borderRadius: 10,
-                      }}
-                    />
+                <a>
+                  <Badge badgeContent={fileCount} color="primary">
                     <Box
                       sx={{
-                        position: "absolute",
-                        top: 16,
-                        right: 16,
+                        transition: "transform .5s, box-shadow 1s",
+                        cursor: "pointer",
+                        "&:hover": {
+                          transform: "scale(1.05)",
+                        },
                       }}
                     >
-                      <PermMediaIcon color="info"></PermMediaIcon>
-                    </Box>
-                    <Box
-                      sx={{
-                        borderRadius: "0px 0px 10px 10px",
-                        background: alpha(theme.palette.background.paper, 0.6),
-                        position: "absolute",
-                        py: 0.5,
-                        px: 1,
-                        bottom: 0,
-                        left: 0,
-                        right: 0,
-                      }}
-                    >
-                      <Typography variant="subtitle1">{settings?.batch_name}</Typography>
-                      {!jobComplete && job?.should_process && (
-                        <Box sx={{ position: "relative" }}>
-                          <LinearProgress
-                            sx={{ height: 15 }}
-                            variant="determinate"
-                            value={(fileCount / settings?.n_batches) * 100}
-                          ></LinearProgress>
-                          <Box sx={{ position: "absolute", bottom: 0, left: 4, right: 0 }}>
-                            <Typography
-                              fontSize={10}
-                              align="center"
-                            >{`${fileCount}/${settings?.n_batches}`}</Typography>
+                      <Image
+                        key={jobId}
+                        src={url}
+                        alt=""
+                        {...dimensions}
+                        style={{
+                          borderRadius: 10,
+                        }}
+                      />
+                      <Box
+                        sx={{
+                          position: "absolute",
+                          top: 16,
+                          right: 16,
+                        }}
+                      >
+                        <PermMediaIcon color="info"></PermMediaIcon>
+                      </Box>
+                      <Box
+                        sx={{
+                          borderRadius: "0px 0px 10px 10px",
+                          background: alpha(theme.palette.background.paper, 0.6),
+                          position: "absolute",
+                          py: 0.5,
+                          px: 1,
+                          bottom: 0,
+                          left: 0,
+                          right: 0,
+                        }}
+                      >
+                        <Typography variant="subtitle1">{settings?.batch_name}</Typography>
+                        {!jobComplete && job?.should_process && (
+                          <Box sx={{ position: "relative" }}>
+                            <LinearProgress
+                              sx={{ height: 15 }}
+                              variant="determinate"
+                              value={(fileCount / settings?.n_batches) * 100}
+                            ></LinearProgress>
+                            <Box sx={{ position: "absolute", bottom: 0, left: 4, right: 0 }}>
+                              <Typography
+                                fontSize={10}
+                                align="center"
+                              >{`${fileCount}/${settings?.n_batches}`}</Typography>
+                            </Box>
                           </Box>
-                        </Box>
-                      )}
+                        )}
+                      </Box>
                     </Box>
-                  </Box>
-                </Badge>
+                  </Badge>
+                </a>
               </Link>
             )
           )}
