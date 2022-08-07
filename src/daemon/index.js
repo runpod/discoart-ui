@@ -263,6 +263,7 @@ const startDaemon = async () => {
           `
           SELECT job_id, job_details FROM jobs
             WHERE completed_at is null
+            AND started_at is null
             AND should_process = 1
             ORDER BY created_at ASC
         `
