@@ -312,9 +312,6 @@ export default function Create({ loggedIn }) {
     return [queued, processing, error]
   }, [jobData])
 
-  console.log("jobdata", jobData)
-  console.log("queue", queued)
-
   return (
     <form onSubmit={handleSubmit(handleRenderStart)}>
       <Container
