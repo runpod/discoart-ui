@@ -359,6 +359,10 @@ export const DarkTheme = createTheme({
         paper: {
           backgroundColor: darken(themeColors.primaryAlt, 0.5),
         },
+        container: {
+          transition: "none !important",
+        },
+        scrollPaper: { transition: "none !important" },
       },
     },
     MuiCssBaseline: {
