@@ -204,10 +204,10 @@ export default function ProgressCarouselItem({
             Cancel
           </Button>
           <Button variant="outlined" size="small" onClick={() => setSettingsViewerOpen(true)}>
-            SETTINGS
+            Settings
           </Button>
           <Button variant="outlined" size="small" onClick={() => setLogViewerOpen(true)}>
-            LOGS
+            Logs
           </Button>
         </Stack>
         <Box
