@@ -18,23 +18,6 @@ import NavigateBeforeIcon from "@mui/icons-material/NavigateBefore"
 
 import ProgressCarouselItem from "./ProgressCarouselItem"
 
-const getThumbnailDimensions = ({ height, width, maxWidth = 80 }) => {
-  try {
-    const aspectRatio = height / width
-
-    const adjustedWidth = Math.min(maxWidth, width)
-
-    const adjustedHeight = adjustedWidth * aspectRatio
-
-    return {
-      height: adjustedHeight,
-      width: adjustedWidth,
-    }
-  } catch (e) {
-    return { height: 300, width: 400 }
-  }
-}
-
 export default function ProgressCarousel({ progress = {}, handleImport, handleQueueRemove }) {
   const theme = useTheme()
   const smallScreen = useMediaQuery(theme.breakpoints.down("sm"))
@@ -49,10 +32,11 @@ export default function ProgressCarousel({ progress = {}, handleImport, handleQu
 
   const [selectedGpuIndex, setSelectedGpuIndex] = useState(0)
 
+  const gpuCount = Object.values(progress)?.length
+
   const handleNextGpu = () => {
-    const activeGpuCount = Object.values(progress)?.length
     const newGpuIndex = parseInt(selectedGpuIndex) + 1
-    if (newGpuIndex > activeGpuCount - 1) {
+    if (newGpuIndex > gpuCount - 1) {
       setSelectedGpuIndex("0")
     } else {
       setSelectedGpuIndex(`${newGpuIndex}`)
@@ -60,11 +44,9 @@ export default function ProgressCarousel({ progress = {}, handleImport, handleQu
   }
 
   const handlePrevGpu = () => {
-    const activeGpuCount = Object.values(progress)?.length
-
     const newGpuIndex = parseInt(selectedGpuIndex) - 1
     if (newGpuIndex < 0) {
-      setSelectedGpuIndex(`${activeGpuCount - 1}`)
+      setSelectedGpuIndex(`${gpuCount - 1}`)
     } else {
       setSelectedGpuIndex(`${newGpuIndex}`)
     }
@@ -74,8 +56,6 @@ export default function ProgressCarousel({ progress = {}, handleImport, handleQu
     setSelectedGpuIndex(newGpuIndex)
   }
 
-  console.log(typeof selectedGpuIndex, selectedGpuIndex)
-
   return (
     <Stack spacing={1} alignItems={"center"}>
       <FormControlLabel
@@ -83,7 +63,7 @@ export default function ProgressCarousel({ progress = {}, handleImport, handleQu
         label="Display Full Resolution"
       />
       <Stack direction="row">
-        <IconButton onClick={handlePrevGpu}>
+        <IconButton disabled={gpuCount <= 1} onClick={handlePrevGpu}>
           <NavigateBeforeIcon></NavigateBeforeIcon>
         </IconButton>
         <ToggleButtonGroup value={selectedGpuIndex} exclusive onChange={handleSelectGpu}>
@@ -102,7 +82,7 @@ export default function ProgressCarousel({ progress = {}, handleImport, handleQu
           ))}
         </ToggleButtonGroup>
 
-        <IconButton onClick={handleNextGpu}>
+        <IconButton disabled={gpuCount <= 1} onClick={handleNextGpu}>
           <NavigateNextIcon></NavigateNextIcon>
         </IconButton>
       </Stack>

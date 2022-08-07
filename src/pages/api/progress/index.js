@@ -96,8 +96,6 @@ export const getJobInfo = async (jobId, jobConfig) => {
 }
 
 const handler = async (req, res) => {
-  const database = await db
-
   try {
     const auth = await getAuth({ req, res })
     if (!auth?.loggedIn) {
