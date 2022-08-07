@@ -8,6 +8,8 @@ import ArtPodLogo from "./ArtPodLogo.png"
 import { getAuth } from "@utils/getAuth"
 import { LoadingButton } from "@mui/lab"
 import LoginIcon from "@mui/icons-material/Login"
+import { useForm } from "react-hook-form"
+import { ControlledTextField } from "@components/DiscoInput"
 
 export async function getServerSideProps(context) {
   const auth = await getAuth(context)
@@ -20,9 +22,9 @@ export async function getServerSideProps(context) {
 export default function Welcome({ loggedIn, setPassword }) {
   const [cookies, setCookie] = useCookies(["password"])
   const [loading, setLoading] = useState(false)
-  const [passwordValue, setPasswordValue] = useState("")
-  const [repeatPasswordValue, setRepeatPasswordValue] = useState("")
   const router = useRouter()
+
+  const { control, handleSubmit, watch } = useForm()
 
   const handleSetPassword = async () => {
     setLoading(true)
@@ -50,11 +52,24 @@ export default function Welcome({ loggedIn, setPassword }) {
     router.replace("/")
   }
 
+  const onSubmit = (data) => {
+    console.log(data)
+    if (setPassword) {
+      handleSetPassword(data?.setPassword)
+    } else {
+      handleLogin(data?.password)
+    }
+  }
+
   useEffect(() => {
     if (loggedIn) {
       router.replace("/create")
     }
   }, [loggedIn])
+
+  const passwordValue = watch("setPassword")
+  const repeatPasswordValue = watch("repeatPassword")
+  const loginPassword = watch("password")
 
   return (
     <Dialog fullWidth maxWidth="md" open={true}>
@@ -67,74 +82,78 @@ export default function Welcome({ loggedIn, setPassword }) {
           },
         }}
       >
-        {/* <form onSubmit={setPassword ? handleSetPassword : handleLogin}> */}
-        <Stack spacing={2} alignItems="center">
-          <Typography variant="h3">Welcome to ArtPod</Typography>
-          <Box
-            sx={{
-              borderRadius: 10,
-            }}
-          >
-            <Image
-              style={{
+        <form onSubmit={handleSubmit(onSubmit)}>
+          <Stack spacing={2} alignItems="center">
+            <Typography variant="h3">Welcome to ArtPod</Typography>
+            <Box
+              sx={{
                 borderRadius: 10,
               }}
-              height={300}
-              width={300}
-              src={ArtPodLogo}
-            ></Image>
-          </Box>
-          {setPassword ? (
-            <>
-              <Stack spacing={0.5} alignItems="center">
-                <Typography>Choose a password to continue</Typography>
-              </Stack>
-              <TextField
-                type="password"
-                value={repeatPasswordValue}
-                onChange={(e) => setRepeatPasswordValue(e?.target?.value)}
-              ></TextField>
-              <TextField
-                type="password"
-                label="Repeat password"
-                value={passwordValue}
-                onChange={(e) => setPasswordValue(e?.target?.value)}
-              ></TextField>
-              <LoadingButton
-                disabled={!passwordValue || passwordValue !== repeatPasswordValue}
-                variant="contained"
-                loading={loading}
-                loadingPosition="start"
-                startIcon={<LoginIcon />}
-                type="submit"
-                onClick={handleSetPassword}
-              >
-                Set Password
-              </LoadingButton>
-            </>
-          ) : (
-            <>
-              <Typography>Enter your password to log in</Typography>
-              <TextField
-                type="password"
-                value={passwordValue}
-                onChange={(e) => setPasswordValue(e?.target?.value)}
-              ></TextField>
-              <LoadingButton
-                loading={loading}
-                loadingPosition="start"
-                disabled={!passwordValue}
-                variant="contained"
-                startIcon={<LoginIcon />}
-                type="submit"
-                onClick={handleLogin}
-              >
-                Log In
-              </LoadingButton>
-            </>
-          )}
-        </Stack>
-        {/* </form> */}
+            >
+              <Image
+                style={{
+                  borderRadius: 10,
+                }}
+                height={300}
+                width={300}
+                src={ArtPodLogo}
+              ></Image>
+            </Box>
+            {setPassword ? (
+              <>
+                <Stack spacing={0.5} alignItems="center">
+                  <Typography>Choose a password to continue</Typography>
+                </Stack>
+                <Stack spacing={1} sx={{ width: 300 }}>
+                  <ControlledTextField
+                    control={control}
+                    type="password"
+                    label="Password"
+                    name="setPassword"
+                  ></ControlledTextField>
+                  <ControlledTextField
+                    control={control}
+                    type="password"
+                    label="Repeat Password"
+                    name="repeatPassword"
+                  ></ControlledTextField>
+                  <LoadingButton
+                    disabled={!passwordValue || passwordValue !== repeatPasswordValue}
+                    variant="contained"
+                    loading={loading}
+                    loadingPosition="start"
+                    startIcon={<LoginIcon />}
+                    type="submit"
+                  >
+                    Set Password
+                  </LoadingButton>
+                </Stack>
+              </>
+            ) : (
+              <>
+                <Typography>Enter your password to log in</Typography>
+                <Stack spacing={1} sx={{ width: 300 }}>
+                  <ControlledTextField
+                    control={control}
+                    label="Password"
+                    type="password"
+                    name="password"
+                  ></ControlledTextField>
+                  <LoadingButton
+                    loading={loading}
+                    loadingPosition="start"
+                    disabled={!loginPassword}
+                    variant="contained"
+                    startIcon={<LoginIcon />}
+                    type="submit"
+                  >
+                    Log In
+                  </LoadingButton>
+                </Stack>
+              </>
+            )}
+          </Stack>
+        </form>
       </DialogContent>
     </Dialog>
   )
