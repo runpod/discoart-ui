@@ -10,10 +10,11 @@ import {
   Checkbox,
   Stack,
   Grid,
+  Switch,
   FormControlLabel,
 } from "@mui/material"
 import Image from "next/image"
-import { useState } from "react"
+import { useState, useMemo } from "react"
 import SettingsViewer from "@components/SettingsViewer"
 import { useRouter } from "next/router"
 import { Masonry } from "@mui/lab"
@@ -132,7 +133,8 @@ export default function JobGallery({ auth, files, job }) {
   const { jobId } = router.query
   const [selected, setSelected] = useState({})
   const [jobName, setJobName] = useState(jobId)
-  const [filterString, setFilterString] = useState("done")
+  const [filterString, setFilterString] = useState("")
+  const [doneOnly, setDoneOnly] = useState(true)
 
   const handleToggleSelect = (fileName) => () => {
     const alreadySelected = selected[fileName]
@@ -158,9 +160,15 @@ export default function JobGallery({ auth, files, job }) {
     })
   }
 
-  const filteredFiles = files?.filter((file) => {
-    return file?.fileName.includes(filterString)
-  })
+  const filteredFiles = useMemo(() => {
+    return files?.filter((file) => {
+      if (doneOnly) {
+        return file?.fileName.includes(filterString) && file?.fileName.includes("done")
+      } else {
+        return file?.fileName.includes(filterString)
+      }
+    })
+  }, [files, doneOnly, filterString])
 
   const handleSelectAll = () => {
     let newSelected = {}
@@ -183,7 +191,12 @@ export default function JobGallery({ auth, files, job }) {
     <Container maxWidth="xl" sx={{ p: { xs: 1, sm: 3 } }}>
       <Grid container>
         <Grid item xs={12} sm={6} mb={{ xs: 1, md: 2 }}>
-          <Stack direction="row" justifyContent={{ xs: "center", md: "start" }} spacing={1}>
+          <Stack
+            direction="row"
+            alignItems="center"
+            justifyContent={{ xs: "center", md: "start" }}
+            spacing={1}
+          >
             <Button size="small" variant="outlined" onClick={() => setOpen(true)}>
               SETTINGS
             </Button>
@@ -196,6 +209,12 @@ export default function JobGallery({ auth, files, job }) {
                   onClick={allChecked ? handleDeselectAll : handleSelectAll}
                 />
               }
+            />
+            <FormControlLabel
+              control={
+                <Checkbox checked={doneOnly} onClick={() => setDoneOnly(!doneOnly)}></Checkbox>
+              }
+              label="Finals Only"
             />
             <TextField
               value={filterString}
