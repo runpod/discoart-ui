@@ -64,70 +64,72 @@ export default function Welcome({ loggedIn, setPassword }) {
           },
         }}
       >
-        <Stack spacing={2} alignItems="center">
-          <Typography variant="h3">Welcome to ArtPod</Typography>
-          <Box
-            sx={{
-              borderRadius: 10,
-            }}
-          >
-            <Image
-              style={{
+        <form onSubmit={setPassword ? handleSetPassword : handleLogin}>
+          <Stack spacing={2} alignItems="center">
+            <Typography variant="h3">Welcome to ArtPod</Typography>
+            <Box
+              sx={{
                 borderRadius: 10,
               }}
-              height={300}
-              width={300}
-              src={ArtPodLogo}
-            ></Image>
-          </Box>
-          {setPassword ? (
-            <>
-              <Stack spacing={0.5} alignItems="center">
-                <Typography>Choose a password to continue</Typography>
-              </Stack>
-              <TextField
-                type="password"
-                value={repeatPasswordValue}
-                onChange={(e) => setRepeatPasswordValue(e?.target?.value)}
-              ></TextField>
-              <TextField
-                type="password"
-                label="Repeat password"
-                value={passwordValue}
-                onChange={(e) => setPasswordValue(e?.target?.value)}
-              ></TextField>
-              <LoadingButton
-                disabled={!passwordValue || passwordValue !== repeatPasswordValue}
-                onClick={handleSetPassword}
-                variant="contained"
-                loading={loading}
-                loadingPosition="start"
-                startIcon={<LoginIcon />}
-              >
-                Set Password
-              </LoadingButton>
-            </>
-          ) : (
-            <>
-              <Typography>Enter your password to log in</Typography>
-              <TextField
-                type="password"
-                value={passwordValue}
-                onChange={(e) => setPasswordValue(e?.target?.value)}
-              ></TextField>
-              <LoadingButton
-                loading={loading}
-                loadingPosition="start"
-                disabled={!passwordValue}
-                onClick={handleLogin}
-                variant="contained"
-                startIcon={<LoginIcon />}
-              >
-                Log In
-              </LoadingButton>
-            </>
-          )}
-        </Stack>
+            >
+              <Image
+                style={{
+                  borderRadius: 10,
+                }}
+                height={300}
+                width={300}
+                src={ArtPodLogo}
+              ></Image>
+            </Box>
+            {setPassword ? (
+              <>
+                <Stack spacing={0.5} alignItems="center">
+                  <Typography>Choose a password to continue</Typography>
+                </Stack>
+                <TextField
+                  type="password"
+                  value={repeatPasswordValue}
+                  onChange={(e) => setRepeatPasswordValue(e?.target?.value)}
+                ></TextField>
+                <TextField
+                  type="password"
+                  label="Repeat password"
+                  value={passwordValue}
+                  onChange={(e) => setPasswordValue(e?.target?.value)}
+                ></TextField>
+                <LoadingButton
+                  disabled={!passwordValue || passwordValue !== repeatPasswordValue}
+                  variant="contained"
+                  loading={loading}
+                  loadingPosition="start"
+                  startIcon={<LoginIcon />}
+                  type="submit"
+                >
+                  Set Password
+                </LoadingButton>
+              </>
+            ) : (
+              <>
+                <Typography>Enter your password to log in</Typography>
+                <TextField
+                  type="password"
+                  value={passwordValue}
+                  onChange={(e) => setPasswordValue(e?.target?.value)}
+                ></TextField>
+                <LoadingButton
+                  loading={loading}
+                  loadingPosition="start"
+                  disabled={!passwordValue}
+                  variant="contained"
+                  startIcon={<LoginIcon />}
+                  type="submit"
+                >
+                  Log In
+                </LoadingButton>
+              </>
+            )}
+          </Stack>
+        </form>
       </DialogContent>
     </Dialog>
   )
