@@ -23,11 +23,13 @@ export default function Welcome({ loggedIn, setPassword }) {
   const [cookies, setCookie] = useCookies(["password"])
   const [loading, setLoading] = useState(false)
   const router = useRouter()
+  const [error, setError] = useState("")
 
   const { control, handleSubmit, watch } = useForm()
 
   const handleSetPassword = async (password) => {
     setLoading(true)
+    setError("")
     const payload = {
       password: password,
     }
@@ -43,13 +45,38 @@ export default function Welcome({ loggedIn, setPassword }) {
         setCookie("password", password)
         router.replace("/")
       })
-      .catch((e) => setLoading(false))
+      .catch((e) => {
+        setLoading(false)
+        setError("Issue setting password")
+      })
   }
 
   const handleLogin = async (password) => {
     setLoading(true)
+    setError("")
     setCookie("password", password)
-    router.replace("/")
+
+    await fetch("/api/login", {
+      headers: {
+        "Content-Type": "application/json",
+      },
+      method: "POST",
+    })
+      .then((data) => {
+        return data.json()
+      })
+      .then(({ loggedIn }) => {
+        if (loggedIn) {
+          router.replace("/")
+        } else {
+          setError("Incorrect Password")
+          setLoading(false)
+        }
+      })
+      .catch((e) => {
+        setError("Incorrect Password")
+        setLoading(false)
+      })
   }
 
   const onSubmit = (data) => {
@@ -84,6 +111,16 @@ export default function Welcome({ loggedIn, setPassword }) {
         <form onSubmit={handleSubmit(onSubmit)}>
           <Stack spacing={2} alignItems="center">
             <Typography variant="h3">Welcome to ArtPod</Typography>
+            <Typography variant="subtitle1">
+              Powered by{" "}
+              <a
+                target="_blank"
+                rel="noopener noreferrer"
+                href="https://github.com/jina-ai/discoart"
+              >
+                discoart
+              </a>
+            </Typography>
             <Box
               sx={{
                 borderRadius: 10,
@@ -98,6 +135,9 @@ export default function Welcome({ loggedIn, setPassword }) {
                 src={ArtPodLogo}
               ></Image>
             </Box>
+            <Typography variant="subtitle1" color="red">
+              {error}
+            </Typography>
             {setPassword ? (
               <>
                 <Stack spacing={0.5} alignItems="center">

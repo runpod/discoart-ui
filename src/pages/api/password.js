@@ -1,6 +1,7 @@
 import sqlite3 from "sqlite3"
 import { open } from "sqlite"
 import Cookies from "cookies"
+import fs from "fs"
 
 const databasePath = "/workspace/database"
 
@@ -14,22 +15,17 @@ const handler = async (req, res) => {
     const payload = req?.body
     const submittedPassword = payload?.password
 
-    const database = await db
+    let savedPassword
 
-    const existingUser = await database.get(`
-        SELECT password from users
-            WHERE user_name = 'owner'
-    `)
+    try {
+      const fileContents = fs.readFileSync("/workspace/password.txt", "utf8")
 
-    const existingPassword = existingUser?.password
+      savedPassword = fileContents?.trim()
+    } catch (e) {}
 
-    if (!existingPassword || submittedPassword === existingPassword) {
-      await database.run(
-        `
-        INSERT INTO users (user_name, password) VALUES('owner', ?)
-            ON CONFLICT(user_name) DO UPDATE SET password = ?`,
-        submittedPassword,
-        submittedPassword
+    if (!savedPassword || submittedPassword?.trim() === savedPassword) {
+      fs.writeFile(`/workspace/password.txt`, submittedPassword?.trim(), () =>
+        console.log(`new password saved`)
       )
 
       const cookies = new Cookies(req, res)
@@ -45,6 +41,7 @@ const handler = async (req, res) => {
       })
     }
   } catch (e) {
+    console.log(e)
     res.status(200).json({
       success: false,
     })

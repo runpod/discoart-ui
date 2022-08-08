@@ -1,4 +1,5 @@
 import { databasePath } from "@utils/constants"
+import fs from "fs"
 
 import sqlite3 from "sqlite3"
 import { open } from "sqlite"
@@ -15,17 +16,20 @@ export const getAuth = async ({ req, res }) => {
     // Get a cookie
     const password = cookies.get("password")
 
-    const existingUser = await database.get(`
-          SELECT password from users
-              WHERE user_name = 'owner'
-    `)
+    let savedPassword
 
-    if (!existingUser?.password) {
+    try {
+      const fileContents = fs.readFileSync("/workspace/password.txt", "utf8")
+
+      savedPassword = fileContents?.trim()
+    } catch (e) {}
+
+    if (!savedPassword) {
       return {
         setPassword: true,
         loggedIn: false,
       }
-    } else if (existingUser?.password === password) {
+    } else if (savedPassword === password?.trim()) {
       return {
         loggedIn: true,
       }
