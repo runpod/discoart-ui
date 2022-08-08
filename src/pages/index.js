@@ -26,10 +26,10 @@ export default function Welcome({ loggedIn, setPassword }) {
 
   const { control, handleSubmit, watch } = useForm()
 
-  const handleSetPassword = async () => {
+  const handleSetPassword = async (password) => {
     setLoading(true)
     const payload = {
-      password: passwordValue,
+      password: password,
     }
 
     await fetch("/api/password", {
@@ -40,20 +40,19 @@ export default function Welcome({ loggedIn, setPassword }) {
       body: JSON.stringify(payload),
     })
       .then(() => {
-        setCookie("password", passwordValue)
+        setCookie("password", password)
         router.replace("/")
       })
       .catch((e) => setLoading(false))
   }
 
-  const handleLogin = async () => {
+  const handleLogin = async (password) => {
     setLoading(true)
-    setCookie("password", passwordValue)
+    setCookie("password", password)
     router.replace("/")
   }
 
   const onSubmit = (data) => {
-    console.log(data)
     if (setPassword) {
       handleSetPassword(data?.setPassword)
     } else {
