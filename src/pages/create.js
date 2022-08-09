@@ -265,8 +265,8 @@ export default function Create({ loggedIn }) {
       jobId: newRenderId,
       parameters: {
         ...stateToJson(data),
-        ...parsedAdvancedSettings,
         name_docarray: newRenderId,
+        ...parsedAdvancedSettings,
       },
     }
 
