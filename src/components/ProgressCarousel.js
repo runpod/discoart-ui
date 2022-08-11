@@ -30,7 +30,7 @@ export default function ProgressCarousel({ progress = {}, handleImport, handleQu
 
   const [previewWidth, setPreviewWidth] = useState(smallScreen ? 350 : 500)
 
-  const [selectedGpuIndex, setSelectedGpuIndex] = useState(0)
+  const [selectedGpuIndex, setSelectedGpuIndex] = useState("0")
 
   const gpuCount = Object.values(progress)?.length
 
