@@ -3,6 +3,7 @@ import fs from "fs"
 const Archiver = require("archiver")
 import sqlite3 from "sqlite3"
 import { open } from "sqlite"
+import { readFile } from "fs/promises"
 
 import { databasePath } from "@utils/constants"
 
@@ -21,30 +22,24 @@ const handler = async (req, res) => {
   const { jobId, selectedFileNames, zipName } = req.query
 
   try {
-    const database = await db
-
     const auth = await getAuth({ req, res })
     if (!auth?.loggedIn) {
       res.status(401)
     }
 
-    let batch_name = "RunPodDisco"
-
-    try {
-      const { job_details } = await database.get(
-        `
-        SELECT job_details FROM jobs
-          WHERE job_id = ? 
-      `,
-        jobId
-      )
-
-      batch_name = JSON.parse(job_details)?.batch_name || "RunPodDisco"
-    } catch (e) {}
-
     const fileNames = selectedFileNames.split(",") || []
 
     const fileLocation = `/workspace/out/${jobId}/`
+
+    let batch_name = "RunPodDisco"
+
+    try {
+      let rawSettings = await readFile(`${fileLocation}settings.txt`)
+      const settings = JSON.parse(rawSettings)
+      batch_name = settings?.batch_name
+    } catch (e) {
+      console.log(e)
+    }
 
     if (fileNames.length === 1) {
       const fileName = fileNames[0]
