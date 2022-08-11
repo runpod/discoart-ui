@@ -71,9 +71,7 @@ const handler = async (req, res) => {
                 ...rawJob,
                 job_details: JSON.parse(rawJob?.job_details),
               }
-            } catch (e) {
-              console.log(e)
-            }
+            } catch (e) {}
 
             const sorted = (
               await Promise.all(

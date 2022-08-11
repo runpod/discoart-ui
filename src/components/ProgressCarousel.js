@@ -53,6 +53,7 @@ export default function ProgressCarousel({ progress = {}, handleImport, handleQu
   }
 
   const handleSelectGpu = (event, newGpuIndex) => {
+    if (newGpuIndex === null) return
     setSelectedGpuIndex(newGpuIndex)
   }
 
@@ -70,10 +71,11 @@ export default function ProgressCarousel({ progress = {}, handleImport, handleQu
           {Object.entries(progress)?.map(([gpuIndex, gpuJob]) => (
             <ToggleButton key={gpuIndex} sx={{ width: 80 }} value={gpuIndex}>
               <Stack alignItems="center">
-                <Stack direction="row" spacing={2}>
-                  <MemoryIcon sx={{ mr: 0.5 }}></MemoryIcon>
-                  {gpuIndex}
-                </Stack>
+                <MemoryIcon sx={{ mr: 0.5 }}></MemoryIcon>
+
+                <Typography fontSize={11} variant="h4">
+                  GPU: {gpuIndex}
+                </Typography>
                 <Typography fontSize={10} variant="subtitle1">
                   {gpuJob && gpuJob?.latestImage ? "render" : gpuJob ? "Init" : "idle"}
                 </Typography>
