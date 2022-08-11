@@ -1,4 +1,5 @@
 import {
+  Button,
   Container,
   Typography,
   Stack,
@@ -58,13 +59,18 @@ export default function Gallery({ auth }) {
   return (
     <Container maxWidth="xl" sx={{ p: { xs: 1, sm: 3 } }}>
       <Stack spacing={2}>
-        <TextField
-          sx={{ width: 200, ml: 1 }}
-          value={filterString}
-          onChange={(e) => setFilterString(e?.target?.value)}
-          label="Batch Name Filter"
-          size="small"
-        ></TextField>
+        <Stack direction="row" justifyContent="space-between">
+          <TextField
+            sx={{ width: 200, ml: 1 }}
+            value={filterString}
+            onChange={(e) => setFilterString(e?.target?.value)}
+            label="Batch Name Filter"
+            size="small"
+          ></TextField>
+          <Button variant="outlined" href={`/api/download?all=true`}>
+            Download Finals
+          </Button>
+        </Stack>
         <Masonry columns={{ sx: 1, md: 2, lg: 4 }} spacing={2}>
           {filteredGalleries?.map(
             ({ url, dimensions, jobId, fileCount, job, jobComplete, settings }) => (
