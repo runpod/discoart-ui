@@ -10,7 +10,16 @@ const port = 9999
 
 const databasePath = "/workspace/database"
 
-let maxConcurrency = process.env.RUNPOD_GPU_COUNT
+let maxConcurrency = 0
+
+try {
+  maxConcurrency = parseInt(process.env.RUNPOD_GPU_COUNT, 10)
+} catch (e) {
+  console.log("WARNING: ISSUE PARSING GPU COUNT")
+}
+
+console.log("max concurrency detected: ", maxConcurrency)
+
 let jobStarting = false
 let activeProcesses = []
 
@@ -58,14 +67,6 @@ const setup = async () => {
   if (!fs.existsSync(`/workspace/init/`)) {
     fs.mkdirSync(`/workspace/init/`)
   }
-
-  console.log("finding gpu count")
-
-  const job = spawn("bash", ["-c", `python ${__dirname}/getGpuCount.py`], {
-    detached: true,
-  })
-
-  console.log("max concurrency detected: ", maxConcurrency)
 
   console.log("Daemon setup complete - start polling")
 }
