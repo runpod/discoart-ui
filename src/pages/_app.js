@@ -101,7 +101,14 @@ function MyApp({ Component, pageProps }) {
                     </Breadcrumbs>
                   </Stack>
                 ) : null}
-                <Stack direction="row" spacing={2} alignItems="center">
+                <Stack
+                  direction="row"
+                  spacing={2}
+                  alignItems="center"
+                  sx={{
+                    px: { sx: 0, md: 3 },
+                  }}
+                >
                   {route === "/create" || (
                     <Link href="/create">
                       <Typography
@@ -129,9 +136,9 @@ function MyApp({ Component, pageProps }) {
                       </a>
                     </Link>
                   )}
-                  <Button ml={{ sx: 0, md: 3 }} onClick={handleLogout}>
+                  {/* <Button ml={{ sx: 0, md: 3 }} onClick={handleLogout}>
                     Log Out
-                  </Button>
+                  </Button> */}
                 </Stack>
               </Stack>
             </Toolbar>
