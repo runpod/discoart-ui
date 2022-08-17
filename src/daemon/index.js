@@ -10,7 +10,7 @@ const port = 9999
 
 const databasePath = "/workspace/database"
 
-let maxConcurrency = 1
+let maxConcurrency = process.env.RUNPOD_GPU_COUNT
 let jobStarting = false
 let activeProcesses = []
 
@@ -64,30 +64,6 @@ const setup = async () => {
   const job = spawn("bash", ["-c", `python ${__dirname}/getGpuCount.py`], {
     detached: true,
   })
-
-  try {
-    maxConcurrency = await new Promise((resolve) => {
-      job.stdout.on("data", (data) => {
-        try {
-          const rawConcurrencyString = `${data}`
-          const parsedConcurrency = parseInt(rawConcurrencyString, 10)
-          resolve(parsedConcurrency)
-        } catch (e) {
-          console.log("WARNING, FAILED TO DETECT CONCURRENCY")
-          resolve(0)
-        }
-      })
-
-      job.on("error", () => {
-        console.log("WARNING, FAILED TO DETECT CONCURRENCY")
-        resolve(0)
-      })
-    })
-  } catch (e) {
-    console.log("WARNING, FAILED TO DETECT CONCURRENCY")
-    console.log(e)
-    maxConcurrency = 0
-  }
 
   console.log("max concurrency detected: ", maxConcurrency)
 

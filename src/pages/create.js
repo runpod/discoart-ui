@@ -82,13 +82,14 @@ import { LoadingButton } from "@mui/lab"
 
 export async function getServerSideProps({ req, res }) {
   const auth = await getAuth({ req, res })
+  const { RUNPOD_GPU_COUNT } = process.env
 
   return {
-    props: auth,
+    props: { ...auth, gpuCount: RUNPOD_GPU_COUNT },
   }
 }
 
-export default function Create({ loggedIn }) {
+export default function Create({ loggedIn, gpuCount }) {
   useLoginRedirect(loggedIn)
 
   const theme = useTheme()
@@ -312,7 +313,7 @@ export default function Create({ loggedIn }) {
     return [queued, processing, error]
   }, [jobData])
 
-  return (
+  return parseInt(gpuCount, 10) > 0 ? (
     <form onSubmit={handleSubmit(handleRenderStart)}>
       <Container
         maxWidth="xl"
@@ -941,5 +942,51 @@ export default function Create({ loggedIn }) {
         ></Box>
       </Grid>
     </form>
+  ) : (
+    <Container
+      maxWidth="xl"
+      sx={{
+        py: 0,
+        m: "auto",
+      }}
+    >
+      <Grid container spacing={4} padding={smallScreen ? 1 : 2}>
+        <Grid item xs={12}>
+          <Typography variant="h4">This is a transfer pod!</Typography>
+        </Grid>
+        <Grid item xs={12}>
+          <Stack spacing={1}>
+            <Typography variant="body">What does that mean?!</Typography>
+            <Typography variant="body">
+              In a nutshell, it means that either you accidentally started your pod with 0 GPUs, or
+              that all the GPUs on the machine that your pod is hosted on are taken.
+            </Typography>
+            <Typography>
+              You can still probably start a new pod, as it will find you an available GPU on a
+              different machine, but it will not have all of your data from this pod. You can
+              transfer all of your data over in several ways, like by using our{" "}
+              <a href="https://www.runpod.io/blog/easily-backup-and-restore-your-pod-using-backblaze-b2-and-cloud-sync">
+                cloud sync feature
+              </a>
+              .
+            </Typography>
+            <Typography>
+              You can also just use the gallery view or connect to jupyter lab to pull the files
+              that you need and terminate this pod if you do not need it anymore.
+            </Typography>
+            <Typography variant="h5">
+              Note that transfer pods have limited resources, so it is fairly easy to OOM them by
+              trying to download huge amounts of gif files and the like. You should be able to
+              download a fair number of final pictures, but be careful with trying to zip huge
+              files!
+            </Typography>
+            <Typography>
+              We know that this kind of sucks, and we are actively trying to make it better. Please
+              bear with us! &hearts;
+            </Typography>
+          </Stack>
+        </Grid>
+      </Grid>
+    </Container>
   )
 }
