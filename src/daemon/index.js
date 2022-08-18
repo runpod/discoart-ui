@@ -13,7 +13,9 @@ const databasePath = "/workspace/database"
 let maxConcurrency = 0
 
 try {
-  maxConcurrency = parseInt(process.env.RUNPOD_GPU_COUNT, 10)
+  if (process.env.RUNPOD_GPU_COUNT) {
+    maxConcurrency = parseInt(process.env.RUNPOD_GPU_COUNT, 10)
+  }
 } catch (e) {
   console.log("WARNING: ISSUE PARSING GPU COUNT")
 }

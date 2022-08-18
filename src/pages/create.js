@@ -82,10 +82,16 @@ import { LoadingButton } from "@mui/lab"
 
 export async function getServerSideProps({ req, res }) {
   const auth = await getAuth({ req, res })
-  const { RUNPOD_GPU_COUNT } = process.env
+
+  let gpuCount = null
+
+  try {
+    const { RUNPOD_GPU_COUNT } = process.env
+    gpuCount = parseInt(RUNPOD_GPU_COUNT)
+  } catch (e) {}
 
   return {
-    props: { ...auth, gpuCount: RUNPOD_GPU_COUNT },
+    props: { ...auth, gpuCount },
   }
 }
 
@@ -313,7 +319,7 @@ export default function Create({ loggedIn, gpuCount }) {
     return [queued, processing, error]
   }, [jobData])
 
-  return parseInt(gpuCount, 10) > 0 ? (
+  return gpuCount > 0 ? (
     <form onSubmit={handleSubmit(handleRenderStart)}>
       <Container
         maxWidth="xl"
