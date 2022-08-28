@@ -191,10 +191,10 @@ export const inputConfig = {
     label: "Perlin Init",
   },
   perlin_mode: {
-    default: null,
+    default: "off",
     type: "select",
 
-    options: ["mixed", "color", "gray"],
+    options: ["off", "mixed", "color", "gray"],
     label: "Perlin Mode",
   },
   //   voronoi_points: {

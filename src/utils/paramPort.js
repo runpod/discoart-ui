@@ -75,7 +75,7 @@ export const stateToJson = (state, shouldFilter) => {
     (state) => {
       return {
         ...state,
-        perlin_init: state?.perlin_mode ? true : false,
+        perlin_init: state?.perlin_mode !== "off" || !state?.perlin_mode ? false : true,
         text_prompts: formatTextPrompts(state.text_prompts),
         width_height: stringifyDimensions(state.height, state.width),
         seed: state?.seed || getRandomSeed(),
@@ -135,7 +135,6 @@ export const jsonToState = (json) => {
       return {
         ...parsed,
         ...transformedSchedules,
-        perlin_init: parsed?.perlin_mode ? true : false,
         text_prompts: parseTextPrompts(parsed?.text_prompts),
         transformation_percent: JSON.stringify(parsed?.transformation_percent),
         clip_models: clipModels || inputConfig.clip_models.default,

@@ -126,6 +126,7 @@ export const ControlledAutocomplete = ({
 
   return (
     <Autocomplete
+      disableClearable
       options={options}
       defaultValue={defaultValue}
       onChange={(e, data) => {
