@@ -75,7 +75,7 @@ export const stateToJson = (state, shouldFilter) => {
     (state) => {
       return {
         ...state,
-        perlin_init: state?.perlin_mode !== "off" || !state?.perlin_mode ? false : true,
+        perlin_init: (state?.perlin_mode === "off" || !state?.perlin_mode) ? false : true,
         text_prompts: formatTextPrompts(state.text_prompts),
         width_height: stringifyDimensions(state.height, state.width),
         seed: state?.seed || getRandomSeed(),
